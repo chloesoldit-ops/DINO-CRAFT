@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DinoCraft 3D Ultimate — Alpha 0.9 Combat</title>
+<title>DinoCraft 3D Ultimate — Combat 1.2 Loot & Maces</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -133,10 +133,12 @@ canvas{display:block;outline:none}
 #battleStats{position:fixed;left:12px;top:215px;background:rgba(10,16,30,.88);border:1px solid #7bc8ff;border-radius:12px;padding:12px 16px;z-index:24;min-width:245px;font:13px system-ui;line-height:1.9;display:none;box-shadow:0 12px 30px #0008}#battleStats b{color:#ffdc78}#battleStats .stHead{font-size:16px;font-weight:900;color:#8fd4ff;letter-spacing:2px;border-bottom:1px solid #556;padding-bottom:5px;margin-bottom:5px}#battleStats .stHint{color:#a1b8d4;font-size:11px}#crosshair{pointer-events:none}#battleStats{pointer-events:none}
 #combatAbilityHUD{position:fixed;right:14px;bottom:145px;background:rgba(6,14,28,.85);border:1px solid #6699bb;border-radius:10px;padding:10px 13px;font-size:12px;color:#e4f4ff;min-width:205px;z-index:20;pointer-events:none;line-height:1.7;box-shadow:0 4px 20px #0008}
 #combatAbilityHUD b{color:#ffd966}#combatAbilityHUD .ready{color:#75ffac}#combatAbilityHUD .cooling{color:#ffaf88}
+#adminPanel{position:fixed;top:15%;left:50%;transform:translateX(-50%);width:min(520px,90vw);z-index:150;background:#111c2c;border:2px solid #70cfff;border-radius:12px;padding:18px;display:none;box-shadow:0 15px 70px #000;color:#fff;font:14px system-ui}#adminPanel input{width:100%;margin:12px 0;padding:12px;border:1px solid #789;border-radius:8px;background:#182c40;color:#fff;font:15px monospace}#adminPanel button{padding:8px 14px;border:0;border-radius:6px;background:#357da0;color:white;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="runtimeError" style="display:none;position:fixed;top:8px;left:8px;right:8px;z-index:1000;background:#480b16;border:1px solid #ff6f81;color:white;font:13px monospace;padding:12px;border-radius:9px;max-height:38vh;overflow:auto"></div>
+<div id="adminPanel"><b>⌨️ DINOCRAFT COMMAND CONSOLE</b><p>Try /creative, /survival, /heal, /give wind_charge 16, /spawn raptor, /spawn rex, /help</p><input id="adminInput" placeholder="Type /help" autocomplete="off"/><button id="adminRun">Run Command</button> <button id="adminClose">Close</button></div>
 <div id="loading"><div class="spin"></div><div>GENERATING WORLD…</div></div>
 <div id="sunset-tint"></div>
 <div id="bloodmoon-tint"></div>
@@ -164,9 +166,9 @@ canvas{display:block;outline:none}
   <div id="botTarget"><div class="name"></div><div class="weapon"></div><div class="hptrack"><div class="hpfill" style="width:100%"></div></div></div>
   <div id="killStreak"><div class="streakNum">0</div><div class="streakText">KILL STREAK</div></div>
   <div id="weaponQuest"><div class="wqTitle">⭐ NEXT LEVEL WEAPON</div><div class="wqTask" id="wqTask">Gain XP to unlock weapons</div><div class="wqProgress"><span id="wqKills">0</span> / <span id="wqNeed">3</span></div><div class="wqBar"><div class="wqFill" id="wqFill" style="width:0%"></div></div></div>
-  <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP</div><div style="opacity:.72">J / Click attack · Shift sprint · Tab stats</div></div>
+  <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP · V Shockwave (12s)</div><div style="opacity:.72">J / Click attack · Q dash · V shockwave · Tab stats</div></div>
 <div id="bossBar"><div class="name"></div><div class="track"><div class="fill"></div></div></div>
-  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>1-9</b> hotbar · <b>E</b> craft · <b>G</b> creative<br><b>F</b> eat · <b>H</b> hide · <b>M</b> mute · <b>P</b> save PvP</div>
+  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>V</b> shockwave · <b>1-9</b> hotbar · <b>E</b> craft · <b>G</b> creative<br><b>F</b> eat · <b>H</b> hide · <b>M</b> mute · <b>P</b> save PvP</div>
   <div id="hud">
     <div id="bars">
       <div class="bar"><i id="hpFill" style="width:100%"></i><span id="hpTxt">❤️ 20/20</span></div>
@@ -194,14 +196,14 @@ canvas{display:block;outline:none}
   <div class="sub">CHOOSE YOUR ADVENTURE</div>
   <div class="worldGrid">
     <div class="worldCard survival" data-mode="survival"><div class="wcIcon">🌲</div><div class="wcName">SURVIVAL</div><div class="wcDesc">Explore a living world with mobs, bosses, crafting, and building.</div></div>
-    <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Battle 14 skilled bots. Kill them for weapons. Red vs Blue vs You.</div></div>
+    <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Fight elites and dinosaurs, collect loot, and unlock epic maces by leveling up!</div></div>
   </div>
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>Survive · Build · Fight</p>
+  <p>Combat 1.0 · Dinosaurs · Boss Waves · Fight</p>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
-  <div class="sub">Two Worlds · 6 Weapon Types · Weapon Rewards · Smart AI<br>Fighter Bots with Distinct Combat Styles · Survival · PvP</div>
+  <div class="sub">Two Worlds · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Q Dash · V Shockwave · PvP</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
@@ -498,22 +500,29 @@ const ITEMS = {
   iron_pickaxe:{n:'Iron Pickaxe',ic:'⛏️',type:'pickaxe',tier:3,dmg:5,mineDmg:1.8},
   diamond_pickaxe:{n:'Diamond Pickaxe',ic:'💎',type:'pickaxe',tier:4,dmg:6,mineDmg:2.5},
   netherite_pickaxe:{n:'Netherite Pickaxe',ic:'🔱',type:'pickaxe',tier:5,dmg:7,mineDmg:3.5},
-  wood_sword:{n:'Wood Sword',ic:'🗡️',type:'sword',tier:1,dmg:5},
-  stone_sword:{n:'Stone Sword',ic:'🗡️',type:'sword',tier:2,dmg:6},
-  iron_sword:{n:'Iron Sword',ic:'⚔️',type:'sword',tier:3,dmg:8},
-  diamond_sword:{n:'Diamond Sword',ic:'⚔️',type:'sword',tier:4,dmg:11},
-  netherite_sword:{n:'Netherite Sword',ic:'🗡️',type:'sword',tier:5,dmg:14},
-  iron_axe:{n:'Iron Axe',ic:'🪓',type:'axe',tier:3,dmg:9,knockback:2.2},
-  diamond_axe:{n:'Diamond Axe',ic:'🪓',type:'axe',tier:4,dmg:12,knockback:2.4},
-  iron_spear:{n:'Iron Spear',ic:'🔱',type:'spear',tier:3,dmg:7,reach:2.5},
-  diamond_spear:{n:'Diamond Spear',ic:'🔱',type:'spear',tier:4,dmg:9,reach:2.8},
+  wood_sword:{n:'Wood Sword',ic:'🗡️',type:'sword',tier:1,dmg:5,atkSpeed:0.35},
+  stone_sword:{n:'Stone Sword',ic:'🗡️',type:'sword',tier:2,dmg:6,atkSpeed:0.34},
+  iron_sword:{n:'Iron Sword',ic:'⚔️',type:'sword',tier:3,dmg:8,atkSpeed:0.33},
+  diamond_sword:{n:'Diamond Sword',ic:'⚔️',type:'sword',tier:4,dmg:11,atkSpeed:0.32},
+  netherite_sword:{n:'Netherite Sword',ic:'🗡️',type:'sword',tier:5,dmg:14,atkSpeed:0.31},
+  iron_axe:{n:'Iron Axe',ic:'🪓',type:'axe',tier:3,dmg:30,atkSpeed:4.2,knockback:3.2},
+  diamond_axe:{n:'Diamond Axe',ic:'🪓',type:'axe',tier:4,dmg:44,atkSpeed:4.6,knockback:3.6},
+  iron_spear:{n:'Iron Spear',ic:'🔱',type:'spear',tier:3,dmg:5,reach:6.0,atkSpeed:0.95},
+  diamond_spear:{n:'Diamond Spear',ic:'🔱',type:'spear',tier:4,dmg:7,reach:6.4,atkSpeed:0.85},
   stone_dagger:{n:'Stone Dagger',ic:'🔪',type:'dagger',tier:2,dmg:4,atkSpeed:0.6},
   iron_dagger:{n:'Iron Dagger',ic:'🔪',type:'dagger',tier:3,dmg:5,atkSpeed:0.55},
   diamond_dagger:{n:'Diamond Dagger',ic:'🔪',type:'dagger',tier:4,dmg:6,atkSpeed:0.5},
   iron_hammer:{n:'Iron Hammer',ic:'🔨',type:'hammer',tier:3,dmg:12,aoe:2.5,atkSpeed:1.4},
   diamond_hammer:{n:'Diamond Hammer',ic:'🔨',type:'hammer',tier:4,dmg:16,aoe:3.0,atkSpeed:1.5},
+  iron_mace:{n:'Iron Mace',ic:'🔨',type:'mace',tier:3,dmg:13,atkSpeed:1.05},
+  diamond_mace:{n:'Diamond Mace',ic:'💠',type:'mace',tier:4,dmg:19,atkSpeed:1.3},
+  netherite_mace:{n:'Netherite Mace',ic:'💥',type:'mace',tier:5,dmg:26,atkSpeed:1.6},
   bow:{n:'Bow',ic:'🏹',type:'bow',tier:3,dmg:9,ranged:true},
   arrow:{n:'Arrow',ic:'➳',type:'ammo'},
+  golden_apple:{n:'Golden Apple',ic:'🍎',type:'consumable'},
+  wind_charge:{n:'Wind Charge',ic:'🌪️',type:'throwable'},
+  tnt_minecart:{n:'TNT Minecart',ic:'🧨',type:'explosive'},
+  delete_wand:{n:'Creative Delete Wand',ic:'🪄',type:'tool',dmg:9999,atkSpeed:0.35},
   shield:{n:'Shield',ic:'🛡️',type:'shield',tier:2},
   grass_block:{n:'Grass',ic:'🟩',type:'block',block:B.GRASS},
   dirt_block:{n:'Dirt',ic:'🟫',type:'block',block:B.DIRT},
@@ -541,7 +550,7 @@ const inventory = [
   {id:'stone_block',count:32},
   {id:'planks_block',count:32},
   {id:'grass_block',count:32},
-  null, null, null
+  {id:'wind_charge',count:12}, {id:'golden_apple',count:5}, {id:'tnt_minecart',count:4}
 ];
 let hotbar = 0;
 const mats = {wood:0, stone:0, iron:0, gold:0, diamond:0};
@@ -1329,7 +1338,10 @@ const MOB_TYPES = {
   spider:{hp:14,speed:0.080,dmg:2,color:0x3a2a3a,size:0.7,hostile:true,drop:'string'},
   enderman:{hp:30,speed:0.070,dmg:6,color:0x1a0a2a,size:1.0,hostile:true,drop:'diamond'},
   golem:{hp:200,speed:0.045,dmg:8,color:0x8a7a68,size:2.0,hostile:true,boss:true},
-  dragon:{hp:400,speed:0.09,dmg:12,color:0x1a0a2a,size:2.5,hostile:true,boss:true,flying:true}
+  dragon:{hp:400,speed:0.09,dmg:12,color:0x1a0a2a,size:2.5,hostile:true,boss:true,flying:true},
+  raptor:{hp:24,speed:0.115,dmg:4,color:0x4fa66c,size:0.95,hostile:true,drop:'bone'},
+  triceratops:{hp:80,speed:0.045,dmg:9,color:0x749b88,size:1.65,hostile:true,drop:'iron'},
+  rex:{hp:260,speed:0.075,dmg:11,color:0xc26c3f,size:2.3,hostile:true,boss:true,drop:'diamond'}
 };
 function addBox(group, w, h, d, x, y, z, mat, opts){
   opts = opts || {};
@@ -1499,10 +1511,42 @@ function buildWolf(g, def){
   g.userData.legs = [];
   for(const p of legPositions) g.userData.legs.push(addBox(g, legGeo[0], legGeo[1], legGeo[2], p[0], p[1], p[2], legMat));
 }
+// Combat 1.0: chunky voxel dinosaur silhouettes, no external models required.
+function buildDinosaur(g,def,type){
+ const s=def.size, hide=new THREE.MeshLambertMaterial({color:def.color});
+ const belly=new THREE.MeshLambertMaterial({color:0xd6b887});
+ const dark=new THREE.MeshLambertMaterial({color:0x294536});
+ const horn=new THREE.MeshLambertMaterial({color:0xf8e5b1});
+ const eye=new THREE.MeshBasicMaterial({color:0xffdf6a});
+ addBox(g,s*.85,s*.7,s*1.5,0,s*.92,0,hide);
+ const head=new THREE.Group();head.position.set(0,s*1.45,s*.75);g.add(head);
+ addBox(head,s*.7,s*.58,s*.72,0,0,0,hide);
+ addBox(head,s*.58,s*.27,s*.63,0,-s*.19,s*.47,belly);
+ [-1,1].forEach(sgn=>{let e=addBox(head,s*.12,s*.12,s*.07,sgn*s*.25,s*.11,s*.1,eye);e.userData.isEye=true;});
+ // tapered articulated tail
+ const tail=new THREE.Group();tail.position.set(0,s*.97,-s*.75);g.add(tail);
+ for(let i=0;i<4;i++)addBox(tail,s*(.48-i*.1),s*(.43-i*.09),s*.48,0,s*(.05+i*.07),-s*(.25+i*.39),hide);
+ g.userData.tail=tail;
+ g.userData.legs=[];
+ const legN=type==='triceratops'?4:2;
+ for(let i=0;i<legN;i++){
+  const x=(i%2===0?-1:1)*s*.32,z=legN===4?(i<2?-s*.49:s*.48):(-s*.22);
+  g.userData.legs.push(addBox(g,s*.21,s*.76,s*.24,x,s*.39,z,hide));
+ }
+ if(type==='triceratops'){
+   addBox(head,s*.91,s*.62,s*.18,0,s*.21,-s*.23,hide);
+   for(let sign of [-1,1]) addBox(head,s*.14,s*.38,s*.14,sign*s*.31,s*.53,s*.1,horn);
+   addBox(head,s*.13,s*.31,s*.14,0,s*.11,s*.61,horn);
+ }else{
+   for(let sign of [-1,1]) addBox(g,s*.14,s*.26,s*.31,sign*s*.41,s*1.25,s*.35,hide);
+   for(let i=0;i<4;i++)addBox(g,s*.16,s*.19,s*.18,0,s*1.33,-s*(.3+i*.31),dark);
+ }
+}
 function makeMobMesh(type){
   const def = MOB_TYPES[type];
   const g = new THREE.Group();
-  if(type === 'pig') buildQuadruped(g, def, {ears:'pig', eyeSize:0.08});
+  if(type === 'raptor' || type === 'triceratops' || type === 'rex') buildDinosaur(g,def,type);
+  else if(type === 'pig') buildQuadruped(g, def, {ears:'pig', eyeSize:0.08});
   else if(type === 'cow') buildQuadruped(g, def, {ears:'cow', bodyColor:0xf5f5f0, headColor:0x3a2a1a, legColor:0x3a2a1a, eyeSize:0.1});
   else if(type === 'sheep') buildQuadruped(g, def, {ears:'sheep', bodyColor:0xf0f0e8, legColor:0x3a3a3a, eyeSize:0.08});
   else if(type === 'chicken') buildChicken(g, def);
@@ -1565,6 +1609,9 @@ function updateMobs(dt){
     if(m.dead){ scene.remove(m.mesh); m.mesh.traverse(o => { if(o.material) o.material.dispose?.(); if(o.geometry && o.geometry !== blockGeo) o.geometry.dispose?.(); }); mobs.splice(i,1); continue; }
     if(m.hit > 0) m.hit -= dt;
     m.walkPhase += dt * 8;
+    if(m.mesh.userData.tail) m.mesh.userData.tail.rotation.y=Math.sin(m.walkPhase*.35)*.20;
+    if(m.type==='raptor' && m.target===player && m.onGround && m.atkCD<=0 && Math.random()<0.006){m.vel.y=.23;m.onGround=false;}
+
     if(m.retreatT > 0) m.retreatT -= dt;
     const dx = player.pos.x - m.pos.x, dy = player.pos.y - m.pos.y, dz = player.pos.z - m.pos.z;
     const dp = Math.hypot(dx, dy, dz);
@@ -1627,6 +1674,13 @@ function updateMobs(dt){
     });
     m.atkCD = Math.max(0, m.atkCD - dt);
     if(m.hp <= 0){
+      if(worldMode==='pvp' && (m.type==='rex'||m.type==='raptor'||m.type==='triceratops')){
+        const xp=m.type==='rex'?150:(m.type==='triceratops'?42:24);
+        awardXP(xp);player.kills++;player.killStreak++;player.bestStreak=Math.max(player.bestStreak,player.killStreak);
+        showToast('🦖 '+m.type.toUpperCase()+' DEFEATED! +'+xp+' XP','🏆');
+        player.hp=Math.min(player.maxHp,player.hp+(m.type==='rex'?12:4));
+        checkWeaponUnlocks();
+      }
       m.dead = true;
       stats.kills++; score += m.def.boss ? 200 : 5;
       let dropId = null;
@@ -1636,7 +1690,14 @@ function updateMobs(dt){
       else if(m.def.drop === 'string') dropId = 'string';
       else if(m.def.drop === 'wood') dropId = 'wood';
       else dropId = 'stone';
-      for(let k=0;k<1 + (Math.random()<0.4?1:0);k++){
+      // Dinosaur loot also appears in PvP. Bosses have better rewards.
+      const isArenaDino=worldMode==='pvp'&&['raptor','triceratops','rex'].includes(m.type);
+      if(isArenaDino){
+        const bonus=m.type==='rex'?'netherite_mace':m.type==='triceratops'?'diamond_mace':'iron';
+        spawnDroppedItem(bonus,m.pos.x,m.pos.y+m.def.size*.6,m.pos.z,ITEMS[bonus].type==='mace');
+        if(m.type==='rex')spawnDroppedItem('diamond',m.pos.x+0.7,m.pos.y+1,m.pos.z,false);
+      }
+      for(let k=0;k<(worldMode==='pvp'?0:1 + (Math.random()<0.4?1:0));k++){
         spawnDroppedItem(dropId, m.pos.x + (Math.random()-0.5)*0.5, m.pos.y + m.def.size*0.6, m.pos.z + (Math.random()-0.5)*0.5);
         spawnXPOrb(m.pos.x + (Math.random()-0.5)*0.5, m.pos.y + m.def.size*0.6, m.pos.z + (Math.random()-0.5)*0.5, Math.floor(m.maxHp / 4) + 1);
       }
@@ -1667,7 +1728,9 @@ const BOT_WEAPONS = [
   {id:'diamond_dagger',type:'dagger',dmg:7,  speed:0.13, attackRange:1.7, attackRate:0.45, style:'rush'},
   {id:'iron_hammer',  type:'hammer', dmg:15, speed:0.06, attackRange:2.5, attackRate:1.8, style:'heavy'},
   {id:'diamond_hammer',type:'hammer',dmg:20, speed:0.06, attackRange:2.6, attackRate:1.9, style:'heavy'},
-  {id:'bow',          type:'bow',    dmg:9,  speed:0.10, attackRange:14,  attackRate:1.4, style:'kite'}
+  {id:'bow',          type:'bow',    dmg:9,  speed:0.10, attackRange:14,  attackRate:1.4, style:'kite'},
+  {id:'iron_mace',    type:'mace',   dmg:15, speed:0.065, attackRange:2.3, attackRate:1.6, style:'heavy'},
+  {id:'diamond_mace', type:'mace',   dmg:21, speed:0.065, attackRange:2.4, attackRate:1.8, style:'heavy'}
 ];
 
 function buildFighterModel(team, weaponId){
@@ -1765,6 +1828,10 @@ function makeWeaponMesh(weaponId){
     blade.position.y = 0.2; g.add(blade);
     const guard = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.03, 0.04), headMat);
     guard.position.y = 0.04; g.add(guard);
+  } else if(wtype === 'mace'){
+    const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.88, 0.09),handleMat); shaft.position.y=0.05; g.add(shaft);
+    const crown = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.32,0.38),headMat); crown.position.y=0.55;g.add(crown);
+    for(let k=0;k<4;k++){const spike=new THREE.Mesh(new THREE.ConeGeometry(0.12,0.27,4),headMat);spike.position.set(Math.cos(k*Math.PI/2)*0.24,0.56,Math.sin(k*Math.PI/2)*0.24);spike.rotation.z=Math.PI/2;g.add(spike);}
   } else if(wtype === 'hammer'){
     const handle = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.8, 0.07), handleMat);
     handle.position.y = 0; g.add(handle);
@@ -1799,7 +1866,8 @@ function pickBotWeapon(){
   if(roll < 0.85) return BOT_WEAPONS[8]; // diamond_dagger
   if(roll < 0.90) return BOT_WEAPONS[9]; // iron_hammer
   if(roll < 0.95) return BOT_WEAPONS[10]; // diamond_hammer
-  return BOT_WEAPONS[11]; // bow
+  if(roll < 0.975) return BOT_WEAPONS[11]; // bow
+  return BOT_WEAPONS[12 + (Math.random()<0.7?0:1)]; // mace fighters
 }
 
 function spawnFighterBot(team, x, y, z){
@@ -1903,7 +1971,18 @@ function killBot(bot, killer, isPlayerSrc){
   bot.deaths++;
   spawnDeathBurst(bot.pos.x, bot.pos.y + 1, bot.pos.z, teamColor(bot.team));
 
-  // PvP weapons are earned by leveling, never dropped by defeated bots.
+  // Random combat loot: kills award XP AND can drop physical gear.
+  // Level unlocks remain guaranteed; weapon drops are optional extra rewards.
+  if(isPlayerSrc){
+    const roll=Math.random();
+    const loot = bot.elite ? (roll<0.30?'diamond_mace':roll<0.58?'iron_mace':roll<0.80?'diamond':null) :
+      (roll<0.10?'iron_mace':roll<0.20?'iron':roll<0.25?'diamond':null);
+    if(loot){
+      const weapon=!!ITEMS[loot] && ['mace','hammer','sword','axe','spear','dagger','bow'].includes(ITEMS[loot].type);
+      spawnDroppedItem(loot,bot.pos.x,bot.pos.y+0.9,bot.pos.z,weapon);
+      showToast('🎁 '+(weapon?'RARE WEAPON DROP!':'LOOT DROP!')+' '+ITEMS[loot].n,'🎁');
+    }
+  }
 
   playSound('kill');
   if(isPlayerSrc){
@@ -1942,7 +2021,7 @@ function shortWeaponName(id){
     iron_axe:'Axe', diamond_axe:'D.Axe',
     iron_spear:'Spear', diamond_spear:'D.Spear',
     stone_dagger:'Dagger', iron_dagger:'I.Dagger', diamond_dagger:'D.Dagger',
-    iron_hammer:'Hammer', diamond_hammer:'D.Hammer',
+    iron_hammer:'Hammer', diamond_hammer:'D.Hammer', iron_mace:'Mace',diamond_mace:'D.Mace',netherite_mace:'N.Mace',
     bow:'Bow'
   };
   return map[id] || id;
@@ -2413,7 +2492,10 @@ const WEAPON_MILESTONES = [
   {level:9, weapon:'diamond_dagger', name:'Diamond Dagger'},
   {level:10, weapon:'netherite_sword', name:'Netherite Sword'},
   {level:12, weapon:'diamond_hammer', name:'Diamond Hammer'},
-  {level:14, weapon:'netherite_pickaxe', name:'Netherite Pickaxe'}
+  {level:11, weapon:'iron_mace', name:'Iron Mace'},
+  {level:13, weapon:'diamond_mace', name:'Diamond Mace'},
+  {level:14, weapon:'netherite_pickaxe', name:'Netherite Pickaxe'},
+  {level:17, weapon:'netherite_mace', name:'Netherite Mace'}
 ];
 const pendingLevelRewards = [];
 // Progress saves locally in your browser, not on a remote server.
@@ -2548,7 +2630,7 @@ function spawnDroppedItem(itemId, x, y, z, isWeaponDrop){
   if(!info) return;
   const g = new THREE.Group();
   let dropMesh;
-  if(info.type === 'sword' || info.type === 'axe' || info.type === 'spear' || info.type === 'dagger' || info.type === 'hammer' || info.type === 'bow'){
+  if(info.type === 'sword' || info.type === 'axe' || info.type === 'spear' || info.type === 'dagger' || info.type === 'hammer' || info.type === 'mace' || info.type === 'mace' || info.type === 'bow'){
     dropMesh = makeWeaponMesh(itemId);
     dropMesh.scale.set(0.7, 0.7, 0.7);
   } else if(itemId === 'wood'){ dropMesh = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,0.3), new THREE.MeshLambertMaterial({color:0x8a5a2a})); }
@@ -2620,7 +2702,7 @@ function updateDroppedItems(dt){
 function collectDrop(itemId, count, isWeapon){
   const info = ITEMS[itemId];
   // Weapon pickups: try inventory first
-  if(isWeapon || (info && (info.type === 'sword' || info.type === 'axe' || info.type === 'spear' || info.type === 'dagger' || info.type === 'hammer' || info.type === 'bow'))){
+  if(isWeapon || (info && (info.type === 'sword' || info.type === 'axe' || info.type === 'spear' || info.type === 'dagger' || info.type === 'hammer' || info.type === 'mace' || info.type === 'bow'))){
     const it = makeItem(itemId);
     if(it && addItem(it)){
       showToast('Picked up ' + it.n, '⚔️');
@@ -2638,6 +2720,11 @@ function collectDrop(itemId, count, isWeapon){
   else if(itemId === 'iron') mats.iron += count;
   else if(itemId === 'gold') mats.gold += count;
   else if(itemId === 'diamond') mats.diamond += count;
+  else if(itemId === 'bone' || itemId==='string'){
+    const it={id:itemId,count};
+    if(!addItem(it)){showToast('Inventory full!','❌');return false;}
+    updateHotbarUI();
+  }
   updateHUD();
   const info2 = ITEMS[itemId];
   if(info2){
@@ -3195,9 +3282,10 @@ function tryAttack(){
   const origin = camera.position.clone();
   const dir = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
   const weaponInfo=item && ITEMS[item.id];
-  const weaponReach = weaponInfo && weaponInfo.type === 'spear' ? 4.2 :
+  const weaponReach = weaponInfo && weaponInfo.type === 'spear' ? (weaponInfo.reach||6) :
     weaponInfo && weaponInfo.type === 'dagger' ? 2.75 :
-    weaponInfo && weaponInfo.type === 'hammer' ? 3.45 : 3.5;
+    weaponInfo && weaponInfo.type === 'hammer' ? 3.45 :
+    weaponInfo && weaponInfo.type === 'mace' ? 3.25 : 3.5;
   let hitTarget = null, hitDist = worldMode === 'pvp' ? weaponReach : Math.min(REACH, weaponReach), hitType = null;
 
   // Check bots first
@@ -3224,10 +3312,21 @@ function tryAttack(){
   if(hitTarget){
     let dmg = 3;
     if(item && ITEMS[item.id] && ITEMS[item.id].dmg) dmg = ITEMS[item.id].dmg;
+    if(weaponInfo && weaponInfo.type==='tool' && !player.creative){showToast('Delete Wand requires Creative mode','🪄');return;}
+    if(weaponInfo && weaponInfo.type==='tool'){
+      if(hitType==='bot'){spawnDroppedItem(hitTarget.weapon||'diamond_sword',hitTarget.pos.x,hitTarget.pos.y+1,hitTarget.pos.z,true);}
+      else {spawnDroppedItem('diamond',hitTarget.pos.x,hitTarget.pos.y+1,hitTarget.pos.z,false);}
+      showToast('🪄 Deleted target — loot dropped!','🪄');
+    }
     const sprinting = keys['shift'] && (Math.abs(player.vel.x) + Math.abs(player.vel.z)) > 0.08;
     if(sprinting) dmg = Math.floor(dmg * 1.25);
     const crit = player.vel.y < -0.06 && !player.onGround;
     if(crit) dmg = Math.floor(dmg * 1.5);
+    // Mace: falling blows gain damage; normal grounded blows still hit hard.
+    if(weaponInfo && weaponInfo.type==='mace' && !player.onGround && player.vel.y < -0.025){
+      dmg += Math.min(28,Math.floor(Math.abs(player.vel.y)*85));
+      showToast('💥 MACE SMASH! '+dmg+' damage','💥');
+    }
 
     if(hitType === 'bot'){
       combatCombo = Math.min(12, combatCombo + 1); comboTimer = 3.2;
@@ -3257,7 +3356,14 @@ function tryAttack(){
     }, 40);
     if(crit || sprinting) player.shake = Math.min(15, player.shake + 4);
   } else {
-    tryMine();
+    if(weaponInfo && weaponInfo.type==='tool' && player.creative && currentTarget){
+      const b=world[idx(currentTarget.x,currentTarget.y,currentTarget.z)];
+      if(b!==B.AIR && b!==B.BEDROCK && b!==B.ARENA_FLOOR && b!==B.ARENA_WALL){
+        world[idx(currentTarget.x,currentTarget.y,currentTarget.z)]=B.AIR;
+        markDirty(b);spawnDroppedItem(b===B.WOOD?'wood':b===B.STONE?'stone':'diamond',currentTarget.x+.5,currentTarget.y+.5,currentTarget.z+.5,false);
+        showToast('Block deleted — item dropped','🪄');
+      }
+    } else tryMine();
   }
 }
 
@@ -3343,7 +3449,7 @@ function buildHeldItem(){
     const botMat = new THREE.MeshLambertMaterial({map:bi.texBottom});
     heldMesh = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.22,0.22), [sideMat, sideMat, topMat, botMat, sideMat, sideMat]);
     heldMesh.position.set(0.05, -0.52, -0.15);
-  } else if(info.type === 'sword' || info.type === 'pickaxe' || info.type === 'axe' || info.type === 'spear' || info.type === 'dagger' || info.type === 'hammer' || info.type === 'bow'){
+  } else if(info.type === 'sword' || info.type === 'pickaxe' || info.type === 'axe' || info.type === 'spear' || info.type === 'dagger' || info.type === 'hammer' || info.type === 'bow' || info.type === 'mace'){
     heldMesh = makeWeaponMesh(slot.id);
     heldMesh.position.set(0.05, -0.5, -0.15);
     heldMesh.rotation.x = -0.2;
@@ -3671,7 +3777,7 @@ function makeItem(itemId){
 /* ===== ADD ITEM / REMOVE ITEM ===== */
 function addItem(item){
   if(!item) return false;
-  const nonStackable = (item.type === 'pickaxe' || item.type === 'axe' || item.type === 'sword' || item.type === 'bow' || item.type === 'armor' || item.type === 'shield' || item.type === 'totem' || item.type === 'spear' || item.type === 'dagger' || item.type === 'hammer');
+  const nonStackable = (item.type === 'pickaxe' || item.type === 'axe' || item.type === 'sword' || item.type === 'bow' || item.type === 'armor' || item.type === 'shield' || item.type === 'totem' || item.type === 'spear' || item.type === 'dagger' || item.type === 'hammer' || item.type === 'mace');
   if(!nonStackable){
     for(let i=0;i<36;i++){
       const s = G_inv(i);
@@ -3716,6 +3822,7 @@ function setupWorld(mode){
   blockDamageMap.clear();
 
   // Reset player state
+  dinoArenaTimer=35;dinoArenaWave=0;shockwaveCooldown=0;
   player.hp = 20;
   player.maxHp = 20;
   player.hunger = 20;
@@ -3748,8 +3855,8 @@ function setupWorld(mode){
       const z = 10 + Math.random()*(WORLD_SIZE-20);
       spawnMob(t, x, terrainH(x,z)+2, z);
     }
-    for(let i=0;i<10;i++){
-      const types = ['zombie','skeleton','creeper','spider'];
+    for(let i=0;i<12;i++){
+      const types = ['zombie','skeleton','creeper','spider','raptor','raptor','triceratops'];
       const t = types[i % types.length];
       const x = 5 + Math.random()*(WORLD_SIZE-10);
       const z = 5 + Math.random()*(WORLD_SIZE-10);
@@ -3855,11 +3962,75 @@ renderer.domElement.setAttribute('tabindex', '0');
 renderer.domElement.addEventListener('click', lockGameMouse);
 /* ===== INPUT ===== */
 const mouseDown = {left:false, right:false};
+let adminOpen=false;
+function toggleAdmin(open){adminOpen=open;document.getElementById('adminPanel').style.display=open?'block':'none';if(open){if(document.pointerLockElement)document.exitPointerLock();document.getElementById('adminInput').focus();}else renderer.domElement.focus();}
+function adminCommand(raw){
+ const a=raw.trim().replace(/^\//,'').toLowerCase().split(/\s+/),cmd=a[0];
+ if(cmd==='help'){showToast('/creative /survival /heal /give ITEM COUNT /spawn TYPE /clear','⌨️');return;}
+ if(cmd==='creative'||cmd==='survival'){player.creative=cmd==='creative';showToast('Mode: '+cmd,'🎮');updateHUD();return;}
+ if(cmd==='heal'){player.hp=player.maxHp;player.hunger=20;player.thirst=20;updateHUD();showToast('Fully healed','🍎');return;}
+ if(cmd==='give'){
+   const id=a[1],count=Math.min(64,Math.max(1,Number.parseInt(a[2])||1));
+   if(!ITEMS[id]){showToast('Unknown item. Try /give golden_apple 5','❌');return;}
+   const it=makeItem(id);it.count=count;
+   if(addItem(it)){updateHotbarUI();showToast('Gave '+count+' '+ITEMS[id].n,'🎁');}else showToast('Inventory full','❌');return;
+ }
+ if(cmd==='spawn'){
+   const type=a[1]==='trex'?'rex':a[1];
+   if(!MOB_TYPES[type]){showToast('Unknown mob. Try raptor / triceratops / rex','❌');return;}
+   const x=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.x+Math.sin(player.yaw)*-7));
+   const z=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.z+Math.cos(player.yaw)*-7));
+   spawnMob(type,x,player.pos.y+2,z);showToast('Spawned '+type,'🦖');return;
+ }
+ if(cmd==='clear'){for(let i=0;i<inventory.length;i++)inventory[i]=null;updateHotbarUI();showToast('Inventory cleared','🧹');return;}
+ showToast('Unknown command: /help','❌');
+}
+document.getElementById('adminRun').onclick=()=>{adminCommand(document.getElementById('adminInput').value);document.getElementById('adminInput').value='';};
+document.getElementById('adminClose').onclick=()=>toggleAdmin(false);
+document.getElementById('adminInput').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){adminCommand(e.target.value);e.target.value='';}if(e.key==='Escape')toggleAdmin(false);});
+let chargeCooldown=0;
+const tntCarts=[];
+function useCombatItem(){
+ const slot=inventory[hotbar];if(!slot||!ITEMS[slot.id])return false;
+ if(slot.id==='golden_apple'){
+   player.hp=Math.min(player.maxHp,player.hp+12);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,4);showToast('🍎 Golden Apple: healing + 4s resistance!','🍎');
+ }else if(slot.id==='wind_charge'){
+   if(chargeCooldown>0){showToast('Wind Charge recharging','⏳');return true;}
+   chargeCooldown=1.5;const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));
+   player.vel.x-=dir.x*.34;player.vel.z-=dir.z*.34;player.vel.y+=.22;
+   for(const bot of fighterBots)if(!bot.dead && bot.pos.distanceTo(player.pos)<7){damageBot(bot,9,null,true,false);bot.vel?.add?.(dir.clone().multiplyScalar(.55));}
+   for(const mob of mobs)if(!mob.dead && mob.pos.distanceTo(player.pos)<7){mob.hp-=9;mob.vel.x+=dir.x*.35;mob.vel.z+=dir.z*.35;}
+   spawnHitSparks(player.pos.x,player.pos.y+1,player.pos.z,0xaeefff,22);showToast('🌪️ Wind Charge!','🌪️');
+ }else if(slot.id==='tnt_minecart'){
+   const g=new THREE.Group();const mat=new THREE.MeshLambertMaterial({color:0xe43d31});const cartmat=new THREE.MeshLambertMaterial({color:0x555960});
+   const body=new THREE.Mesh(new THREE.BoxGeometry(1.0,.55,.8),cartmat);g.add(body);
+   const tnt=new THREE.Mesh(new THREE.BoxGeometry(.75,.65,.6),mat);tnt.position.y=.5;g.add(tnt);
+   const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));
+   g.position.set(player.pos.x+dir.x*2,player.pos.y+.6,player.pos.z+dir.z*2);scene.add(g);tntCarts.push({mesh:g,dir,time:3});showToast('🧨 TNT Minecart primed! 3 seconds','🧨');
+ }else return false;
+ if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}updateHotbarUI();updateHUD();return true;
+}
+function updateCombatItems(dt){
+ chargeCooldown=Math.max(0,chargeCooldown-dt);
+ for(let i=tntCarts.length-1;i>=0;i--){
+   const cart=tntCarts[i];cart.time-=dt;cart.mesh.position.addScaledVector(cart.dir,dt*3);cart.mesh.rotation.y+=dt*3;
+   if(cart.time<=0){const p=cart.mesh.position;
+     spawnDeathBurst(p.x,p.y+1,p.z,0xff6622);spawnHitSparks(p.x,p.y+1,p.z,0xffaa33,35);
+     for(const bot of fighterBots)if(!bot.dead && bot.pos.distanceTo(p)<7)damageBot(bot,Math.max(1,Math.round(65-bot.pos.distanceTo(p)*8)),null,true,false);
+     for(const mob of mobs)if(!mob.dead && mob.pos.distanceTo(p)<7)mob.hp-=Math.max(1,Math.round(65-mob.pos.distanceTo(p)*8));
+     if(!player.creative && player.pos.distanceTo(p)<5)playerHurt(8,null);
+     scene.remove(cart.mesh);cart.mesh.traverse(o=>{o.geometry?.dispose?.();o.material?.dispose?.();});tntCarts.splice(i,1);showToast('💥 TNT MINECART EXPLODED!','🧨');
+   }
+ }
+}
+
 let placeCooldown = 0;
 window.addEventListener('keydown', e => {
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
+  if(adminOpen){if(k==='escape')toggleAdmin(false);return;}
+  if(k==='/' || k==='enter'){e.preventDefault();toggleAdmin(true);return;}
   if(document.getElementById('invOverlay').style.display === 'flex'){
     if(k === 'escape' || k === 'e') toggleInventory();
     return;
@@ -3885,7 +4056,8 @@ window.addEventListener('keydown', e => {
   }
   if(k === 'p' && !e.repeat && worldMode === 'pvp'){ savePvPProgress(); showToast('💾 PvP progress saved!', '💾'); }
   if(k === 'q' && !e.repeat) combatDash();
-  if(k === 'j' && !e.repeat && worldReady && !player.dead) tryAttack();
+  if(k === 'v' && !e.repeat) combatShockwave();
+  if(k === 'j' && !e.repeat && worldReady && !player.dead){if(!useCombatItem())tryAttack();}
   if(k === 'k' && !e.repeat && worldReady && !player.dead) tryAttack();
   if(k === 'h'){
     const el = document.getElementById('help');
@@ -3914,7 +4086,7 @@ document.addEventListener('mousedown', e => {
   // Only clicks on the game canvas should attack, never clicks on the menus/UI.
   if(e.target !== renderer.domElement || !worldReady || player.dead) return;
   if(document.pointerLockElement !== renderer.domElement) lockGameMouse();
-  if(e.button === 0){ mouseDown.left = true; tryAttack(); }
+  if(e.button === 0){ if(!useCombatItem()){mouseDown.left = true;tryAttack();} }
   if(e.button === 2){
     mouseDown.right = true;
     const slot = inventory[hotbar];
@@ -3961,6 +4133,48 @@ document.querySelectorAll('.worldCard').forEach(card => {
   });
 });
 
+
+/* ===== DINOCRAFT COMBAT 1.0: DINO ARENA EVENTS ===== */
+let dinoArenaTimer=35, dinoArenaWave=0, shockwaveCooldown=0;
+function updateDinoArena(dt){
+ if(worldMode!=='pvp'||!worldReady||player.dead)return;
+ const active=mobs.some(m=>!m.dead&&['raptor','triceratops','rex'].includes(m.type));
+ if(active){
+   const boss=mobs.find(m=>!m.dead&&m.type==='rex');
+   if(boss)showBossBar('🦖 TYRANT REX — ARENA BOSS',boss.hp,boss.maxHp);
+   return;
+ }
+ dinoArenaTimer-=dt;
+ if(dinoArenaTimer>0)return;
+ dinoArenaWave++;
+ const type=dinoArenaWave%3===0?'rex':(dinoArenaWave%2===0?'triceratops':'raptor');
+ const x=WORLD_SIZE/2+11,z=WORLD_SIZE/2+10;
+ const m=spawnMob(type,x,22,z);
+ if(m){
+   if(type==='raptor'){spawnMob('raptor',x+3,22,z+1);spawnMob('raptor',x-3,22,z+1);}
+   showToast(type==='rex'?'🦖 BOSS WAVE: TYRANT REX!':'🦖 DINOSAUR INVASION: '+type.toUpperCase(),'⚔️');
+   if(type==='rex')showBossBar('🦖 TYRANT REX — ARENA BOSS',m.hp,m.maxHp);
+ }
+ dinoArenaTimer=90;
+}
+function combatShockwave(){
+ if(!worldReady||player.dead||shockwaveCooldown>0)return;
+ shockwaveCooldown=12;
+ const radius=5.2, damage=Math.min(20,7+Math.floor(player.level*.65));
+ let hits=0;
+ for(const b of fighterBots){
+  if(b.dead||b.pos.distanceTo(player.pos)>radius)continue;
+  damageBot(b,damage,null,true,false);hits++;
+ }
+ for(const m of mobs){
+  if(m.dead||m.pos.distanceTo(player.pos)>radius)continue;
+  m.hp-=damage;m.hit=.45;
+  spawnHitSparks(m.pos.x,m.pos.y+m.def.size*.5,m.pos.z,0x66ddff,14);hits++;
+ }
+ spawnParticles(player.pos.x,player.pos.y+1,player.pos.z,35,0x66ddff);
+ showToast('💥 SHOCKWAVE! '+hits+' targets hit','💥');playSound('attack');
+}
+
 /* ===== SURVIVAL SPAWNING ===== */
 let spawnT = 0;
 function tickSpawn(dt){
@@ -3977,7 +4191,7 @@ function tickSpawn(dt){
     const x = 8 + Math.random()*(WORLD_SIZE-16), z = 8 + Math.random()*(WORLD_SIZE-16);
     spawnMob(t, x, terrainH(x,z)+2, z);
   } else if(r < 0.4 + hostileChance){
-    const types = ['zombie','skeleton','creeper','spider'];
+    const types = ['zombie','skeleton','creeper','spider','raptor','raptor','triceratops'];
     if(Math.random() < 0.12) types.push('enderman');
     const t = types[Math.floor(Math.random()*types.length)];
     const x = 5 + Math.random()*(WORLD_SIZE-10), z = 5 + Math.random()*(WORLD_SIZE-10);
@@ -4015,6 +4229,7 @@ function animate(){
     updatePlayer(dt);
     updateMobs(dt);
     updateFighterBots(dt);
+    updateDinoArena(dt);
     updateBotProjectiles(dt);
     updateRaycast();
     updateRain(dt);
@@ -4027,14 +4242,14 @@ function animate(){
     updateBotTargetHUD();
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
   }
-  if(!invOpen && !playerDead) updateCombatAbilities(dt);
+  if(!invOpen && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt); shockwaveCooldown=Math.max(0,shockwaveCooldown-dt); }
   updateParticles(dt);
   updatePopups(dt);
   if(pendingLevelRewards.length) deliverPendingRewards();
   updateAmbientAudio(lastNightF, dt);
 
   if(!invOpen && !playerDead){
-    if(mouseDown.left && worldReady && player.atkCD <= 0) tryAttack();
+    if(mouseDown.left && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
     if(mouseDown.right){
       const slot = inventory[hotbar];
       if(!(slot && ITEMS[slot.id] && ITEMS[slot.id].type === 'shield')){
