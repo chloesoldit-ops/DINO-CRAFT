@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DinoCraft 3D Ultimate — Combat 1.2 Loot & Maces</title>
+<title>DinoCraft 3D Ultimate — Creative Update 1.3</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -134,11 +134,20 @@ canvas{display:block;outline:none}
 #combatAbilityHUD{position:fixed;right:14px;bottom:145px;background:rgba(6,14,28,.85);border:1px solid #6699bb;border-radius:10px;padding:10px 13px;font-size:12px;color:#e4f4ff;min-width:205px;z-index:20;pointer-events:none;line-height:1.7;box-shadow:0 4px 20px #0008}
 #combatAbilityHUD b{color:#ffd966}#combatAbilityHUD .ready{color:#75ffac}#combatAbilityHUD .cooling{color:#ffaf88}
 #adminPanel{position:fixed;top:15%;left:50%;transform:translateX(-50%);width:min(520px,90vw);z-index:150;background:#111c2c;border:2px solid #70cfff;border-radius:12px;padding:18px;display:none;box-shadow:0 15px 70px #000;color:#fff;font:14px system-ui}#adminPanel input{width:100%;margin:12px 0;padding:12px;border:1px solid #789;border-radius:8px;background:#182c40;color:#fff;font:15px monospace}#adminPanel button{padding:8px 14px;border:0;border-radius:6px;background:#357da0;color:white;cursor:pointer}
+
+#creativePanel{position:fixed;inset:5vh 8vw;z-index:155;display:none;flex-direction:column;background:#101b2bf5;border:2px solid #6dd8ff;border-radius:14px;color:#fff;box-shadow:0 20px 90px #000c;padding:17px;overflow:hidden;font:14px system-ui}
+#creativeGrid{overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px;margin-top:10px;padding:4px}
+.creativeItem{border:1px solid #55718e;border-radius:8px;background:#26384d;color:#fff;padding:9px;text-align:left;cursor:pointer;min-height:62px}
+.creativeItem:hover{background:#365a72;border-color:#ffde72}
+#creativeSearch{background:#1d3148;border:1px solid #7295bb;border-radius:8px;color:#fff;padding:10px;flex:1;min-width:100px}
+#creativePanel button{cursor:pointer}#creativeClose{padding:10px;border:0;border-radius:8px;background:#4b6a8a;color:white}
+#creativeHUD{position:fixed;top:115px;right:12px;z-index:25;background:#142d42cf;color:#c5f0ff;border:1px solid #6ac9ed;border-radius:8px;padding:8px 12px;font:12px system-ui;display:none;pointer-events:none}
 </style>
 </head>
 <body>
 <div id="runtimeError" style="display:none;position:fixed;top:8px;left:8px;right:8px;z-index:1000;background:#480b16;border:1px solid #ff6f81;color:white;font:13px monospace;padding:12px;border-radius:9px;max-height:38vh;overflow:auto"></div>
-<div id="adminPanel"><b>⌨️ DINOCRAFT COMMAND CONSOLE</b><p>Try /creative, /survival, /heal, /give wind_charge 16, /spawn raptor, /spawn rex, /help</p><input id="adminInput" placeholder="Type /help" autocomplete="off"/><button id="adminRun">Run Command</button> <button id="adminClose">Close</button></div>
+<div id="adminPanel"><b>⌨️ DINOCRAFT COMMAND CONSOLE</b><p>/help · /creative · /survival · /fly · /god · /give any_item 64 · /give all · /items · /spawn rex</p><input id="adminInput" placeholder="Type /help" autocomplete="off"/><button id="adminRun">Run Command</button> <button id="adminClose">Close</button></div>
+<div id="creativePanel"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><b>🎨 CREATIVE ITEM LIBRARY</b><input id="creativeSearch" placeholder="Search any DinoCraft item (sword, apple, TNT…)"/><button id="creativeClose">Close (I / Esc)</button></div><p style="font-size:12px;color:#a5c8e4;margin-top:6px">Click an item to place a stack into your selected hotbar slot. Search by item name or ID.</p><div id="creativeGrid"></div></div><div id="creativeHUD"></div>
 <div id="loading"><div class="spin"></div><div>GENERATING WORLD…</div></div>
 <div id="sunset-tint"></div>
 <div id="bloodmoon-tint"></div>
@@ -166,9 +175,9 @@ canvas{display:block;outline:none}
   <div id="botTarget"><div class="name"></div><div class="weapon"></div><div class="hptrack"><div class="hpfill" style="width:100%"></div></div></div>
   <div id="killStreak"><div class="streakNum">0</div><div class="streakText">KILL STREAK</div></div>
   <div id="weaponQuest"><div class="wqTitle">⭐ NEXT LEVEL WEAPON</div><div class="wqTask" id="wqTask">Gain XP to unlock weapons</div><div class="wqProgress"><span id="wqKills">0</span> / <span id="wqNeed">3</span></div><div class="wqBar"><div class="wqFill" id="wqFill" style="width:0%"></div></div></div>
-  <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP · V Shockwave (12s)</div><div style="opacity:.72">J / Click attack · Q dash · V shockwave · Tab stats</div></div>
+  <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP</div><div style="opacity:.72">J / Click attack · Q dash · I creative items · Tab stats</div></div>
 <div id="bossBar"><div class="name"></div><div class="track"><div class="fill"></div></div></div>
-  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>V</b> shockwave · <b>1-9</b> hotbar · <b>E</b> craft · <b>G</b> creative<br><b>F</b> eat · <b>H</b> hide · <b>M</b> mute · <b>P</b> save PvP</div>
+  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> craft · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> mute · <b>P</b> save PvP</div>
   <div id="hud">
     <div id="bars">
       <div class="bar"><i id="hpFill" style="width:100%"></i><span id="hpTxt">❤️ 20/20</span></div>
@@ -201,9 +210,9 @@ canvas{display:block;outline:none}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>Combat 1.0 · Dinosaurs · Boss Waves · Fight</p>
+  <p>Creative Update 1.3 · Build · Fly · Fight</p>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
-  <div class="sub">Two Worlds · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Q Dash · V Shockwave · PvP</div>
+  <div class="sub">Two Worlds · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Creative Flight · Admin Commands · PvP</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
@@ -2958,6 +2967,23 @@ function updatePlayer(dt){
   const accel = player.inWater ? 0.12 : 0.35;
   player.vel.x += (targetVX - player.vel.x) * accel;
   player.vel.z += (targetVZ - player.vel.z) * accel;
+  if(flying){
+    // No gravity or collision while flying. Shift descends; Space ascends.
+    const vertical=(keys[' ']?1:0)-(keys['shift']?1:0);
+    const flySpeed=(keys['control']?0.42:0.22)*creativeSpeed*(keys['alt']?1.5:1);
+    player.vel.set(move.x*flySpeed,vertical*flySpeed,move.z*flySpeed);
+    player.pos.x=Math.max(0.5,Math.min(WORLD_SIZE-0.5,player.pos.x+player.vel.x));
+    player.pos.y=Math.max(1,Math.min(WORLD_HEIGHT+50,player.pos.y+player.vel.y));
+    player.pos.z=Math.max(0.5,Math.min(WORLD_SIZE-0.5,player.pos.z+player.vel.z));
+    player.onGround=false;player.fallStartY=null;player.inWater=false;
+    player.bob=0;player.roll=0;
+    camera.position.set(player.pos.x,player.pos.y+PLAYER_EYE,player.pos.z);
+    camera.rotation.set(player.pitch,player.yaw,0);
+    if(player.atkCD>0)player.atkCD=Math.max(0,player.atkCD-dt);
+    if(player.invuln>0)player.invuln=Math.max(0,player.invuln-dt);
+    return;
+  }
+  player.vel.x*=creativeSpeed;player.vel.z*=creativeSpeed;
   player.vel.y -= grav;
   if(player.inWater){ player.vel.y *= 0.85; player.vel.y -= 0.003; }
   if(player.vel.y < -0.7) player.vel.y = -0.7;
@@ -3060,11 +3086,12 @@ function updatePlayer(dt){
   else lowHp.style.display = 'none';
 }
 function playerHurt(amt, srcBot){
+  if(godMode || player.creative) return;
   if(dashProtection > 0) amt *= .5;
   if(player.dead) return;
   if(player.invuln > 0) return;
   if(player.blocking) amt *= 0.3;
-  if(player.creative) amt *= 0.4;
+
   player.hp -= amt;
   player.invuln = 0.5;
   player.shake = Math.min(20, 6 + amt * 1.5);
@@ -3822,7 +3849,7 @@ function setupWorld(mode){
   blockDamageMap.clear();
 
   // Reset player state
-  dinoArenaTimer=35;dinoArenaWave=0;shockwaveCooldown=0;
+  dinoArenaTimer=35;dinoArenaWave=0;
   player.hp = 20;
   player.maxHp = 20;
   player.hunger = 20;
@@ -3962,29 +3989,104 @@ renderer.domElement.setAttribute('tabindex', '0');
 renderer.domElement.addEventListener('click', lockGameMouse);
 /* ===== INPUT ===== */
 const mouseDown = {left:false, right:false};
-let adminOpen=false;
-function toggleAdmin(open){adminOpen=open;document.getElementById('adminPanel').style.display=open?'block':'none';if(open){if(document.pointerLockElement)document.exitPointerLock();document.getElementById('adminInput').focus();}else renderer.domElement.focus();}
+let adminOpen=false, creativeOpen=false, flying=false, godMode=false, creativeSpeed=1;
+function toggleAdmin(open){if(open && creativeOpen)toggleCreativePanel(false);adminOpen=open;keys={};mouseDown.left=mouseDown.right=false;document.getElementById('adminPanel').style.display=open?'block':'none';if(open){if(document.pointerLockElement)document.exitPointerLock();document.getElementById('adminInput').focus();}else renderer.domElement.focus();}
+function creativeStatus(){
+ const hud=document.getElementById('creativeHUD');hud.style.display=(flying||godMode||player.creative)?'block':'none';
+ hud.textContent=(player.creative?'🎨 CREATIVE  ':'')+(flying?'🕊️ FLY ON (Space up / Shift down)  ':'')+(godMode?'❤️ GOD ON  ':'')+'· I: Items · /: Commands';
+ updateHUD();
+}
+function setCreativeMode(on){player.creative=on;if(on){flying=true;godMode=true;}else{flying=false;godMode=false;}player.vel.set(0,0,0);player.fallStartY=null;creativeStatus();}
+function giveExactItem(id,count){
+ id=(id||'').toLowerCase().replace(/^minecraft:/,'').replace(/[ -]+/g,'_');
+ if(!ITEMS[id])return 0;
+ let given=0;
+ while(given<count){
+   const size=Math.min(64,count-given), item=makeItem(id);item.count=size;
+   // Put items straight in the chosen hotbar slot when inventory is otherwise full.
+   if(!addItem(item))break;
+   given+=size;
+ }
+ updateHotbarUI();updateHUD();return given;
+}
 function adminCommand(raw){
  const a=raw.trim().replace(/^\//,'').toLowerCase().split(/\s+/),cmd=a[0];
- if(cmd==='help'){showToast('/creative /survival /heal /give ITEM COUNT /spawn TYPE /clear','⌨️');return;}
- if(cmd==='creative'||cmd==='survival'){player.creative=cmd==='creative';showToast('Mode: '+cmd,'🎮');updateHUD();return;}
+ if(!cmd)return;
+ if(cmd==='help'){showToast('/creative /survival /fly /god /give ID COUNT /give all /items /spawn TYPE /heal /clear /speed','⌨️');return;}
+ if(cmd==='creative'||cmd==='survival'||cmd==='gamemode'){
+   const mode=cmd==='gamemode'?(a[1]||'creative'):cmd;
+   if(!['creative','survival','1','0','c','s'].includes(mode)){showToast('Use /gamemode creative or survival','❌');return;}
+   setCreativeMode(['creative','1','c'].includes(mode));showToast('Mode: '+(player.creative?'Creative (fly + god)':'Survival'),'🎮');return;
+ }
+ if(cmd==='fly'||cmd==='flight'){
+   flying=a[1]==='off'?false:a[1]==='on'?true:!flying;
+   player.vel.y=0;player.fallStartY=null;creativeStatus();showToast('Flight '+(flying?'ON':'OFF')+' · Space up / Shift down','🕊️');return;
+ }
+ if(cmd==='god'||cmd==='godmode'||cmd==='invincible'||cmd==='infinitehealth'){
+   godMode=a[1]==='off'?false:a[1]==='on'?true:!godMode;
+   if(godMode)player.hp=player.maxHp;creativeStatus();showToast('Infinite health '+(godMode?'ON':'OFF'),'❤️');return;
+ }
  if(cmd==='heal'){player.hp=player.maxHp;player.hunger=20;player.thirst=20;updateHUD();showToast('Fully healed','🍎');return;}
+ if(cmd==='items'||cmd==='inventory'||cmd==='catalog'){toggleAdmin(false);toggleCreativePanel(true);return;}
+ if(cmd==='speed'){
+   const n=Number(a[1]);if(!Number.isFinite(n)||n<0.2||n>5){showToast('Use /speed 0.2 to 5','❌');return;}
+   creativeSpeed=n;showToast('Movement speed ×'+n,'⚡');return;
+ }
  if(cmd==='give'){
-   const id=a[1],count=Math.min(64,Math.max(1,Number.parseInt(a[2])||1));
-   if(!ITEMS[id]){showToast('Unknown item. Try /give golden_apple 5','❌');return;}
-   const it=makeItem(id);it.count=count;
-   if(addItem(it)){updateHotbarUI();showToast('Gave '+count+' '+ITEMS[id].n,'🎁');}else showToast('Inventory full','❌');return;
+   const off=['@s','@p','@a','self','me'].includes(a[1])?2:1;
+   const id=a[off];
+   if(!id){showToast('Use /give diamond_sword 1 or /give all','❌');return;}
+   if(id==='all'){
+     let n=0;
+     // First fill free slots with equipment and useful supplies; use /items for the full catalog.
+     const priority=['diamond_sword','netherite_sword','diamond_axe','diamond_spear','netherite_mace','shield','golden_apple','wind_charge','tnt_minecart','delete_wand'];
+     for(const itemId of priority)n+=giveExactItem(itemId,ITEMS[itemId].type==='consumable'||ITEMS[itemId].type==='throwable'||ITEMS[itemId].type==='explosive'?16:1)>0?1:0;
+     showToast('Starter collection: '+n+' items. /items shows ALL items','🎁');return;
+   }
+   const count=Math.min(576,Math.max(1,Number.parseInt(a[off+1],10)||1));
+   const resolved=id.replace(/^minecraft:/,'').replace(/[ -]+/g,'_');
+   if(!ITEMS[resolved]){showToast('Unknown item '+id+' · use /items to browse','❌');return;}
+   const given=giveExactItem(resolved,count);
+   showToast(given?'Gave '+given+' '+ITEMS[resolved].n+(given<count?' (inventory full)':''):'Inventory full · use /clear or /items','🎁');return;
  }
  if(cmd==='spawn'){
    const type=a[1]==='trex'?'rex':a[1];
    if(!MOB_TYPES[type]){showToast('Unknown mob. Try raptor / triceratops / rex','❌');return;}
-   const x=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.x+Math.sin(player.yaw)*-7));
-   const z=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.z+Math.cos(player.yaw)*-7));
-   spawnMob(type,x,player.pos.y+2,z);showToast('Spawned '+type,'🦖');return;
+   const count=Math.min(10,Math.max(1,Number.parseInt(a[2],10)||1));
+   for(let i=0;i<count;i++){
+     const x=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.x-Math.sin(player.yaw)*(8+i*2)));
+     const z=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.z-Math.cos(player.yaw)*(8+i*2)));
+     spawnMob(type,x,player.pos.y+2,z);
+   }showToast('Spawned '+count+' '+type,'🦖');return;
  }
- if(cmd==='clear'){for(let i=0;i<inventory.length;i++)inventory[i]=null;updateHotbarUI();showToast('Inventory cleared','🧹');return;}
- showToast('Unknown command: /help','❌');
+ if(cmd==='clear'){for(let i=0;i<inventory.length;i++)inventory[i]=null;lastHotbar=-1;updateHotbarUI();showToast('Inventory cleared','🧹');return;}
+ showToast('Unknown command. Try /help','❌');
 }
+function populateCreativeItems(){
+ const q=document.getElementById('creativeSearch').value.toLowerCase().trim();
+ const grid=document.getElementById('creativeGrid');grid.replaceChildren();
+ for(const [id,item] of Object.entries(ITEMS)){
+   if(q&&!((id+' '+item.n+' '+item.type).toLowerCase().includes(q)))continue;
+   const b=document.createElement('button');b.className='creativeItem';
+   b.textContent=item.ic+' '+item.n+' · '+id;
+   b.title='Put '+item.n+' into selected hotbar slot '+(hotbar+1);
+   b.onclick=()=>{
+     // Creative picker equips the selected hotbar slot, so inventory fullness is irrelevant.
+     inventory[hotbar]={id,count:['block','mat','ammo','consumable','throwable','explosive'].includes(item.type)?64:1};
+     lastHotbar=-1;updateHotbarUI();showToast('Equipped '+item.n+' in hotbar '+(hotbar+1),'🎨');
+   };
+   grid.appendChild(b);
+ }
+}
+function toggleCreativePanel(open){
+ if(open && adminOpen)toggleAdmin(false);
+ creativeOpen=open;document.getElementById('creativePanel').style.display=open?'flex':'none';
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(open){if(document.pointerLockElement)document.exitPointerLock();populateCreativeItems();document.getElementById('creativeSearch').focus();}
+ else renderer.domElement.focus();
+}
+document.getElementById('creativeSearch').addEventListener('input',populateCreativeItems);
+document.getElementById('creativeClose').onclick=()=>toggleCreativePanel(false);
 document.getElementById('adminRun').onclick=()=>{adminCommand(document.getElementById('adminInput').value);document.getElementById('adminInput').value='';};
 document.getElementById('adminClose').onclick=()=>toggleAdmin(false);
 document.getElementById('adminInput').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){adminCommand(e.target.value);e.target.value='';}if(e.key==='Escape')toggleAdmin(false);});
@@ -4030,6 +4132,7 @@ window.addEventListener('keydown', e => {
   startAmbient();
   const k = e.key.toLowerCase();
   if(adminOpen){if(k==='escape')toggleAdmin(false);return;}
+  if(creativeOpen){if(k==='escape'||k==='i'){e.preventDefault();toggleCreativePanel(false);}return;}
   if(k==='/' || k==='enter'){e.preventDefault();toggleAdmin(true);return;}
   if(document.getElementById('invOverlay').style.display === 'flex'){
     if(k === 'escape' || k === 'e') toggleInventory();
@@ -4039,16 +4142,13 @@ window.addEventListener('keydown', e => {
   if(k === ' ' || ['arrowup','arrowdown','arrowleft','arrowright'].includes(k)) { if(k === ' ') keys[' '] = true; e.preventDefault(); }
   if(e.key === 'Shift') keys['shift'] = true;
   if(k >= '1' && k <= '9'){ hotbar = parseInt(k)-1; updateHotbarUI(); }
-  if(k === 'g'){
-    player.creative = !player.creative;
-    showToast(player.creative ? 'Creative ON' : 'Survival ON', player.creative ? '🎨' : '⚔️');
-    updateHUD();
-  }
+  if(k === 'g'){setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');}
   if(k === 'f'){
     if(player.hunger < 20){ player.hunger = Math.min(20, player.hunger+6); updateHUD(); playSound('place'); }
     else showToast('Not hungry', '❌');
   }
   if(k === 'e') toggleInventory();
+  if(k === 'i'){e.preventDefault();toggleCreativePanel(true);return;}
   if(k === 'tab' && !e.repeat && worldMode === 'pvp'){
     e.preventDefault(); statsVisible=!statsVisible;
     document.getElementById('battleStats').style.display=statsVisible?'block':'none';
@@ -4056,7 +4156,8 @@ window.addEventListener('keydown', e => {
   }
   if(k === 'p' && !e.repeat && worldMode === 'pvp'){ savePvPProgress(); showToast('💾 PvP progress saved!', '💾'); }
   if(k === 'q' && !e.repeat) combatDash();
-  if(k === 'v' && !e.repeat) combatShockwave();
+  
+  if(k === 'x' && !e.repeat && worldReady){const it=inventory[hotbar];if(it){spawnDroppedItem(it.id,player.pos.x,player.pos.y+1,player.pos.z,false);if(!player.creative){it.count--;if(it.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();showToast('Dropped '+ITEMS[it.id].n,'📦');}return;}
   if(k === 'j' && !e.repeat && worldReady && !player.dead){if(!useCombatItem())tryAttack();}
   if(k === 'k' && !e.repeat && worldReady && !player.dead) tryAttack();
   if(k === 'h'){
@@ -4135,7 +4236,7 @@ document.querySelectorAll('.worldCard').forEach(card => {
 
 
 /* ===== DINOCRAFT COMBAT 1.0: DINO ARENA EVENTS ===== */
-let dinoArenaTimer=35, dinoArenaWave=0, shockwaveCooldown=0;
+let dinoArenaTimer=35, dinoArenaWave=0;
 function updateDinoArena(dt){
  if(worldMode!=='pvp'||!worldReady||player.dead)return;
  const active=mobs.some(m=>!m.dead&&['raptor','triceratops','rex'].includes(m.type));
@@ -4156,23 +4257,6 @@ function updateDinoArena(dt){
    if(type==='rex')showBossBar('🦖 TYRANT REX — ARENA BOSS',m.hp,m.maxHp);
  }
  dinoArenaTimer=90;
-}
-function combatShockwave(){
- if(!worldReady||player.dead||shockwaveCooldown>0)return;
- shockwaveCooldown=12;
- const radius=5.2, damage=Math.min(20,7+Math.floor(player.level*.65));
- let hits=0;
- for(const b of fighterBots){
-  if(b.dead||b.pos.distanceTo(player.pos)>radius)continue;
-  damageBot(b,damage,null,true,false);hits++;
- }
- for(const m of mobs){
-  if(m.dead||m.pos.distanceTo(player.pos)>radius)continue;
-  m.hp-=damage;m.hit=.45;
-  spawnHitSparks(m.pos.x,m.pos.y+m.def.size*.5,m.pos.z,0x66ddff,14);hits++;
- }
- spawnParticles(player.pos.x,player.pos.y+1,player.pos.z,35,0x66ddff);
- showToast('💥 SHOCKWAVE! '+hits+' targets hit','💥');playSound('attack');
 }
 
 /* ===== SURVIVAL SPAWNING ===== */
@@ -4225,7 +4309,7 @@ function animate(){
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   updateSky(dt);
   if(worldReady && worldMode === 'pvp'){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;savePvPProgress();} }
-  if(!invOpen && !playerDead){
+  if(!invOpen && !creativeOpen && !adminOpen && !playerDead){
     updatePlayer(dt);
     updateMobs(dt);
     updateFighterBots(dt);
@@ -4242,13 +4326,13 @@ function animate(){
     updateBotTargetHUD();
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
   }
-  if(!invOpen && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt); shockwaveCooldown=Math.max(0,shockwaveCooldown-dt); }
+  if(!invOpen && !creativeOpen && !adminOpen && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
   updateParticles(dt);
   updatePopups(dt);
   if(pendingLevelRewards.length) deliverPendingRewards();
   updateAmbientAudio(lastNightF, dt);
 
-  if(!invOpen && !playerDead){
+  if(!invOpen && !creativeOpen && !adminOpen && !playerDead){
     if(mouseDown.left && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
     if(mouseDown.right){
       const slot = inventory[hotbar];
