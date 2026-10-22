@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DinoCraft 3D Ultimate — Creative Update 1.3</title>
+<title>DinoCraft 2.0 — The Revolution Reforged</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -32,6 +32,8 @@ canvas{display:block;outline:none}
 .bar{background:rgba(10,10,15,0.75);border-radius:4px;height:18px;width:140px;position:relative;border:2px solid rgba(0,0,0,0.8);overflow:hidden}
 .bar>i{position:absolute;left:0;top:0;bottom:0;transition:width 0.25s ease;box-shadow:inset 0 2px 0 rgba(255,255,255,0.35),inset 0 -2px 0 rgba(0,0,0,0.3)}
 .bar>span{position:absolute;left:8px;line-height:14px;font-size:11px;font-weight:800;text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;z-index:2;letter-spacing:0.5px}
+#goldHpFill{background:linear-gradient(180deg,#ffe78a,#d89d08)}
+#goldHpBar{border-color:#c89c2d;display:none}
 #hpFill{background:linear-gradient(180deg,#ff5566,#c02030)}
 #hungerFill{background:linear-gradient(180deg,#ffb85c,#a56315)}
 #thirstFill{background:linear-gradient(180deg,#66ddff,#1b7a8c)}
@@ -177,10 +179,11 @@ canvas{display:block;outline:none}
   <div id="weaponQuest"><div class="wqTitle">⭐ NEXT LEVEL WEAPON</div><div class="wqTask" id="wqTask">Gain XP to unlock weapons</div><div class="wqProgress"><span id="wqKills">0</span> / <span id="wqNeed">3</span></div><div class="wqBar"><div class="wqFill" id="wqFill" style="width:0%"></div></div></div>
   <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP</div><div style="opacity:.72">J / Click attack · Q dash · I creative items · Tab stats</div></div>
 <div id="bossBar"><div class="name"></div><div class="track"><div class="fill"></div></div></div>
-  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> craft · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> mute · <b>P</b> save PvP</div>
+  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump / Elytra toggle in air · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> craft · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> mute · <b>P</b> save PvP</div>
   <div id="hud">
     <div id="bars">
       <div class="bar"><i id="hpFill" style="width:100%"></i><span id="hpTxt">❤️ 20/20</span></div>
+      <div class="bar" id="goldHpBar"><i id="goldHpFill" style="width:0%"></i><span id="goldHpTxt">💛 0/8</span></div>
       <div class="bar"><i id="hungerFill" style="width:100%"></i><span id="hungerTxt">🍖 20</span></div>
       <div class="bar"><i id="thirstFill" style="width:100%"></i><span id="thirstTxt">💧 20</span></div>
       <div class="bar"><i id="xpFill" style="width:0%"></i><span id="xpTxt">✨ 0</span></div>
@@ -204,15 +207,42 @@ canvas{display:block;outline:none}
   <h1>SELECT WORLD</h1>
   <div class="sub">CHOOSE YOUR ADVENTURE</div>
   <div class="worldGrid">
-    <div class="worldCard survival" data-mode="survival"><div class="wcIcon">🌲</div><div class="wcName">SURVIVAL</div><div class="wcDesc">Explore a living world with mobs, bosses, crafting, and building.</div></div>
-    <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Fight elites and dinosaurs, collect loot, and unlock epic maces by leveling up!</div></div>
+    <div class="worldCard survival" data-mode="survival"><div class="wcIcon">🌲</div><div class="wcName">SURVIVAL</div><div class="wcDesc">REVOLUTION REFORGED: ancient ruins, camps, towers, caves, rare loot, dinosaurs and building.</div></div>
+    <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Battle for coins and unlock epic weapons!</div></div>
+    <div class="worldCard" data-mode="city"><div class="wcIcon">🏙️</div><div class="wcName">DINO CITY</div><div class="wcDesc">Three cities, missions, shops and fast travel. Sell Survival loot, spend Arena winnings and grow your fortune! Press T.</div></div>
   </div>
+</div>
+
+<!-- Combat Overhaul: available in all worlds -->
+<button id="quickMapButton" type="button" style="position:fixed;right:14px;top:92px;z-index:120;background:#173b53ee;color:#fff;border:2px solid #80d9ff;border-radius:12px;padding:11px 15px;font:bold 14px system-ui;cursor:pointer;box-shadow:0 5px 20px #0009">🗺️ MAPS (M)</button>
+<div id="quickMapOverlay" style="position:fixed;inset:0;z-index:195;background:#030a16e9;display:none;align-items:center;justify-content:center;padding:16px">
+  <div style="width:min(610px,96vw);max-height:90vh;overflow-y:auto;border:2px solid #7bd4ff;border-radius:18px;background:linear-gradient(145deg,#18334b,#101923);box-shadow:0 20px 90px #000;padding:24px;color:#fff;font-family:system-ui">
+    <h2 style="font-size:25px;color:#b8eaff;margin-bottom:5px">🗺️ QUICK MAP SWITCHER</h2>
+    <p id="quickMapCurrent" style="color:#f9db8a;margin-bottom:18px">Current map: Survival</p>
+    <div id="quickMapChoices" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:10px"></div>
+    <p style="color:#b4c7d7;font-size:12px;margin-top:15px">Your coins are shared between maps. Survival inventory is saved separately from Arena gear.</p>
+    <button id="quickMapClose" type="button" style="margin-top:15px;background:#395d77;border:1px solid #8dc9ea;border-radius:9px;color:white;padding:10px 18px;cursor:pointer">Close (M / Esc)</button>
+  </div>
+</div>
+<div id="revolutionHint" style="position:fixed;top:45px;left:12px;max-width:330px;padding:7px 11px;z-index:19;border-radius:8px;background:#101d2ddd;border:1px solid #557fa1;color:#d8efff;font:12px system-ui;pointer-events:none">🗺️ M: Switch maps · T: Market · /help</div>
+<div id="cityWallet" style="position:fixed;left:12px;top:180px;z-index:19;background:#172d28dd;border:1px solid #a5e0a0;border-radius:9px;padding:9px 12px;color:#f9e78b;font:bold 14px system-ui;pointer-events:none">🪙 DinoCoins: <span id="coinCount">0</span><span style="color:#bed3c6;font-size:11px"> · T: Missions / Shop</span></div>
+<div id="cityMarket" style="display:none;position:fixed;inset:0;z-index:180;background:#050b13eb;align-items:center;justify-content:center;padding:18px;color:white;font:14px system-ui">
+ <div style="width:min(740px,95vw);max-height:88vh;overflow-y:auto;background:#162439;border:2px solid #7ec8a1;border-radius:16px;padding:20px;box-shadow:0 16px 60px #000">
+  <h2 style="color:#ffe281;margin-bottom:10px">🏙️ DINO CITY — TRADING MARKET</h2><div id="marketBalance" style="font-size:17px;margin-bottom:9px"></div>
+  <p style="color:#a9bed3;margin:8px 0">Sell resources found in Survival. Arena victories also earn DinoCoins. Purchases go into your delivery vault — claim them in any world.</p>
+  <h3 style="color:#ffdc80;margin:14px 0 5px">🏆 REVOLUTION MISSIONS</h3><div id="marketQuests"></div>
+  <h3 style="color:#ffdc80;margin:14px 0 5px">🚕 TRAVEL & CITY DISTRICTS</h3><div id="marketTravel"></div>
+  <h3 style="color:#9bf0cc;margin:12px 0 5px">SELL FROM YOUR INVENTORY</h3><div id="marketSell"></div>
+  <h3 style="color:#9bf0cc;margin:15px 0 5px">BUY GEAR & SUPPLIES</h3><div id="marketBuy"></div>
+  <h3 style="color:#9bf0cc;margin:15px 0 5px">DELIVERY VAULT</h3><div id="marketVault"></div>
+  <button id="marketClose" style="margin-top:14px;border:0;border-radius:8px;background:#356c8e;color:white;padding:11px 20px;cursor:pointer">CLOSE (T / ESC)</button>
+ </div>
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>Creative Update 1.3 · Build · Fly · Fight</p>
+  <p>THE REVOLUTION REFORGED 2.0 · THREE WORLDS</p>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
-  <div class="sub">Two Worlds · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Creative Flight · Admin Commands · PvP</div>
+  <div class="sub">Three Worlds · Three Cities · Shared Quests & DinoCoins · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Creative Flight · Admin Commands · PvP</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
@@ -529,6 +559,13 @@ const ITEMS = {
   bow:{n:'Bow',ic:'🏹',type:'bow',tier:3,dmg:9,ranged:true},
   arrow:{n:'Arrow',ic:'➳',type:'ammo'},
   golden_apple:{n:'Golden Apple',ic:'🍎',type:'consumable'},
+  enchanted_golden_apple:{n:'Enchanted Golden Apple',ic:'🌟',type:'consumable'},
+  healing_potion:{n:'Healing Potion',ic:'🧪',type:'consumable'},
+  speed_potion:{n:'Potion of Swiftness',ic:'⚡',type:'consumable'},
+  strength_potion:{n:'Potion of Strength',ic:'💪',type:'consumable'},
+  regeneration_potion:{n:'Potion of Regeneration',ic:'💗',type:'consumable'},
+  elytra:{n:'Elytra Wings',ic:'🪽',type:'equipment'},
+  firework_rocket:{n:'Firework Rocket',ic:'🚀',type:'consumable'},
   wind_charge:{n:'Wind Charge',ic:'🌪️',type:'throwable'},
   tnt_minecart:{n:'TNT Minecart',ic:'🧨',type:'explosive'},
   delete_wand:{n:'Creative Delete Wand',ic:'🪄',type:'tool',dmg:9999,atkSpeed:0.35},
@@ -549,9 +586,58 @@ const ITEMS = {
   gold:{n:'Gold',ic:'⭐',type:'mat'},
   diamond:{n:'Diamond',ic:'💎',type:'mat'},
   bone:{n:'Bone',ic:'🦴',type:'mat'},
-  string:{n:'String',ic:'🕸️',type:'mat'}
+  string:{n:'String',ic:'🕸️',type:'mat'},
+  lapis:{n:'Lapis Lazuli',ic:'🔷',type:'mat'},
+  enchanting_table:{n:'Enchanting Table',ic:'✨',type:'utility'},
+  emerald:{n:'Emerald',ic:'🟢',type:'mat'}
 };
 
+/* The economy is independent of each world. Coins and purchased items are stored locally. */
+const BANK_KEY='dinocraft_revolution_economy_v1';
+let bank={coins:0,vault:{},missions:{mined:0,kills:0,earned:0,sold:0,arena:0},claimed:{}};
+try {const saved=JSON.parse(localStorage.getItem(BANK_KEY)||'null');if(saved&&Number.isFinite(saved.coins))bank={coins:Math.max(0,Math.floor(saved.coins)),vault:saved.vault&&typeof saved.vault==='object'?saved.vault:{},missions:{...bank.missions,...(saved.missions&&typeof saved.missions==='object'?saved.missions:{})},claimed:saved.claimed&&typeof saved.claimed==='object'?saved.claimed:{}};}catch(e){}
+function saveBank(){try{localStorage.setItem(BANK_KEY,JSON.stringify(bank));}catch(e){}updateCoins();}
+function updateCoins(){const el=document.getElementById('coinCount');if(el)el.textContent=bank.coins.toLocaleString();}
+function missionProgress(key,amount=1){if(!bank.missions)bank.missions={};bank.missions[key]=Math.max(0,(Number(bank.missions[key])||0)+amount);saveBank();}
+function earnCoins(n,label){const amount=Math.max(0,Math.floor(n));bank.coins+=amount;if(label!=='Mission reward'){
+ bank.missions.earned=(bank.missions.earned||0)+amount;
+ if(label.startsWith('Sold '))bank.missions.sold=(bank.missions.sold||0)+(Number.parseInt(label.split(' ')[1],10)||1);
+ if(label==='Arena victory'||label==='Elite arena victory')bank.missions.arena=(bank.missions.arena||0)+1;
+ if(label==='Dinosaur hunt')bank.missions.kills=(bank.missions.kills||0)+1;
+ }saveBank();if(amount)showToast('🪙 +'+amount+' DinoCoins · '+label,'🪙');}
+const REV_MISSIONS=[
+ {id:'miner',name:'⛏️ Rookie Miner',key:'mined',target:25,reward:125,detail:'Mine 25 blocks in Survival'},
+ {id:'hunter',name:'🦖 Dinosaur Hunter',key:'kills',target:10,reward:300,detail:'Defeat ten wild creatures'},
+ {id:'tycoon',name:'💰 First Fortune',key:'earned',target:800,reward:200,detail:'Earn 800 coins through trading and battles'},
+ {id:'merchant',name:'📦 Master Merchant',key:'sold',target:20,reward:175,detail:'Sell 20 resources'},
+ {id:'champion',name:'⚔️ Arena Champion',key:'arena',target:5,reward:350,detail:'Defeat five Arena opponents'}
+];
+const ADVENTURE_SAVE='dinocraft_revolution_inventory_v3';
+let adventureLoaded=false;
+function sanitizeInventory(data){if(!Array.isArray(data))return null;return Array.from({length:36},(_,i)=>{const s=data[i];if(!s||!ITEMS[s.id]||!Number.isInteger(s.count)||s.count<=0)return null;const item={...makeItem(s.id),count:Math.min(64,s.count)};if(s.ench&&typeof s.ench==='object')item.ench={...s.ench};return item;});}
+const SURVIVAL_WORLD_SAVE='dinocraft_revolution_survival_world_v3';
+function saveSurvivalWorld(){
+ if(worldMode!=='survival')return;
+ try{
+   const parts=[];let i=0;
+   while(i<world.length){const t=world[i];let count=1;while(count<255&&i+count<world.length&&world[i+count]===t)count++;parts.push(String.fromCharCode(count,t));i+=count;}
+   const blocks=btoa(parts.join(''));
+   localStorage.setItem(SURVIVAL_WORLD_SAVE,JSON.stringify({version:3,blocks,position:[player.pos.x,player.pos.y,player.pos.z]}));
+ }catch(e){/* Local storage full, private mode or sandbox restriction. */}
+}
+function loadSurvivalWorld(){
+ try{const d=JSON.parse(localStorage.getItem(SURVIVAL_WORLD_SAVE)||'null');if(!d||d.version!==3||typeof d.blocks!=='string')return null;
+ const data=atob(d.blocks);const decoded=new Uint8Array(world.length);let j=0;
+ for(let i=0;i<data.length;i+=2){const count=data.charCodeAt(i),t=data.charCodeAt(i+1);if(!count||!Number.isFinite(t)||j+count>decoded.length||(t!==B.AIR&&!BLOCKS[t]))return null;decoded.fill(t,j,j+count);j+=count;}
+ if(j!==decoded.length)return null;world.set(decoded);return Array.isArray(d.position)&&d.position.length===3?d.position:null;
+ }catch(e){return null;}
+}
+function saveAdventure(){if(worldMode==='pvp')return;try{localStorage.setItem(ADVENTURE_SAVE,JSON.stringify({items:inventory.slice(0,36),hotbar,version:3}));}catch(e){}saveSurvivalWorld();}
+function loadAdventure(){try{const saved=JSON.parse(localStorage.getItem(ADVENTURE_SAVE)||'null');const items=sanitizeInventory(saved?.items);if(!items)return false;inventory.length=36;for(let i=0;i<36;i++)inventory[i]=items[i];hotbar=Math.max(0,Math.min(8,Number(saved.hotbar)||0));return true;}catch(e){return false;}}
+function resetInventory(){inventory.length=36;for(let i=0;i<36;i++)inventory[i]=null;hotbar=0;}
+
+const SELL_PRICES={wood:3,stone:2,iron:12,gold:18,diamond:75,emerald:90,lapis:16,bone:3,string:3,wood_block:3,stone_block:2,cobble_block:2,planks_block:3,dirt_block:1,grass_block:2,sand_block:2,obsidian_block:25};
+const SHOP_ITEMS={healing_potion:45,golden_apple:85,enchanted_golden_apple:350,speed_potion:75,strength_potion:85,regeneration_potion:90,arrow:4,bow:110,shield:65,iron_sword:120,diamond_sword:400,diamond_spear:410,netherite_mace:950,elytra:900,firework_rocket:28,tnt_minecart:100,wind_charge:38,lapis:22,enchanting_table:240};
 const inventory = [
   {id:'stone_sword',count:1},
   {id:'shield',count:1},
@@ -559,7 +645,8 @@ const inventory = [
   {id:'stone_block',count:32},
   {id:'planks_block',count:32},
   {id:'grass_block',count:32},
-  {id:'wind_charge',count:12}, {id:'golden_apple',count:5}, {id:'tnt_minecart',count:4}
+  {id:'wind_charge',count:12}, {id:'golden_apple',count:5}, {id:'tnt_minecart',count:4},
+  {id:'lapis',count:16}
 ];
 let hotbar = 0;
 const mats = {wood:0, stone:0, iron:0, gold:0, diamond:0};
@@ -571,7 +658,7 @@ const player = {
   vel: new THREE.Vector3(),
   onGround: false, inWater: false,
   yaw: 0, pitch: 0, roll: 0,
-  hp: 20, maxHp: 20,
+  hp: 20, maxHp: 20, goldenHp: 0, maxGoldenHp: 8,
   hunger: 20, thirst: 20,
   xp: 0, xpNext: 20, level: 1,
   creative: false,
@@ -590,7 +677,8 @@ let worldMode = 'survival';
 
 /* ===== SCENE ===== */
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x8fc3e8, 60, 240);
+scene.background = new THREE.Color(0x87cfff);
+scene.fog = new THREE.Fog(0x95d8ff, 90, 310);
 const camera = new THREE.PerspectiveCamera(BASE_FOV, innerWidth/innerHeight, 0.05, 700);
 camera.rotation.order = 'YXZ';
 const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
@@ -601,7 +689,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.18;
+renderer.toneMappingExposure = 1.34;
 document.body.appendChild(renderer.domElement);
 addEventListener('resize', () => {
   camera.aspect = innerWidth/innerHeight;
@@ -609,7 +697,7 @@ addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
-const sun = new THREE.DirectionalLight(0xfff2cc, 1.2);
+const sun = new THREE.DirectionalLight(0xfff2cc, 1.35);
 sun.position.set(80, 140, 40);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -618,9 +706,9 @@ sun.shadow.camera.top = 70; sun.shadow.camera.bottom = -70;
 sun.shadow.camera.far = 260;
 sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
-const hemi = new THREE.HemisphereLight(0xa0d0f0, 0x506640, 0.55);
+const hemi = new THREE.HemisphereLight(0xbfe8ff, 0x587148, 0.95);
 scene.add(hemi);
-const amb = new THREE.AmbientLight(0xffffff, 0.25);
+const amb = new THREE.AmbientLight(0xffffff, 0.36);
 scene.add(amb);
 const moonlight = new THREE.DirectionalLight(0xc8d8ff, 0);
 moonlight.position.set(-60, 120, -30);
@@ -697,9 +785,60 @@ function generateSurvivalWorld(){
     if(h < SEA_LEVEL) for(let yy=h+1;yy<=SEA_LEVEL;yy++) setRaw(x,yy,z,B.WATER);
     setRaw(x,0,z,B.BEDROCK);
   }
-  carveCaves(24);
+  carveCaves(36);
   plantTrees();
+  addSkyIslands();
   scatterDecorations();
+  buildRevolutionLandmarks();
+}
+// THE NEW REVOLUTION: discoverable landmarks with real mineable blocks.
+function buildRevolutionLandmarks(){
+  const sites=[
+    {x:17,z:17,r:5,h:8,kind:'tower'},
+    {x:62,z:16,r:6,h:6,kind:'fort'},
+    {x:18,z:62,r:5,h:5,kind:'camp'},
+    {x:62,z:63,r:7,h:9,kind:'temple'},
+    {x:40,z:12,r:5,h:5,kind:'camp'},
+    {x:11,z:40,r:4,h:7,kind:'tower'},
+    {x:69,z:41,r:5,h:6,kind:'fort'},
+    {x:40,z:68,r:5,h:7,kind:'temple'}
+  ];
+  for(const site of sites){
+    const {x,z,r,h,kind}=site;
+    const y=Math.max(SEA_LEVEL+2,terrainH(x,z)+1);
+    if(y+h+4>=WORLD_HEIGHT) continue;
+    // Raised foundations make structures readable even on uneven terrain.
+    for(let dx=-r;dx<=r;dx++)for(let dz=-r;dz<=r;dz++){
+      const edge=Math.abs(dx)===r||Math.abs(dz)===r;
+      for(let dy=-2;dy<=0;dy++)setRaw(x+dx,y+dy,z+dz,B.COBBLE);
+      if(kind==='camp'){
+        if(edge&&(Math.abs(dx+dz)%3===0))for(let dy=1;dy<=3;dy++)setRaw(x+dx,y+dy,z+dz,B.WOOD);
+        if(edge&&Math.abs(dx+dz)%3===0)setRaw(x+dx,y+4,z+dz,B.PLANKS);
+      }else if(edge){
+        for(let dy=1;dy<=h;dy++){
+          if(kind==='temple'&&dy>h-2&&((dx+dz)&1))continue;
+          if(dz===-r&&Math.abs(dx)<=1&&dy<=3)continue;
+          setRaw(x+dx,y+dy,z+dz,kind==='temple'?B.OBSIDIAN:B.COBBLE);
+        }
+      }
+      if(kind!=='camp'&&((Math.abs(dx)===r-1&&Math.abs(dz)===r-1)))
+        for(let dy=1;dy<=h;dy++)setRaw(x+dx,y+dy,z+dz,B.WOOD);
+    }
+    if(kind!=='camp')for(let dx=-r;dx<=r;dx++)for(let dz=-r;dz<=r;dz++)
+      setRaw(x+dx,y+h+1,z+dz,kind==='temple'?B.OBSIDIAN:B.PLANKS);
+    if(kind==='temple'){
+      setRaw(x,y+1,z,B.DIAMOND_ORE);
+      for(const [dx,dz] of [[-2,0],[2,0],[0,-2],[0,2]])setRaw(x+dx,y+1,z+dz,B.GOLD_ORE);
+      setRaw(x,y+h+2,z,B.END_PORTAL);
+    } else if(kind==='fort'){
+      for(const [dx,dz] of [[-2,-2],[2,2]])setRaw(x+dx,y+1,z+dz,B.IRON_ORE);
+    } else if(kind==='camp'){
+      setRaw(x,y+1,z,B.GOLD_ORE);
+      setRaw(x+1,y+1,z,B.PLANKS);
+    } else {
+      setRaw(x,y+h+2,z,B.DIAMOND_ORE);
+    }
+  }
 }
 
 function carveCaves(count){
@@ -728,7 +867,7 @@ function carveCaves(count){
   }
 }
 function plantTrees(){
-  for(let i=0;i<130;i++){
+  for(let i=0;i<260;i++){
     const x = 4 + Math.floor(Math.random()*(WORLD_SIZE-8));
     const z = 4 + Math.floor(Math.random()*(WORLD_SIZE-8));
     const y = terrainH(x,z);
@@ -766,15 +905,34 @@ function scatterDecorations(){
     if(getBlock(x, topY+1, z) !== B.AIR) continue;
     const baseB = getBlock(x,topY,z);
     const r = Math.random();
-    if(baseB === B.SAND && r < 0.025) decor.cactus.push([x, topY+1, z]);
+    if(baseB === B.SAND && r < 0.04) decor.cactus.push([x, topY+1, z]);
     else if(baseB === B.GRASS){
-      if(r < 0.055){
+      if(r < 0.11){
         const c = flowerColors[Math.floor(Math.random()*flowerColors.length)];
         if(!decor.flowers[c]) decor.flowers[c] = [];
         decor.flowers[c].push([x, topY+1, z]);
-      } else if(r < 0.45) decor.tufts.push([x, topY+1, z]);
-      else if(r < 0.458) decor.mushrooms.push([x, topY+1, z]);
+      } else if(r < 0.62) decor.tufts.push([x, topY+1, z]);
+      else if(r < 0.645) decor.mushrooms.push([x, topY+1, z]);
     }
+  }
+}
+
+function addSkyIslands(){
+  const islands=[{x:14,z:16,y:34,r:5},{x:62,z:14,y:37,r:4},{x:20,z:60,y:36,r:5},{x:59,z:57,y:39,r:6},{x:40,z:38,y:44,r:7}];
+  for(const s of islands){
+    for(let dx=-s.r;dx<=s.r;dx++)for(let dz=-s.r;dz<=s.r;dz++)for(let dy=-2;dy<=2;dy++){
+      const d=Math.sqrt(dx*dx+dz*dz+(dy*1.45)*(dy*1.45));
+      if(d<=s.r-(dy>1?0.7:0)){
+        const bx=s.x+dx,by=s.y+dy,bz=s.z+dz;
+        if(by>2&&by<WORLD_HEIGHT-3){
+          const top=dy===2;
+          setRaw(bx,by,bz,top?B.GRASS:(Math.random()<0.08?B.DIAMOND_ORE:B.DIRT));
+        }
+      }
+    }
+    plantTree(s.x,s.y+3,s.z,Math.random()<0.5?'dense':'normal');
+    for(let i=0;i<8;i++){const fx=s.x-2+Math.floor(Math.random()*5),fz=s.z-2+Math.floor(Math.random()*5),fy=s.y+4;if(getBlock(fx,fy,fz)===B.AIR)decor.tufts.push([fx,fy,fz]);}
+    if(Math.random()<0.8)for(let k=0;k<5;k++){const wy=s.y+1-k;if(wy>SEA_LEVEL)setRaw(s.x+s.r-1,wy,s.z,B.WATER);}
   }
 }
 
@@ -1592,9 +1750,15 @@ function spawnMob(type, x, y, z){
     wanderDir: Math.random()*Math.PI*2, wanderT: Math.random()*3,
     hit: 0, dead: false, walkPhase: 0, retreatT: 0
   };
+  // Revolution challenge: all hostile Survival dinosaurs and monsters are tougher.
+  if(worldMode==='survival' && def.hostile){
+    const bonus=['rex','triceratops','raptor'].includes(type)?1.55:1.22;
+    mob.hp=Math.round(mob.hp*bonus);mob.maxHp=mob.hp;
+    mob.def=Object.assign({},mob.def,{speed:mob.def.speed*1.13,dmg:mob.def.dmg*1.15});
+  }
   if(isBloodMoon && def.hostile){
     mob.hp *= 1.5; mob.maxHp *= 1.5;
-    mob.def = Object.assign({}, def, {speed: def.speed*1.4, dmg: def.dmg*1.4});
+    mob.def = Object.assign({}, mob.def, {speed: mob.def.speed*1.4, dmg: mob.def.dmg*1.4});
   }
   mesh.position.copy(mob.pos);
   scene.add(mesh);
@@ -1683,6 +1847,7 @@ function updateMobs(dt){
     });
     m.atkCD = Math.max(0, m.atkCD - dt);
     if(m.hp <= 0){
+      if(worldMode==='survival' || worldMode==='pvp'){earnCoins(m.def.boss?180:(['rex','triceratops','raptor'].includes(m.type)?(m.type==='rex'?140:25):6),'Dinosaur hunt');}
       if(worldMode==='pvp' && (m.type==='rex'||m.type==='raptor'||m.type==='triceratops')){
         const xp=m.type==='rex'?150:(m.type==='triceratops'?42:24);
         awardXP(xp);player.kills++;player.killStreak++;player.bestStreak=Math.max(player.bestStreak,player.killStreak);
@@ -1983,9 +2148,10 @@ function killBot(bot, killer, isPlayerSrc){
   // Random combat loot: kills award XP AND can drop physical gear.
   // Level unlocks remain guaranteed; weapon drops are optional extra rewards.
   if(isPlayerSrc){
-    const roll=Math.random();
-    const loot = bot.elite ? (roll<0.30?'diamond_mace':roll<0.58?'iron_mace':roll<0.80?'diamond':null) :
-      (roll<0.10?'iron_mace':roll<0.20?'iron':roll<0.25?'diamond':null);
+    const looting=(inventory[hotbar]&&inventory[hotbar].ench&&inventory[hotbar].ench.looting)||0;
+    const roll=Math.random()-looting*0.055;
+    const loot = bot.elite ? (roll<0.26?'diamond_mace':roll<0.50?'iron_mace':roll<0.72?'diamond':roll<0.82?'emerald':null) :
+      (roll<0.10?'iron_mace':roll<0.20?'iron':roll<0.28?'diamond':roll<0.34?'lapis':null);
     if(loot){
       const weapon=!!ITEMS[loot] && ['mace','hammer','sword','axe','spear','dagger','bow'].includes(ITEMS[loot].type);
       spawnDroppedItem(loot,bot.pos.x,bot.pos.y+0.9,bot.pos.z,weapon);
@@ -1995,6 +2161,7 @@ function killBot(bot, killer, isPlayerSrc){
 
   playSound('kill');
   if(isPlayerSrc){
+    earnCoins(bot.elite?70:20,bot.elite?'Elite arena victory':'Arena victory');
     player.kills++;
     player.killStreak++;
     if(player.killStreak > player.bestStreak) player.bestStreak = player.killStreak;
@@ -2005,7 +2172,8 @@ function killBot(bot, killer, isPlayerSrc){
     const eliteBonus = bot.elite ? 22 : 0;
     const comboBonus = combatCombo >= 3 ? Math.min(15, combatCombo * 2) : 0;
     if(bot.elite) showToast('💀 ELITE DEFEATED! +22 XP', '🏆');
-    awardXP(18 + streakBonus + eliteBonus + comboBonus); // Kill-streak XP bonuses, never dropped items.
+    const lootingBonus=(inventory[hotbar]&&inventory[hotbar].ench&&inventory[hotbar].ench.looting)?inventory[hotbar].ench.looting*2:0;
+    awardXP(18 + streakBonus + eliteBonus + comboBonus + lootingBonus); // Kill-streak XP bonuses, plus enchant bonuses.
     if(comboBonus) showToast('⚡ Combo finish +'+comboBonus+' XP','⚡');
     if(streakBonus) showToast('🔥 Streak bonus +'+streakBonus+' XP','🔥');
     score += bot.elite ? 65 : 25;
@@ -2960,7 +3128,7 @@ function updatePlayer(dt){
   if(moving) move.normalize();
   const sprinting = keys['shift'] && moving && !player.inWater;
   const baseSpeed = player.inWater ? SWIM_SPEED : WALK_SPEED;
-  let speed = baseSpeed * (sprinting ? SPRINT_MULT : 1);
+  let speed = baseSpeed * (sprinting ? SPRINT_MULT : 1) * (speedPotionTimer>0?1.55:1);
   if(player.blocking) speed *= 0.55;
   const grav = player.inWater ? GRAVITY * 0.35 : GRAVITY;
   const targetVX = move.x * speed, targetVZ = move.z * speed;
@@ -2968,6 +3136,7 @@ function updatePlayer(dt){
   player.vel.x += (targetVX - player.vel.x) * accel;
   player.vel.z += (targetVZ - player.vel.z) * accel;
   if(flying){
+    elytraGliding=false;
     // No gravity or collision while flying. Shift descends; Space ascends.
     const vertical=(keys[' ']?1:0)-(keys['shift']?1:0);
     const flySpeed=(keys['control']?0.42:0.22)*creativeSpeed*(keys['alt']?1.5:1);
@@ -2984,7 +3153,16 @@ function updatePlayer(dt){
     return;
   }
   player.vel.x*=creativeSpeed;player.vel.z*=creativeSpeed;
-  player.vel.y -= grav;
+  // Elytra activation and removal use a single Space keydown, handled below.
+  // Holding Space never immediately re-equips the wings after removal.
+  if(player.onGround || player.inWater || keys['shift']) elytraGliding=false;
+  if(elytraGliding){
+    const glideSpeed=(rocketBoost>0?.51:.23);
+    player.vel.x+= (fwd.x*glideSpeed-player.vel.x)*.25;
+    player.vel.z+= (fwd.z*glideSpeed-player.vel.z)*.25;
+    player.vel.y=Math.max(player.vel.y-.0015,rocketBoost>0?-.045:-.065);
+  }else{ player.vel.y -= grav; }
+  if(rocketBoost>0)rocketBoost=Math.max(0,rocketBoost-dt);
   if(player.inWater){ player.vel.y *= 0.85; player.vel.y -= 0.003; }
   if(player.vel.y < -0.7) player.vel.y = -0.7;
   if(keys[' ']){
@@ -3028,6 +3206,7 @@ function updatePlayer(dt){
   }
   if(!playerCollides(player.pos.x, player.pos.y - 0.05, player.pos.z)) player.onGround = false;
   else { player.onGround = true; player.fallStartY = null; }
+  if(player.onGround)elytraGliding=false;
   player.inWater = checkInWater(player.pos.x, player.pos.y, player.pos.z);
   if(player.inWater && !player.wasInWater){ spawnSplashParticles(player.pos.x, player.pos.y, player.pos.z, 14); playSound('step_sand'); }
   if(player.inWater && moving && Math.random() < 0.3) spawnSplashParticles(player.pos.x, player.pos.y, player.pos.z, 2);
@@ -3092,6 +3271,11 @@ function playerHurt(amt, srcBot){
   if(player.invuln > 0) return;
   if(player.blocking) amt *= 0.3;
 
+  if(player.goldenHp > 0){
+    const blocked=Math.min(player.goldenHp,amt);
+    player.goldenHp-=blocked;
+    amt-=blocked;
+  }
   player.hp -= amt;
   player.invuln = 0.5;
   player.shake = Math.min(20, 6 + amt * 1.5);
@@ -3213,7 +3397,7 @@ function tryMine(){
     blockDamageMap.delete(key);
     world[idx(bx,by,bz)] = B.AIR;
     markDirty(oldType);
-    stats.mined++; score += 1;
+    stats.mined++; score += 1;if(worldMode==='survival')missionProgress('mined');
     let dropId = null;
     if(oldType === B.WOOD) dropId = 'wood';
     else if(oldType === B.STONE || oldType === B.COBBLE || oldType === B.ARENA_FLOOR || oldType === B.ARENA_WALL) dropId = 'stone';
@@ -3304,15 +3488,17 @@ function tryAttack(){
   const item = inventory[hotbar];
   let cooldown = 0.4;
   if(item && ITEMS[item.id] && ITEMS[item.id].atkSpeed) cooldown = ITEMS[item.id].atkSpeed;
-  player.atkCD = cooldown;
+  player.atkCD = item && ITEMS[item.id] && ITEMS[item.id].type === 'mace' ? cooldown * 0.72 : cooldown;
 
   const origin = camera.position.clone();
   const dir = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
   const weaponInfo=item && ITEMS[item.id];
-  const weaponReach = weaponInfo && weaponInfo.type === 'spear' ? (weaponInfo.reach||6) :
+  const heldEnch=(item&&item.ench)||null;
+  let weaponReach = weaponInfo && weaponInfo.type === 'spear' ? (weaponInfo.reach||6) :
     weaponInfo && weaponInfo.type === 'dagger' ? 2.75 :
     weaponInfo && weaponInfo.type === 'hammer' ? 3.45 :
-    weaponInfo && weaponInfo.type === 'mace' ? 3.25 : 3.5;
+    weaponInfo && weaponInfo.type === 'mace' ? 6.2 : 3.9;
+  if(heldEnch&&heldEnch.reach) weaponReach += heldEnch.reach*0.75;
   let hitTarget = null, hitDist = worldMode === 'pvp' ? weaponReach : Math.min(REACH, weaponReach), hitType = null;
 
   // Check bots first
@@ -3323,7 +3509,7 @@ function tryAttack(){
     const t = to.dot(dir);
     if(t < 0 || t > hitDist) continue;
     const closest = dir.clone().multiplyScalar(t);
-    if(to.distanceTo(closest) < 1.0){ hitDist = t; hitTarget = bot; hitType = 'bot'; }
+    if(to.distanceTo(closest) < (weaponInfo && weaponInfo.type==='mace' ? 2.65 : 1.55)){ hitDist = t; hitTarget = bot; hitType = 'bot'; }
   }
   // Then mobs
   for(const m of mobs){
@@ -3333,7 +3519,7 @@ function tryAttack(){
     const t = to.dot(dir);
     if(t < 0 || t > hitDist) continue;
     const closest = dir.clone().multiplyScalar(t);
-    if(to.distanceTo(closest) < m.def.size * 0.9){ hitDist = t; hitTarget = m; hitType = 'mob'; }
+    if(to.distanceTo(closest) < Math.max(weaponInfo && weaponInfo.type==='mace' ? 2.4 : 1.3,m.def.size * (weaponInfo && weaponInfo.type==='mace' ? 1.85 : 1.3))){ hitDist = t; hitTarget = m; hitType = 'mob'; }
   }
 
   if(hitTarget){
@@ -3345,29 +3531,51 @@ function tryAttack(){
       else {spawnDroppedItem('diamond',hitTarget.pos.x,hitTarget.pos.y+1,hitTarget.pos.z,false);}
       showToast('🪄 Deleted target — loot dropped!','🪄');
     }
+    if(heldEnch&&heldEnch.sharpness) dmg += heldEnch.sharpness*2;
+    if(strengthPotionTimer>0) dmg=Math.round(dmg*1.65);
     const sprinting = keys['shift'] && (Math.abs(player.vel.x) + Math.abs(player.vel.z)) > 0.08;
     if(sprinting) dmg = Math.floor(dmg * 1.25);
     const crit = player.vel.y < -0.06 && !player.onGround;
     if(crit) dmg = Math.floor(dmg * 1.5);
-    // Mace: falling blows gain damage; normal grounded blows still hit hard.
-    if(weaponInfo && weaponInfo.type==='mace' && !player.onGround && player.vel.y < -0.025){
-      dmg += Math.min(28,Math.floor(Math.abs(player.vel.y)*85));
-      showToast('💥 MACE SMASH! '+dmg+' damage','💥');
+    // PvP update 1.6: spear charge rewards horizontal speed, including dash boosts.
+    if(weaponInfo && weaponInfo.type==='spear'){
+      const chargeSpeed=Math.hypot(player.vel.x,player.vel.z);
+      const spearBonus=Math.min(32,Math.max(0,Math.floor((chargeSpeed-0.08)*76)));
+      if(spearBonus>0){
+        dmg+=spearBonus;
+        if(spearBonus>=4)showToast('⚡ SPEAR CHARGE! +'+spearBonus+' damage','⚡');
+      }
+    }
+    // Mace rewards distance fallen, not merely vertical velocity.
+    if(weaponInfo && weaponInfo.type==='mace' && !player.onGround && player.vel.y < 0.045){
+      const fallHeight=player.fallStartY===null?0:Math.max(0,player.fallStartY-player.pos.y);
+      // More useful from medium drops, with a huge payoff for genuine high-altitude hits.
+      const smashBonus=Math.min(160,Math.floor(Math.max(0,fallHeight-0.15)*5.5));
+      if(smashBonus>0){
+        dmg+=smashBonus;
+        showToast('💥 MACE SMASH! +'+smashBonus+' damage','💥');
+        // Reward a successful aerial hit: bounce into another combo, with no fall damage.
+        if(smashBonus>=2){player.vel.y=Math.max(player.vel.y,0.22);player.fallStartY=null;}
+      }
     }
 
     if(hitType === 'bot'){
       combatCombo = Math.min(12, combatCombo + 1); comboTimer = 3.2;
       if(combatCombo===5 || combatCombo===10) showToast('⚡ '+combatCombo+' HIT COMBO!', '⚡');
+      if(heldEnch&&heldEnch.wind){const kbv=new THREE.Vector3().subVectors(hitTarget.pos,origin).normalize();hitTarget.vel?.add?.(kbv.multiplyScalar(0.10*heldEnch.wind+0.08));}
       damageBot(hitTarget, dmg, null, true, crit || sprinting);
+      if(heldEnch&&heldEnch.lifesteal){player.hp=Math.min(player.maxHp,player.hp+heldEnch.lifesteal*0.7);updateHUD();}
     } else {
       hitTarget.hp -= dmg;
       hitTarget.hit = 0.35;
       const kb = new THREE.Vector3().subVectors(hitTarget.pos, origin).normalize();
-      hitTarget.vel.x += kb.x * 0.16;
-      hitTarget.vel.z += kb.z * 0.16;
+      const windKB=(heldEnch&&heldEnch.wind?heldEnch.wind*0.06:0);
+      hitTarget.vel.x += kb.x * (0.16+windKB);
+      hitTarget.vel.z += kb.z * (0.16+windKB);
       spawnHitSparks(hitTarget.pos.x, hitTarget.pos.y + hitTarget.def.size*0.7, hitTarget.pos.z, crit ? 0xffdd44 : 0xff8844, crit ? 14 : 10);
       playSound(crit ? 'crit' : 'hit');
       showDamagePopup(hitTarget.pos, dmg, crit);
+      if(heldEnch&&heldEnch.lifesteal){player.hp=Math.min(player.maxHp,player.hp+heldEnch.lifesteal*0.7);updateHUD();}
     }
     const hc = document.getElementById('hitconfirm');
     hc.style.opacity = '1';
@@ -3568,6 +3776,10 @@ function updateHUD(){
   document.getElementById('rank').textContent = rank;
   document.getElementById('hpFill').style.width = Math.max(0, player.hp/player.maxHp*100) + '%';
   document.getElementById('hpTxt').textContent = '❤️ ' + Math.round(player.hp) + '/' + player.maxHp;
+  const goldBar=document.getElementById('goldHpBar');
+  goldBar.style.display=player.goldenHp>0?'block':'none';
+  document.getElementById('goldHpFill').style.width=Math.max(0,Math.min(100,player.goldenHp/player.maxGoldenHp*100))+'%';
+  document.getElementById('goldHpTxt').textContent='💛 '+Math.ceil(player.goldenHp)+'/'+player.maxGoldenHp;
   document.getElementById('hungerFill').style.width = Math.max(0, player.hunger/20*100) + '%';
   document.getElementById('hungerTxt').textContent = '🍖 ' + Math.round(player.hunger);
   document.getElementById('thirstFill').style.width = Math.max(0, player.thirst/20*100) + '%';
@@ -3576,7 +3788,7 @@ function updateHUD(){
   document.getElementById('xpTxt').textContent = '✨ ' + player.xp + '/' + player.xpNext;
   document.getElementById('clock').textContent = (inEnd ? '🌌 End' : inNether ? '🔥 Nether' : (isBloodMoon ? '🩸 Day ' + day : '☀️ Day ' + day));
   updateBattleStats();
-  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (worldMode === 'pvp' ? '⚔️ PvP' : '⚔️ Survival');
+  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (worldMode === 'pvp' ? '⚔️ PvP' : worldMode === 'city' ? '🏙️ DinoCity' : '⚔️ Survival');
 }
 function updateCompass(){
   const px = Math.floor(player.pos.x), pz = Math.floor(player.pos.z);
@@ -3601,7 +3813,7 @@ function updateHotbarUI(){
     const slot = inventory[i];
     const cls = 'slot' + (i === hotbar ? ' active' : '');
     let ic = '', cnt = '';
-    if(slot && ITEMS[slot.id]){ ic = ITEMS[slot.id].ic; if(slot.count > 1) cnt = slot.count; }
+    if(slot && ITEMS[slot.id]){ ic = ITEMS[slot.id].ic + (slot.ench?'✨':''); if(slot.count > 1) cnt = slot.count; }
     html += '<div class="' + cls + '"><div class="ic">' + ic + '</div>' + (cnt?'<div class="count">' + cnt + '</div>':'') + '</div>';
   }
   document.getElementById('hotbar').innerHTML = html;
@@ -3611,7 +3823,7 @@ function updateHotbarUI(){
     const slot = inventory[hotbar];
     if(slot && ITEMS[slot.id]){
       const el = document.getElementById('heldName');
-      el.textContent = ITEMS[slot.id].n;
+      el.textContent = ITEMS[slot.id].n + enchantShort(slot.ench);
       el.style.opacity = '1';
       clearTimeout(updateHotbarUI._t);
       updateHotbarUI._t = setTimeout(() => { el.style.opacity = '0'; }, 1400);
@@ -3800,35 +4012,171 @@ function makeItem(itemId){
   if(!def) return null;
   return {id:itemId, count:1, type:def.type, n:def.n};
 }
+function cloneEnchants(src){return src&&typeof src==='object'?JSON.parse(JSON.stringify(src)):null;}
+function enchantShort(ench){
+  if(!ench)return '';
+  const parts=[];
+  if(ench.sharpness)parts.push('Sharp '+ench.sharpness);
+  if(ench.lifesteal)parts.push('Life '+ench.lifesteal);
+  if(ench.reach)parts.push('Reach '+ench.reach);
+  if(ench.wind)parts.push('Wind '+ench.wind);
+  if(ench.looting)parts.push('Loot '+ench.looting);
+  if(ench.protection)parts.push('Prot '+ench.protection);
+  return parts.length?' ✨'+parts.join(' · '):'';
+}
+function applyEnchantToHeld(kind,level){
+  const slot=inventory[hotbar];
+  if(!slot||!ITEMS[slot.id]){showToast('Hold an item first','❌');return false;}
+  const def=ITEMS[slot.id];
+  kind=(kind||'').toLowerCase();
+  level=Math.max(1,Math.min(kind==='protection'?4:5,Math.floor(level||1)));
+  if(!['sharpness','lifesteal','reach','wind','looting','protection'].includes(kind)){showToast('Try sharpness, lifesteal, reach, wind, looting, protection','✨');return false;}
+  if(kind==='protection' && def.type!=='shield'){showToast('Protection works on shields','🛡️');return false;}
+  if(kind!=='protection' && !['sword','axe','spear','dagger','hammer','mace','bow','pickaxe'].includes(def.type)){showToast('Enchant a weapon or tool','❌');return false;}
+  slot.ench=slot.ench||{};
+  slot.ench[kind]=level;
+  updateHotbarUI();
+  showToast('✨ Enchanted '+def.n+' with '+kind.toUpperCase()+' '+level,'✨');
+  return true;
+}
 
 /* ===== ADD ITEM / REMOVE ITEM ===== */
 function addItem(item){
-  if(!item) return false;
-  const nonStackable = (item.type === 'pickaxe' || item.type === 'axe' || item.type === 'sword' || item.type === 'bow' || item.type === 'armor' || item.type === 'shield' || item.type === 'totem' || item.type === 'spear' || item.type === 'dagger' || item.type === 'hammer' || item.type === 'mace');
-  if(!nonStackable){
-    for(let i=0;i<36;i++){
-      const s = G_inv(i);
-      if(s && s.id === item.id && s.count < 64 && !s.ench && !item.ench){
-        const space = 64 - s.count, take = Math.min(space, item.count);
-        s.count += take; item.count -= take;
-        if(item.count <= 0) return true;
-      }
-    }
-  }
-  for(let j=0;j<36;j++){
-    if(!G_inv(j)){
-      // Save into inventory array
-      inventory[j] = item;
-      return true;
-    }
-  }
-  return false;
+ if(!item||!ITEMS[item.id])return false;
+ let remaining=Math.max(0,Math.min(576,Math.floor(item.count||1)));
+ const unstackable=['pickaxe','axe','sword','bow','armor','shield','totem','spear','dagger','hammer','mace'].includes(ITEMS[item.id].type);
+ // Never partially consume a sale or a vault delivery if the bag is already full.
+ const capacity=inventory.reduce((n,s)=>n+(!s?unstackable?1:64:!unstackable&&s.id===item.id&&!s.ench&&!item.ench?64-s.count:0),0);
+ if(capacity<remaining)return false;
+ if(!unstackable)for(let i=0;i<36&&remaining>0;i++){
+   const s=inventory[i];if(s&&s.id===item.id&&s.count<64&&!s.ench&&!item.ench){const count=Math.min(remaining,64-s.count);s.count+=count;remaining-=count;}
+ }
+ for(let i=0;i<36&&remaining>0;i++)if(!inventory[i]){
+   const n=unstackable?1:Math.min(64,remaining);
+   inventory[i]={...makeItem(item.id),count:n};remaining-=n;
+ }
+ return remaining===0;
 }
 function G_inv(i){ return inventory[i]; }
 
+/* ===== DINO CITY: three separate urban neighbourhoods and a shared economy ===== */
+const CITY_PLACES=[{name:'Rexborough',x:19,z:19},{name:'Fossil Bay',x:60,z:19},{name:'Jurassic Heights',x:40,z:60}];
+function generateCityWorld(){
+  world.fill(B.AIR);
+  const floor=20;
+  // Safe flat ground and crossing highways linking all three cities.
+  for(let x=1;x<WORLD_SIZE-1;x++)for(let z=1;z<WORLD_SIZE-1;z++){setRaw(x,floor-1,z,B.STONE);setRaw(x,floor,z,B.GRASS);}
+  function road(x0,z0,x1,z1){const steps=Math.ceil(Math.hypot(x1-x0,z1-z0)*2);for(let k=0;k<=steps;k++){const x=Math.round(x0+(x1-x0)*k/steps),z=Math.round(z0+(z1-z0)*k/steps);for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)if(x+dx>0&&z+dz>0&&x+dx<WORLD_SIZE-1&&z+dz<WORLD_SIZE-1)setRaw(x+dx,floor,z+dz,B.ARENA_FLOOR);}}
+  road(19,19,60,19);road(60,19,40,60);road(40,60,19,19);
+  function house(cx,cz,w,d,h,wall,roof){
+    const left=Math.floor(cx-w/2),front=Math.floor(cz-d/2);
+    for(let x=left;x<left+w;x++)for(let z=front;z<front+d;z++){
+      setRaw(x,floor,z,B.PLANKS);
+      for(let y=floor+1;y<=floor+h;y++){
+        const edge=x===left||x===left+w-1||z===front||z===front+d-1;
+        if(edge)setRaw(x,y,z,(y===floor+2&&(x===left+2||z===front+2))?B.LEAVES:wall);
+      }
+      setRaw(x,floor+h+1,z,roof);
+    }
+    for(let y=floor+1;y<=floor+2;y++)setRaw(left+Math.floor(w/2),y,front,B.AIR);
+  }
+  for(let i=0;i<CITY_PLACES.length;i++){
+    const c=CITY_PLACES[i];
+    // Main street and trading plaza in each city.
+    for(let x=c.x-7;x<=c.x+7;x++)for(let z=c.z-6;z<=c.z+6;z++)if(x>1&&z>1&&x<WORLD_SIZE-2&&z<WORLD_SIZE-2)setRaw(x,floor,z,B.ARENA_FLOOR);
+    house(c.x-10,c.z-10,7,7,7+i*2,i===0?B.COBBLE:i===1?B.SAND:B.STONE,B.OBSIDIAN);
+    house(c.x+9,c.z-9,7,8,5+i,i===0?B.WOOD:i===1?B.PLANKS:B.COBBLE,B.GOLD_ORE);
+    house(c.x-10,c.z+9,8,7,6,i===0?B.PLANKS:i===1?B.COBBLE:B.WOOD,B.IRON_ORE);
+    // Currency kiosk and golden sign, visible by the plaza.
+    for(let y=floor+1;y<floor+5;y++)setRaw(c.x,y,c.z,B.GOLD_ORE);
+    setRaw(c.x,floor+5,c.z,B.DIAMOND_ORE);
+    road(c.x,c.z,c.x+6,c.z+6);
+    // Lit avenue, trees and benches distinguish the three neighbourhoods.
+    for(const dx of [-5,5])for(const dz of [-4,4]){
+      const px=c.x+dx,pz=c.z+dz;
+      for(let y=floor+1;y<=floor+3;y++)setRaw(px,y,pz,B.WOOD);
+      setRaw(px,floor+4,pz,i===0?B.GOLD_ORE:i===1?B.DIAMOND_ORE:B.IRON_ORE);
+    }
+    for(const dx of [-15,15])for(const dz of [-2,4,10]){
+      const px=c.x+dx,pz=c.z+dz;if(px<3||pz<3||px>=WORLD_SIZE-3||pz>=WORLD_SIZE-3)continue;
+      for(let y=floor+1;y<=floor+4;y++)setRaw(px,y,pz,B.WOOD);
+      for(let x=px-1;x<=px+1;x++)for(let z=pz-1;z<=pz+1;z++)for(let y=floor+4;y<=floor+5;y++)setRaw(x,y,z,B.LEAVES);
+    }
+  }
+}
+function marketItemButton(text,action){const b=document.createElement('button');b.textContent=text;b.style.cssText='background:#263c51;color:#e7f7ff;border:1px solid #578399;border-radius:7px;margin:3px;padding:8px;cursor:pointer;font:12px system-ui';b.onclick=action;return b;}
+function takeInventory(id,count){let rem=count;for(const slot of inventory){if(slot&&slot.id===id)rem-=slot.count;}if(rem>0)return false;rem=count;for(let i=0;i<inventory.length&&rem>0;i++){const slot=inventory[i];if(slot&&slot.id===id){const n=Math.min(rem,slot.count);slot.count-=n;rem-=n;if(slot.count<=0)inventory[i]=null;}}lastHotbar=-1;updateHotbarUI();return true;}
+function toggleMarket(force){const overlay=document.getElementById('cityMarket');const open=force===undefined?overlay.style.display!=='flex':force;overlay.style.display=open?'flex':'none';keys={};mouseDown.left=mouseDown.right=false;if(open){if(document.pointerLockElement)document.exitPointerLock();renderMarket();}else renderer.domElement.focus();}
+function renderMarket(){
+ document.getElementById('marketBalance').textContent='🪙 Wallet: '+bank.coins.toLocaleString()+' DinoCoins  |  Mode: '+(worldMode==='pvp'?'Arena':worldMode==='city'?'DinoCity':'Survival');
+ const questBox=document.getElementById('marketQuests');questBox.replaceChildren();
+ for(const m of REV_MISSIONS){const progress=Math.min(m.target,Math.floor(Number(bank.missions[m.key])||0));const claimed=!!bank.claimed[m.id];
+ questBox.appendChild(marketItemButton(m.name+' · '+progress+'/'+m.target+' · 🪙'+m.reward+(claimed?' ✓ CLAIMED':progress>=m.target?' ✅ CLAIM REWARD':' · '+m.detail),()=>{
+ if(claimed){showToast('Already claimed','🏆');return;}if(progress<m.target){showToast('Keep playing to finish this mission!','🎯');return;}
+ bank.claimed[m.id]=true;earnCoins(m.reward,'Mission reward');renderMarket();
+ }));}
+ const travelBox=document.getElementById('marketTravel');travelBox.replaceChildren();
+ for(let i=0;i<CITY_PLACES.length;i++){const city=CITY_PLACES[i];travelBox.appendChild(marketItemButton('🏙️ Visit '+city.name,()=>{
+ if(worldMode!=='city'){showToast('Enter DinoCity first (type /world city)','🚕');return;}
+ player.pos.set(city.x,23,city.z+5);player.vel.set(0,0,0);player.spawnPoint.copy(player.pos);toggleMarket(false);showToast('Welcome to '+city.name+'!','🚕');
+ }));}
+ for(const [name,mode] of [['🌲 Go to Survival','survival'],['⚔️ Enter Arena','pvp'],['🏙️ Enter DinoCity','city']])travelBox.appendChild(marketItemButton(name,()=>{toggleMarket(false);changeWorld(mode);}));
+ const sell=document.getElementById('marketSell');sell.replaceChildren();
+ if(worldMode==='pvp'){sell.textContent='Arena starter gear cannot be sold. Earn coins by winning battles.';}
+ else {let has=false;for(const [id,price] of Object.entries(SELL_PRICES)){const total=inventory.reduce((n,x)=>n+(x&&x.id===id?x.count:0),0);if(!total)continue;has=true;for(const count of [1,Math.min(64,total)]){
+ sell.appendChild(marketItemButton((ITEMS[id]?.ic||'📦')+' Sell '+(ITEMS[id]?.n||id)+' ×'+count+' → +'+price*count+' coins (own '+total+')',()=>{if(takeInventory(id,count)){earnCoins(price*count,'Sold '+count+' '+id);saveAdventure();renderMarket();}}));if(total===1)break;}}if(!has)sell.textContent='Collect wood, iron, diamonds and other resources in Survival, then return here to sell them.';}
+ const buy=document.getElementById('marketBuy');buy.replaceChildren();for(const [id,price] of Object.entries(SHOP_ITEMS))for(const n of [1,5]){buy.appendChild(marketItemButton((ITEMS[id]?.ic||'🎁')+' '+ITEMS[id].n+' ×'+n+' · 🪙'+(price*n),()=>{if(bank.coins<price*n){showToast('Not enough DinoCoins!','❌');return;}bank.coins-=price*n;bank.vault[id]=(bank.vault[id]||0)+n;saveBank();showToast('Purchased '+n+' '+ITEMS[id].n+' — claim from the vault!','🛍️');renderMarket();}));}
+ const vault=document.getElementById('marketVault');vault.replaceChildren();let any=false;for(const [id,count] of Object.entries(bank.vault)){if(!count||!ITEMS[id])continue;any=true;vault.appendChild(marketItemButton('📦 Claim '+ITEMS[id].n+' ×'+count,()=>{const item=makeItem(id);if(addItem(item)){bank.vault[id]--;saveBank();saveAdventure();updateHotbarUI();showToast('Delivered '+ITEMS[id].n,'📦');renderMarket();}else showToast('Inventory full. Clear a slot!','❌');}));}if(!any)vault.textContent='No pending deliveries. Bought items can be claimed in ANY world.';
+}
+document.getElementById('marketClose').onclick=()=>toggleMarket(false);
+
+/* Quick map switcher uses the same safe world transition as /world. */
+function toggleQuickMap(force){
+ const overlay=document.getElementById('quickMapOverlay');
+ const open=force===undefined?overlay.style.display!=='flex':!!force;
+ overlay.style.display=open?'flex':'none';
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(open){
+  if(document.pointerLockElement)document.exitPointerLock();
+  document.getElementById('quickMapCurrent').textContent='Current map: '+(worldMode==='pvp'?'PvP Arena':worldMode==='city'?'DinoCity':'Survival');
+  const choices=document.getElementById('quickMapChoices');choices.replaceChildren();
+  for(const [title,mode,desc] of [
+   ['🌲 SURVIVAL','survival','Mine, build, explore ruins and hunt dinosaurs'],
+   ['⚔️ PVP ARENA','pvp','Battle dinosaurs and earn DinoCoins'],
+   ['🏙️ DINO CITY','city','Visit shops, missions and the three city districts']]){
+   const b=document.createElement('button');b.type='button';
+   b.style.cssText='text-align:left;background:#23425a;color:white;border:2px solid '+(worldMode===mode?'#e6c969':'#57849c')+';border-radius:12px;padding:17px;cursor:pointer;font:14px system-ui';
+   b.innerHTML='<strong style="font-size:17px">'+title+'</strong><span style="display:block;color:#b9d5e8;margin-top:7px;font-size:12px">'+desc+'</span>';
+   b.onclick=()=>{toggleQuickMap(false);if(mode!==worldMode)changeWorld(mode);else showToast('Already in this world!','🗺️');};
+   choices.appendChild(b);
+  }
+  const cityLabel=document.createElement('p');cityLabel.style.cssText='grid-column:1/-1;color:#ffda8a;margin-top:4px';cityLabel.textContent='🚕 CITY DISTRICTS — travel straight to a city:';choices.appendChild(cityLabel);
+  for(let i=0;i<CITY_PLACES.length;i++){
+    const place=CITY_PLACES[i];const b=document.createElement('button');b.type='button';
+    b.textContent='🏙️ '+place.name;b.style.cssText='background:#2e4050;color:#fff;border:1px solid #80c1d5;border-radius:9px;padding:12px;cursor:pointer';
+    b.onclick=()=>{
+      toggleQuickMap(false);
+      if(worldMode!=='city')changeWorld('city');
+      // The world change is asynchronous; put the arrival point in the city AFTER it loads.
+      setTimeout(()=>{if(worldMode==='city'&&worldReady){player.pos.set(place.x,23,place.z+5);player.vel.set(0,0,0);player.spawnPoint.copy(player.pos);showToast('Welcome to '+place.name+'!','🚕');}},160);
+    };choices.appendChild(b);
+  }
+ }
+ else renderer.domElement.focus();
+}
+document.getElementById('quickMapButton').onclick=()=>{if(worldReady)toggleQuickMap(true);else showToast('Start a world first!','🗺️');};
+document.getElementById('quickMapClose').onclick=()=>toggleQuickMap(false);
+
 /* ===== WORLD SETUP ===== */
 function setupWorld(mode){
+  if(worldReady){if(worldMode==='pvp')savePvPProgress();else saveAdventure();}
+  const previousMode=worldMode;
   worldMode = mode;
+  if(mode==='pvp'){resetInventory();}
+  else if(!adventureLoaded || previousMode==='pvp'){
+    const restored=loadAdventure();adventureLoaded=true;
+    if(!restored)resetInventory();
+  }
   clearAllMeshes();
   for(const m of mobs){ scene.remove(m.mesh); }
   mobs.length = 0;
@@ -3851,6 +4199,7 @@ function setupWorld(mode){
   // Reset player state
   dinoArenaTimer=35;dinoArenaWave=0;
   player.hp = 20;
+  player.goldenHp = 0;player.maxGoldenHp=8;elytraGliding=false;rocketBoost=0;
   player.maxHp = 20;
   player.hunger = 20;
   player.thirst = 20;
@@ -3866,14 +4215,24 @@ function setupWorld(mode){
   if(player._respawnInterval){ clearInterval(player._respawnInterval); player._respawnInterval = null; }
   document.getElementById('respawnOverlay').style.display = 'none';
 
-  if(mode === 'pvp') loadPvPProgress();
+  const pvpProgressLoaded=mode==='pvp' && loadPvPProgress();
 
-  if(mode === 'survival'){
+  if(mode === 'city'){
+    generateCityWorld();buildAllMeshes();
+    player.pos.set(19,23,24);player.spawnPoint.copy(player.pos);
+    document.getElementById('weaponQuest').style.display='none';
+    showToast('🏙️ 3 cities connected by roads! Press T for the market.','🏙️');
+  } else if(mode === 'survival'){
     generateSurvivalWorld();
+    const savedSurvivalPosition=loadSurvivalWorld();
     buildAllMeshes();
     buildDecorations();
     const sx = WORLD_SIZE/2, sz = WORLD_SIZE/2;
     player.pos.set(sx, terrainH(sx, sz) + 4, sz);
+    if(savedSurvivalPosition && savedSurvivalPosition.every(Number.isFinite)){
+       const [x,y,z]=savedSurvivalPosition;
+       if(x>2&&x<WORLD_SIZE-2&&y>3&&y<WORLD_HEIGHT-3&&z>2&&z<WORLD_SIZE-2)player.pos.set(x,y,z);
+    }
     player.spawnPoint.copy(player.pos);
     for(let i=0;i<10;i++){
       const types = ['pig','cow','sheep','chicken','wolf'];
@@ -3883,12 +4242,18 @@ function setupWorld(mode){
       spawnMob(t, x, terrainH(x,z)+2, z);
     }
     for(let i=0;i<12;i++){
-      const types = ['zombie','skeleton','creeper','spider','raptor','raptor','triceratops'];
+      const types = ['zombie','skeleton','creeper','spider','raptor','raptor','triceratops','enderman'];
       const t = types[i % types.length];
       const x = 5 + Math.random()*(WORLD_SIZE-10);
       const z = 5 + Math.random()*(WORLD_SIZE-10);
       spawnMob(t, x, terrainH(x,z)+2, z);
     }
+    // Supply a starter kit only once; never duplicate items by re-entering the world.
+    if(!localStorage.getItem('dinocraft_first_starter_v2'))for(const [id,count] of [['stone_sword',1],['wood_pickaxe',1],['planks_block',32],['golden_apple',2],['healing_potion',2],['torch',8]]){
+      if(ITEMS[id]) addItem({id,count,type:ITEMS[id].type,n:ITEMS[id].n});
+    }
+    try{localStorage.setItem('dinocraft_first_starter_v2','1');}catch(e){}
+    showToast('THE NEW REVOLUTION: Explore 8 hidden towers, temples, forts and camps!','🌍');
     document.getElementById('weaponQuest').style.display = 'none';
   } else if(mode === 'pvp'){
     generatePvPWorld();
@@ -3896,7 +4261,8 @@ function setupWorld(mode){
     const mid = Math.floor(WORLD_SIZE / 2);
     player.pos.set(mid, 22.0, mid - 14);
     player.spawnPoint.copy(player.pos);
-    // Give PvP loadout
+    // Give a starting kit only when no saved Arena character exists.
+    if(!pvpProgressLoaded){
     inventory[0] = {id:'stone_sword', count:1};
     inventory[1] = {id:'shield', count:1};
     inventory[2] = {id:'wood_pickaxe', count:1};
@@ -3907,6 +4273,7 @@ function setupWorld(mode){
     inventory[7] = null;
     inventory[8] = null;
     hotbar = 0;
+    }
     // Spawn 14 bots: 7 red + 7 blue
     for(let i=0;i<7;i++){
       const rx = 16 + (Math.random()-0.5)*4;
@@ -3923,11 +4290,23 @@ function setupWorld(mode){
     document.getElementById('weaponQuest').style.display = 'block';
   }
   updateHUD();
+  updateCoins();
   updateHotbarUI();
   buildHeldItem();
-  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (mode === 'pvp' ? '⚔️ PvP' : '⚔️ Survival');
+  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (mode === 'pvp' ? '⚔️ PvP' : mode === 'city' ? '🏙️ DinoCity' : '⚔️ Survival');
 }
 
+function changeWorld(mode){
+ if(!['pvp','city','survival'].includes(mode))return;
+ if(mode===worldMode){showToast('Already in '+mode+'!','🌍');return;}
+ if(adminOpen)toggleAdmin(false);
+ if(document.getElementById('cityMarket').style.display==='flex')toggleMarket(false);
+ if(document.getElementById('quickMapOverlay').style.display==='flex')toggleQuickMap(false);
+ const splash=document.getElementById('loading');splash.style.display='flex';
+ if(document.pointerLockElement)document.exitPointerLock();
+ setTimeout(()=>{try{setupWorld(mode);showToast('🌍 World changed to '+(mode==='pvp'?'PvP Arena':mode==='city'?'DinoCity':'Survival'),'🌍');}
+ finally{splash.style.display='none';lastTime=performance.now()/1000;renderer.domElement.focus();}},40);
+}
 /* Mouse look must be requested from an actual user gesture. */
 let worldReady = false;
 function lockGameMouse(){
@@ -3990,10 +4369,11 @@ renderer.domElement.addEventListener('click', lockGameMouse);
 /* ===== INPUT ===== */
 const mouseDown = {left:false, right:false};
 let adminOpen=false, creativeOpen=false, flying=false, godMode=false, creativeSpeed=1;
+let elytraEquipped=false, elytraGliding=false, rocketBoost=0;
 function toggleAdmin(open){if(open && creativeOpen)toggleCreativePanel(false);adminOpen=open;keys={};mouseDown.left=mouseDown.right=false;document.getElementById('adminPanel').style.display=open?'block':'none';if(open){if(document.pointerLockElement)document.exitPointerLock();document.getElementById('adminInput').focus();}else renderer.domElement.focus();}
 function creativeStatus(){
- const hud=document.getElementById('creativeHUD');hud.style.display=(flying||godMode||player.creative)?'block':'none';
- hud.textContent=(player.creative?'🎨 CREATIVE  ':'')+(flying?'🕊️ FLY ON (Space up / Shift down)  ':'')+(godMode?'❤️ GOD ON  ':'')+'· I: Items · /: Commands';
+ const hud=document.getElementById('creativeHUD');hud.style.display=(elytraEquipped||flying||godMode||player.creative)?'block':'none';
+ hud.textContent=(elytraEquipped?'🪽 ELYTRA: Space deploy / Space unequip midair  ':'')+(player.creative?'🎨 CREATIVE  ':'')+(flying?'🕊️ FLY ON (Space up / Shift down)  ':'')+(godMode?'❤️ GOD ON  ':'')+'· I: Items · /: Commands';
  updateHUD();
 }
 function setCreativeMode(on){player.creative=on;if(on){flying=true;godMode=true;}else{flying=false;godMode=false;}player.vel.set(0,0,0);player.fallStartY=null;creativeStatus();}
@@ -4002,7 +4382,7 @@ function giveExactItem(id,count){
  if(!ITEMS[id])return 0;
  let given=0;
  while(given<count){
-   const size=Math.min(64,count-given), item=makeItem(id);item.count=size;
+   const size=['pickaxe','axe','sword','bow','armor','shield','totem','spear','dagger','hammer','mace'].includes(ITEMS[id].type)?1:Math.min(64,count-given), item=makeItem(id);item.count=size;
    // Put items straight in the chosen hotbar slot when inventory is otherwise full.
    if(!addItem(item))break;
    given+=size;
@@ -4012,7 +4392,20 @@ function giveExactItem(id,count){
 function adminCommand(raw){
  const a=raw.trim().replace(/^\//,'').toLowerCase().split(/\s+/),cmd=a[0];
  if(!cmd)return;
- if(cmd==='help'){showToast('/creative /survival /fly /god /give ID COUNT /give all /items /spawn TYPE /heal /clear /speed','⌨️');return;}
+ if(cmd==='help'){toggleAdmin(false);showCommandHelp();return;}
+ if(cmd==='shop'||cmd==='market'||cmd==='missions'||cmd==='quests'){toggleAdmin(false);toggleMarket(true);return;}
+ if(cmd==='world'||cmd==='travel'||cmd==='goto'){
+ const dest={arena:'pvp',pvp:'pvp',city:'city',dinocity:'city',survival:'survival'}[a[1]];
+ if(!dest){showToast('Try /world city, /world survival, /world arena','🌍');return;}
+ toggleAdmin(false);changeWorld(dest);return;
+ }
+ if(cmd==='save'){if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();showToast('💾 Inventory, coins, quests and Survival world saved!','💾');return;}
+ if(cmd==='city'){toggleAdmin(false);changeWorld('city');return;}
+ if(cmd==='balance'||cmd==='coins'){showToast('🪙 Your balance: '+bank.coins+' DinoCoins','🪙');return;}
+ if(cmd==='sell'){if(worldMode==='pvp'){showToast('Arena starter gear cannot be sold','❌');return;}const id=(a[1]||'').replace(/[ -]+/g,'_');const amount=Math.max(1,Math.min(64,Number.parseInt(a[2],10)||1));if(!SELL_PRICES[id]){showToast('Use /shop to see sellable resources','❌');return;}if(takeInventory(id,amount)){earnCoins(SELL_PRICES[id]*amount,'Sold '+amount+' '+id);}else showToast('Not enough '+id+' in inventory','❌');return;}
+ if(cmd==='revolution'){showToast('Survival: enchanted skies, floating islands, prettier forests, more flowers and upgraded loot!','🌍');return;}
+ if(cmd==='difficulty'){const v=a[1];if(!['easy','normal','hard','apex'].includes(v)){showToast('Use /difficulty easy, normal, hard, or apex','❌');return;}arenaDifficulty=v;dinoArenaTimer=6;showToast('Dinosaur difficulty: '+v.toUpperCase()+'!','🦖');return;}
+ if(cmd==='elytra'){elytraEquipped=a[1]==='off'?false:a[1]==='on'?true:!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'equipped! Jump off a ledge and press Space.':'unequipped.'),'🪽');return;}
  if(cmd==='creative'||cmd==='survival'||cmd==='gamemode'){
    const mode=cmd==='gamemode'?(a[1]||'creative'):cmd;
    if(!['creative','survival','1','0','c','s'].includes(mode)){showToast('Use /gamemode creative or survival','❌');return;}
@@ -4032,6 +4425,13 @@ function adminCommand(raw){
    const n=Number(a[1]);if(!Number.isFinite(n)||n<0.2||n>5){showToast('Use /speed 0.2 to 5','❌');return;}
    creativeSpeed=n;showToast('Movement speed ×'+n,'⚡');return;
  }
+ if(cmd==='enchant'||cmd==='ench'){
+   const kind=(a[1]||'').replace(/[ -]+/g,'_');
+   const lvl=Math.max(1,Math.min(5,Number.parseInt(a[2],10)||1));
+   if(kind==='list'){showToast('Enchantments: sharpness, lifesteal, reach, wind, looting, protection','✨');return;}
+   if(player.creative){applyEnchantToHeld(kind,lvl);}else if(takeInventory('lapis',1)){if(!applyEnchantToHeld(kind,lvl)) addItem({id:'lapis',count:1}); else showToast('Used 1 Lapis Lazuli','🔷');}else showToast('Need 1 lapis to enchant (or use Creative)','🔷');
+   return;
+ }
  if(cmd==='give'){
    const off=['@s','@p','@a','self','me'].includes(a[1])?2:1;
    const id=a[off];
@@ -4039,7 +4439,7 @@ function adminCommand(raw){
    if(id==='all'){
      let n=0;
      // First fill free slots with equipment and useful supplies; use /items for the full catalog.
-     const priority=['diamond_sword','netherite_sword','diamond_axe','diamond_spear','netherite_mace','shield','golden_apple','wind_charge','tnt_minecart','delete_wand'];
+     const priority=['diamond_sword','netherite_sword','diamond_axe','diamond_spear','netherite_mace','shield','golden_apple','wind_charge','tnt_minecart','enchanting_table','lapis','delete_wand'];
      for(const itemId of priority)n+=giveExactItem(itemId,ITEMS[itemId].type==='consumable'||ITEMS[itemId].type==='throwable'||ITEMS[itemId].type==='explosive'?16:1)>0?1:0;
      showToast('Starter collection: '+n+' items. /items shows ALL items','🎁');return;
    }
@@ -4091,11 +4491,45 @@ document.getElementById('adminRun').onclick=()=>{adminCommand(document.getElemen
 document.getElementById('adminClose').onclick=()=>toggleAdmin(false);
 document.getElementById('adminInput').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){adminCommand(e.target.value);e.target.value='';}if(e.key==='Escape')toggleAdmin(false);});
 let chargeCooldown=0;
+let speedPotionTimer=0, strengthPotionTimer=0, regenerationPotionTimer=0;
+let arenaDifficulty='hard';
+function showCommandHelp(){
+  let overlay=document.getElementById('commandHelpOverlay');
+  if(!overlay){
+    overlay=document.createElement('div');overlay.id='commandHelpOverlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:220;background:rgba(5,8,20,.92);display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:15px system-ui';
+    const panel=document.createElement('div');panel.style.cssText='width:min(650px,95vw);max-height:85vh;overflow-y:auto;background:#152038;border:2px solid #8dd5ff;border-radius:15px;padding:20px';
+    const title=document.createElement('h2');title.textContent='📖 DINOCRAFT COMMAND GUIDE';title.style.color='#ffdc78';panel.appendChild(title);
+    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
+    for(const [cmd,desc] of cmds){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #43516a;padding:9px 2px;flex-wrap:wrap';const code=document.createElement('code');code.textContent=cmd;code.style.color='#96efca';const label=document.createElement('span');label.textContent=desc;row.append(code,label);panel.appendChild(row);}
+    const close=document.createElement('button');close.textContent='CLOSE (ESC)';close.style.cssText='margin-top:14px;background:#306da0;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer';close.onclick=()=>overlay.style.display='none';panel.appendChild(close);
+    overlay.appendChild(panel);document.body.appendChild(overlay);
+  }
+  overlay.style.display='flex';if(document.pointerLockElement)document.exitPointerLock();
+}
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){const h=document.getElementById('commandHelpOverlay');if(h&&h.style.display==='flex'){h.style.display='none';e.stopImmediatePropagation();}}},true);
+
 const tntCarts=[];
 function useCombatItem(){
  const slot=inventory[hotbar];if(!slot||!ITEMS[slot.id])return false;
- if(slot.id==='golden_apple'){
-   player.hp=Math.min(player.maxHp,player.hp+12);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,4);showToast('🍎 Golden Apple: healing + 4s resistance!','🍎');
+ if(slot.id==='elytra'){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'equipped. Jump, then press Space to glide!':'removed.'),'🪽');return true;}
+ if(slot.id==='enchanted_golden_apple'){
+   player.hp=player.maxHp;player.maxGoldenHp=Math.max(player.maxGoldenHp,16);player.goldenHp=Math.min(player.maxGoldenHp,player.goldenHp+16);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,12);updateHUD();showToast('🌟 Enchanted Apple: full heal, +16 gold HP, resistance!','🌟');
+ }else if(slot.id==='speed_potion'){
+   speedPotionTimer=90;showToast('⚡ SPEED II — 90 seconds!','⚡');
+ }else if(slot.id==='strength_potion'){
+   strengthPotionTimer=90;showToast('💪 STRENGTH II — 90 seconds!','💪');
+ }else if(slot.id==='regeneration_potion'){
+   regenerationPotionTimer=30;showToast('💗 REGENERATION — 30 seconds!','💗');
+ }else if(slot.id==='healing_potion'){
+   player.hp=Math.min(player.maxHp,player.hp+16);updateHUD();showToast('🧪 Healing Potion: +16 HP!','🧪');
+ }else if(slot.id==='firework_rocket'){
+   if(!elytraEquipped || !elytraGliding){showToast('Equip Elytra and glide before using a rocket!','🚀');return true;}
+   rocketBoost=3.5;player.vel.y=Math.max(player.vel.y,.1);showToast('🚀 FIREWORK BOOST!','🚀');
+ }else if(slot.id==='golden_apple'){
+   player.hp=Math.min(player.maxHp,player.hp+12);player.goldenHp=Math.min(player.maxGoldenHp,player.goldenHp+8);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,4);updateHUD();showToast('🍎 Golden Apple: +8 golden health, healing, 4s resistance!','🍎');
+ }else if(slot.id==='enchanting_table'){
+   toggleAdmin(true);setTimeout(()=>{const input=document.getElementById('adminInput');if(input&&!input.value)input.value='/enchant ';},20);showToast('Type /enchant sharpness 5, /enchant lifesteal 3, or /enchant list','✨');return true;
  }else if(slot.id==='wind_charge'){
    if(chargeCooldown>0){showToast('Wind Charge recharging','⏳');return true;}
    chargeCooldown=1.5;const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));
@@ -4114,6 +4548,10 @@ function useCombatItem(){
 }
 function updateCombatItems(dt){
  chargeCooldown=Math.max(0,chargeCooldown-dt);
+ speedPotionTimer=Math.max(0,speedPotionTimer-dt);
+ strengthPotionTimer=Math.max(0,strengthPotionTimer-dt);
+ regenerationPotionTimer=Math.max(0,regenerationPotionTimer-dt);
+ if(regenerationPotionTimer>0&&!player.dead&&!player.creative){player.hp=Math.min(player.maxHp,player.hp+dt*.85);updateHUD();}
  for(let i=tntCarts.length-1;i>=0;i--){
    const cart=tntCarts[i];cart.time-=dt;cart.mesh.position.addScaledVector(cart.dir,dt*3);cart.mesh.rotation.y+=dt*3;
    if(cart.time<=0){const p=cart.mesh.position;
@@ -4131,17 +4569,33 @@ window.addEventListener('keydown', e => {
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
+  if(document.getElementById('quickMapOverlay').style.display==='flex'){if(k==='m'||k==='escape'){e.preventDefault();toggleQuickMap(false);}return;}
+  if(k==='m' && !e.repeat && !adminOpen && !creativeOpen && document.getElementById('cityMarket').style.display!=='flex' && document.getElementById('invOverlay').style.display!=='flex'){e.preventDefault();toggleQuickMap(true);return;}
   if(adminOpen){if(k==='escape')toggleAdmin(false);return;}
   if(creativeOpen){if(k==='escape'||k==='i'){e.preventDefault();toggleCreativePanel(false);}return;}
+  if(document.getElementById('cityMarket').style.display==='flex'){if(k==='t'||k==='escape'){e.preventDefault();toggleMarket(false);}return;}
+  if(k==='t' && !e.repeat){e.preventDefault();toggleMarket();return;}
   if(k==='/' || k==='enter'){e.preventDefault();toggleAdmin(true);return;}
   if(document.getElementById('invOverlay').style.display === 'flex'){
     if(k === 'escape' || k === 'e') toggleInventory();
     return;
   }
+  // Space is a wing toggle in midair: first tap deploys, next tap UNEQUIPS.
+  // Creative flight keeps its original Space-to-rise control.
+  if(k===' ' && !e.repeat && !flying && !player.onGround && elytraEquipped){
+    if(elytraGliding){
+      elytraGliding=false;elytraEquipped=false;rocketBoost=0;
+      showToast('🪽 Elytra UNEQUIPPED! Falling — land carefully.','🪽');
+    }else if(player.vel.y<0){
+      elytraGliding=true;showToast('🪽 Elytra opened! Press Space again to unequip.','🪽');
+    }
+    keys[' ']=false;e.preventDefault();return;
+  }
   keys[k] = true;
   if(k === ' ' || ['arrowup','arrowdown','arrowleft','arrowright'].includes(k)) { if(k === ' ') keys[' '] = true; e.preventDefault(); }
   if(e.key === 'Shift') keys['shift'] = true;
   if(k >= '1' && k <= '9'){ hotbar = parseInt(k)-1; updateHotbarUI(); }
+  if(k === 'v' && !e.repeat){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'ON · Press Space while falling':'OFF'),'🪽');}
   if(k === 'g'){setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');}
   if(k === 'f'){
     if(player.hunger < 20){ player.hunger = Math.min(20, player.hunger+6); updateHUD(); playSound('place'); }
@@ -4248,15 +4702,16 @@ function updateDinoArena(dt){
  dinoArenaTimer-=dt;
  if(dinoArenaTimer>0)return;
  dinoArenaWave++;
- const type=dinoArenaWave%3===0?'rex':(dinoArenaWave%2===0?'triceratops':'raptor');
+ const type=arenaDifficulty==='apex'?'rex':arenaDifficulty==='hard'?(dinoArenaWave%2===0?'rex':'triceratops'):arenaDifficulty==='easy'?'raptor':dinoArenaWave%3===0?'rex':(dinoArenaWave%2===0?'triceratops':'raptor');
  const x=WORLD_SIZE/2+11,z=WORLD_SIZE/2+10;
  const m=spawnMob(type,x,22,z);
  if(m){
+   if(arenaDifficulty==='apex'||arenaDifficulty==='hard'){const mult=arenaDifficulty==='apex'?3.4:2.05;m.hp*=mult;m.maxHp*=mult;spawnMob(arenaDifficulty==='apex'?'rex':'raptor',x+5,22,z+4);}
    if(type==='raptor'){spawnMob('raptor',x+3,22,z+1);spawnMob('raptor',x-3,22,z+1);}
    showToast(type==='rex'?'🦖 BOSS WAVE: TYRANT REX!':'🦖 DINOSAUR INVASION: '+type.toUpperCase(),'⚔️');
    if(type==='rex')showBossBar('🦖 TYRANT REX — ARENA BOSS',m.hp,m.maxHp);
  }
- dinoArenaTimer=90;
+ dinoArenaTimer=arenaDifficulty==='easy'?100:arenaDifficulty==='apex'?22:arenaDifficulty==='hard'?35:65;
 }
 
 /* ===== SURVIVAL SPAWNING ===== */
@@ -4266,17 +4721,17 @@ function tickSpawn(dt){
   spawnT += dt;
   if(spawnT < 4) return;
   spawnT = 0;
-  if(mobs.length > 25) return;
+  if(mobs.length > 32) return;
   const r = Math.random();
-  const hostileChance = isBloodMoon && lastNightF > 0.3 ? 0.75 : 0.6;
+  const hostileChance = isBloodMoon && lastNightF > 0.3 ? 0.83 : 0.73;
   if(r < 0.4 && !(isBloodMoon && lastNightF > 0.3)){
     const types = ['pig','cow','sheep','chicken','wolf'];
     const t = types[Math.floor(Math.random()*types.length)];
     const x = 8 + Math.random()*(WORLD_SIZE-16), z = 8 + Math.random()*(WORLD_SIZE-16);
     spawnMob(t, x, terrainH(x,z)+2, z);
   } else if(r < 0.4 + hostileChance){
-    const types = ['zombie','skeleton','creeper','spider','raptor','raptor','triceratops'];
-    if(Math.random() < 0.12) types.push('enderman');
+    const types = ['zombie','skeleton','creeper','spider','raptor','raptor','triceratops','enderman'];
+    if(Math.random() < 0.22) types.push('rex','triceratops');
     const t = types[Math.floor(Math.random()*types.length)];
     const x = 5 + Math.random()*(WORLD_SIZE-10), z = 5 + Math.random()*(WORLD_SIZE-10);
     spawnMob(t, x, terrainH(x,z)+2, z);
@@ -4308,8 +4763,8 @@ function animate(){
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   updateSky(dt);
-  if(worldReady && worldMode === 'pvp'){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;savePvPProgress();} }
-  if(!invOpen && !creativeOpen && !adminOpen && !playerDead){
+  if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
+  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     updatePlayer(dt);
     updateMobs(dt);
     updateFighterBots(dt);
@@ -4326,13 +4781,13 @@ function animate(){
     updateBotTargetHUD();
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
   }
-  if(!invOpen && !creativeOpen && !adminOpen && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
+  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
   updateParticles(dt);
   updatePopups(dt);
   if(pendingLevelRewards.length) deliverPendingRewards();
   updateAmbientAudio(lastNightF, dt);
 
-  if(!invOpen && !creativeOpen && !adminOpen && !playerDead){
+  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     if(mouseDown.left && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
     if(mouseDown.right){
       const slot = inventory[hotbar];
