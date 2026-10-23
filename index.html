@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DinoCraft 2.7 — Six Worlds</title>
+<title>DinoCraft 2.8 — Six Worlds</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -1539,6 +1539,9 @@ const MOB_TYPES = {
   dragon:{hp:400,speed:0.09,dmg:12,color:0x1a0a2a,size:2.5,hostile:true,boss:true,flying:true},
   raptor:{hp:24,speed:0.115,dmg:4,color:0x4fa66c,size:0.95,hostile:true,drop:'bone'},
   triceratops:{hp:80,speed:0.045,dmg:9,color:0x749b88,size:1.65,hostile:true,drop:'iron'},
+  blaze:{hp:45,speed:0.075,dmg:7,color:0xffac30,size:0.95,hostile:true,drop:'gold'},
+  piglin:{hp:44,speed:0.077,dmg:6,color:0xe8a77b,size:0.95,hostile:true,drop:'gold'},
+  end_guardian:{hp:90,speed:0.094,dmg:12,color:0x512d80,size:1.25,hostile:true,drop:'diamond'},
   rex:{hp:260,speed:0.075,dmg:11,color:0xc26c3f,size:2.3,hostile:true,boss:true,drop:'diamond'}
 };
 function addBox(group, w, h, d, x, y, z, mat, opts){
@@ -1751,6 +1754,9 @@ function makeMobMesh(type){
   else if(type === 'wolf') buildWolf(g, def);
   else if(type === 'zombie') buildHumanoid(g, def, {skinColor:0x4a8a4a, clothColor:0x2a4a6a});
   else if(type === 'skeleton') buildHumanoid(g, def, {skinColor:0xf0f0e8, clothColor:0xe0e0d8, eyeColor:0x000000, eyeSize:0.12});
+  else if(type === 'piglin') buildHumanoid(g, def, {skinColor:0xe8a77b, clothColor:0x7a2837, eyeColor:0xeddc70});
+  else if(type === 'blaze'){buildHumanoid(g,def,{skinColor:0xffae31,clothColor:0x6b290b,eyeColor:0xffe363});g.scale.set(1,1.12,1);}
+  else if(type === 'end_guardian'){buildHumanoid(g,def,{skinColor:0x30234a,clothColor:0x5b2a9e,eyeColor:0xee55ff});g.scale.set(1,1.4,1);}
   else if(type === 'creeper') buildCreeper(g, def);
   else if(type === 'spider') buildSpider(g, def);
   else if(type === 'enderman'){ buildHumanoid(g, def, {skinColor:0x1a0a2a, clothColor:0x0a0510, eyeColor:0xff44ff, eyeSize:0.16, eyeZ:-0.32}); g.scale.set(1, 1.5, 1); }
@@ -1782,7 +1788,7 @@ function spawnMob(type, x, y, z){
     hit: 0, dead: false, walkPhase: 0, retreatT: 0
   };
   // Revolution challenge: all hostile Survival dinosaurs and monsters are tougher.
-   if((worldMode==='survival'||worldMode==='nether') && def.hostile){
+   if(['survival','nether','end'].includes(worldMode) && def.hostile){
     const bonus=['rex','triceratops','raptor'].includes(type)?1.55:1.22;
     mob.hp=Math.round(mob.hp*bonus);mob.maxHp=mob.hp;
     mob.def=Object.assign({},mob.def,{speed:mob.def.speed*1.13,dmg:mob.def.dmg*1.15});
@@ -1886,6 +1892,8 @@ function updateMobs(dt){
         player.hp=Math.min(player.maxHp,player.hp+(m.type==='rex'?12:4));
         checkWeaponUnlocks();
       }
+      if(worldMode==='nether'&&['blaze','piglin'].includes(m.type)){earnCoins(m.type==='blaze'?45:25,'Nether monster defeated');netherKills++;}
+      if(worldMode==='end'&&m.type==='end_guardian')earnCoins(65,'End Guardian defeated');
       if(worldMode==='end'&&m.type==='dragon'&&!dragonRewarded){dragonRewarded=true;earnCoins(5000,'Ender Dragon victory');if(!addItem(makeItem('dragonfang_mace'))){bank.vault.dragonfang_mace=(bank.vault.dragonfang_mace||0)+1;saveBank();}showToast('🏆 DRAGON DEFEATED! +5000 DinoCoins · DRAGONFANG MACE!','🐉');lastHotbar=-1;updateHotbarUI();saveAdventure();}
       m.dead = true;
       stats.kills++; score += m.def.boss ? 200 : 5;
@@ -3988,7 +3996,17 @@ function toggleInventory(){
 document.getElementById('invClose').addEventListener('click', toggleInventory);
 
 /* ===== DIMENSIONS ===== */
-let inNether=false,inEnd=false,portalCooldown=0,dragonRewarded=false,dragonCrystals=[];
+let inNether=false,inEnd=false,portalCooldown=0,dragonRewarded=false,dragonCrystals=[],netherKills=0;
+const NETHER_SITES=[{name:'Crimson Fortress',x:39,z:39,reward:275},{name:'Goldspire Citadel',x:21,z:20,reward:180},{name:'Ashfall Outpost',x:58,z:59,reward:180},{name:'Soulfire Shrine',x:15,z:61,reward:220},{name:'Magma Observatory',x:64,z:16,reward:220}];
+const NETHER_EXPLORE_KEY='dinocraft_nether_explorer_v1';
+let netherExplore={};try{netherExplore=JSON.parse(localStorage.getItem(NETHER_EXPLORE_KEY)||'{}')||{};}catch(e){}
+let netherExploreTimer=0;
+function updateNetherExploration(dt){
+ if(worldMode!=='nether'||player.dead)return;netherExploreTimer-=dt;if(netherExploreTimer>0)return;netherExploreTimer=1.25;
+ for(const site of NETHER_SITES){if(netherExplore[site.name]||Math.hypot(player.pos.x-site.x,player.pos.z-site.z)>8)continue;
+ netherExplore[site.name]=true;try{localStorage.setItem(NETHER_EXPLORE_KEY,JSON.stringify(netherExplore));}catch(e){}
+ earnCoins(site.reward,'Nether discovery: '+site.name);showToast('🔥 DISCOVERED '+site.name+'!','🏰');}
+}
 function surfaceAt(x,z){for(let y=WORLD_HEIGHT-4;y>3;y--)if(BLOCKS[getBlock(x,y,z)]?.solid)return y+2;return 24;}
 function buildPortalAt(x,z,block){const base=surfaceAt(x,z)-2;for(let dx=-1;dx<=1;dx++)for(let dy=0;dy<=4;dy++)setRaw(x+dx,base+dy,z,(dx===-1||dx===1||dy===0||dy===4)?B.OBSIDIAN:block);}
 function generateNetherWorld(){
@@ -4002,6 +4020,29 @@ function generateNetherWorld(){
  // Nether fortress, bridge, and crimson pillars.
  for(let x=18;x<=60;x++)for(let z=37;z<=42;z++)for(let y=25;y<=27;y++)setRaw(x,y,z,B.OBSIDIAN);
  for(const [x,z] of [[20,39],[59,39],[39,39],[21,20],[58,59]])for(let y=22;y<=42;y++)for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)if(Math.abs(dx)===2||Math.abs(dz)===2)setRaw(x+dx,y,z+dz,y%6===0?B.GOLD_ORE:B.COBBLE);
+ // Two bonus shrines with mineable gold, rare crystals and walkable bridges.
+ for(const [sx,sz,colour] of [[15,61,B.GOLD_ORE],[64,16,B.DIAMOND_ORE]]){
+  for(let x=sx-5;x<=sx+5;x++)for(let z=sz-5;z<=sz+5;z++){
+   for(let y=20;y<=24;y++)setRaw(x,y,z,B.OBSIDIAN);
+   for(let y=25;y<=33;y++)setRaw(x,y,z,B.AIR);
+  }
+  for(const [dx,dz] of [[-4,-4],[-4,4],[4,-4],[4,4]]){
+   for(let y=25;y<=32;y++)setRaw(sx+dx,y,sz+dz,B.COBBLE);
+   setRaw(sx+dx,33,sz+dz,colour);
+  }
+  for(let y=25;y<=30;y++)setRaw(sx,y,sz,y===30?colour:B.OBSIDIAN);
+ }
+ // Dramatic basalt spikes, ash and ember ore fields with a pixel-block silhouette.
+ for(let i=0;i<78;i++){
+  const x=5+Math.floor(hash2(i+111,i*3)*70),z=5+Math.floor(hash2(i*7,i+39)*70);
+  if(Math.hypot(x-40,z-65)<14||Math.hypot(x-39,z-39)<10)continue;
+  const base=20+Math.floor(sn(x+25,z+30,13)*8+Math.sin(x*.15)*3);
+  const height=3+Math.floor(hash2(i+90,i+14)*9);
+  for(let y=base+1;y<Math.min(WORLD_HEIGHT-3,base+height);y++){
+   const radius=y<base+height-3?1:0;
+   for(let dx=-radius;dx<=radius;dx++)for(let dz=-radius;dz<=radius;dz++)setRaw(x+dx,y,z+dz,(i%7===0&&y===base+height-1)?B.GOLD_ORE:B.OBSIDIAN);
+  }
+ }
  // Clear the arrival and build a two-way portal with a safe platform.
  for(let x=35;x<=45;x++)for(let z=54;z<=64;z++){for(let y=20;y<=24;y++)setRaw(x,y,z,B.OBSIDIAN);for(let y=25;y<=35;y++)setRaw(x,y,z,B.AIR);}
  buildPortalAt(40,59,B.NETHER_PORTAL);
@@ -4017,6 +4058,13 @@ function generateEndWorld(){
  for(const [x,z,height] of [[20,20,18],[60,20,22],[20,60,25],[60,60,21],[40,13,29],[40,67,27],[13,40,24],[67,40,26]]){
   for(let y=21;y<Math.min(WORLD_HEIGHT-2,height+21);y++)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)setRaw(x+dx,y,z+dz,B.OBSIDIAN);
   setRaw(x,Math.min(WORLD_HEIGHT-2,height+21),z,B.GOLD_ORE);
+ }
+ // Outer ruins and broken End bridges make the island feel ancient.
+ for(const [cx,cz] of [[24,40],[56,40],[40,24],[40,56]]){
+   for(let x=cx-3;x<=cx+3;x++)for(let z=cz-3;z<=cz+3;z++)setRaw(x,23,z,B.OBSIDIAN);
+   for(const [dx,dz] of [[-3,-3],[-3,3],[3,-3],[3,3]])for(let y=24;y<=31;y++)setRaw(cx+dx,y,cz+dz,y===31?B.DIAMOND_ORE:B.OBSIDIAN);
+   for(let x=cx-3;x<=cx+3;x++)setRaw(x,32,cz-3,B.OBSIDIAN);
+   for(let x=cx-3;x<=cx+3;x++)setRaw(x,32,cz+3,B.OBSIDIAN);
  }
  // Portal is away from the boss arena. Safe spawn platform.
  for(let x=37;x<=43;x++)for(let z=65;z<=71;z++)for(let y=19;y<=21;y++)setRaw(x,y,z,B.STONE);
@@ -4623,8 +4671,8 @@ function setupWorld(mode){
 
   const pvpProgressLoaded=mode==='pvp' && loadPvPProgress();
 
-  if(mode==='nether'){generateNetherWorld();buildAllMeshes();player.pos.set(40.5,26.2,66.5);player.spawnPoint.copy(player.pos);for(let i=0;i<14;i++){let x=10+Math.random()*60,z=10+Math.random()*60;spawnMob(i%3?'skeleton':'rex',x,surfaceAt(x,z)+1,z);}showToast('🔥 NETHER: fortress, lava marshes, dangerous enemies!','🔥');}
-  else if(mode==='end'){generateEndWorld();buildAllMeshes();player.pos.set(40.5,24,70.5);player.spawnPoint.copy(player.pos);dragonCrystals=[[20,20,39],[60,20,43],[20,60,46],[60,60,42],[40,13,50],[40,67,48],[13,40,45],[67,40,47]].map(([x,z,y])=>({x,z,y}));const boss=spawnMob('dragon',40,30,39);if(boss){boss.hp=boss.maxHp=1800;boss.def={...boss.def,dmg:22,speed:.11};boss.pos.set(40,30,39);}dragonRewarded=false;showToast('🌌 THE END: destroy eight End Crystals, then defeat the dragon!','🐉');}
+  if(mode==='nether'){generateNetherWorld();buildAllMeshes();player.pos.set(40.5,26.2,66.5);player.spawnPoint.copy(player.pos);for(let i=0;i<14;i++){let x=10+Math.random()*60,z=10+Math.random()*60;spawnMob(i%3===0?'blaze':i%3===1?'piglin':'skeleton',x,surfaceAt(x,z)+1,z);}showToast('🔥 NETHER: fortress, lava marshes, dangerous enemies!','🔥');}
+  else if(mode==='end'){generateEndWorld();buildAllMeshes();player.pos.set(40.5,24,70.5);player.spawnPoint.copy(player.pos);dragonCrystals=[[20,20,18],[60,20,22],[20,60,25],[60,60,21],[40,13,29],[40,67,27],[13,40,24],[67,40,26]].map(([x,z,h])=>({x,z,y:Math.min(WORLD_HEIGHT-2,h+21)}));for(let i=0;i<8;i++){const x=12+Math.random()*56,z=12+Math.random()*56;spawnMob('end_guardian',x,surfaceAt(x,z)+1,z);}const boss=spawnMob('dragon',40,30,39);if(boss){boss.hp=boss.maxHp=1800;boss.def={...boss.def,dmg:22,speed:.11};boss.pos.set(40,30,39);}dragonRewarded=false;showToast('🌌 THE END: destroy eight End Crystals, then defeat the dragon!','🐉');}
   else if(mode === 'pretty'){
     generatePrettyWorld();buildAllMeshes();buildPrettyScenery();
     player.pos.set(40.5,28,54.5);player.spawnPoint.copy(player.pos);
@@ -5226,6 +5274,7 @@ function animate(){
   if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     updatePlayer(dt);
     updatePrettyWorld(dt);
+    updateNetherExploration(dt);
     updateMobs(dt);
     updateFighterBots(dt);
     updateDinoArena(dt);
