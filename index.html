@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DinoCraft 2.5 — Crystal Paradise</title>
+<title>DinoCraft 2.6 — Crystal Paradise</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -4146,7 +4146,7 @@ function toggleQuickMap(force){
    ['🌲 SURVIVAL','survival','Mine, build, explore ruins and hunt dinosaurs'],
    ['⚔️ PVP ARENA','pvp','Battle dinosaurs and earn DinoCoins'],
    ['🏙️ DINO CITY','city','Visit shops, missions and the three city districts'],
-   ['🌸 PRETTY LANDS','pretty','Explore Crystal Paradise, magical gardens and hidden crystals']]){
+   ['🌸 PRETTY LANDS','pretty','Explore nine magic landmarks and complete journal quests (K)']]){
    const b=document.createElement('button');b.type='button';
    b.style.cssText='text-align:left;background:#23425a;color:white;border:2px solid '+(worldMode===mode?'#e6c969':'#57849c')+';border-radius:12px;padding:17px;cursor:pointer;font:14px system-ui';
    b.innerHTML='<strong style="font-size:17px">'+title+'</strong><span style="display:block;color:#b9d5e8;margin-top:7px;font-size:12px">'+desc+'</span>';
@@ -4183,8 +4183,45 @@ const PRETTY_SITES=[
  {name:'Moonflower Lake',x:18,z:53,emoji:'🪷'},
  {name:'Rainbow Falls',x:62,z:27,emoji:'🌈'},
  {name:'Fairy Grove',x:19,z:19,emoji:'🧚'},
- {name:'Starfall Gardens',x:59,z:61,emoji:'🌸'}
+ {name:'Starfall Gardens',x:59,z:61,emoji:'🌸'},
+ {name:'Aurora Peaks',x:64,z:12,emoji:'🌌'},
+ {name:'Celestial Observatory',x:40,z:13,emoji:'🔭'},
+ {name:'Whispering Woods',x:13,z:35,emoji:'🌳'},
+ {name:'Blossom Tower',x:67,z:49,emoji:'🌺'}
 ];
+const PRETTY_JOURNAL_KEY='dinocraft_pretty_journal_v1';
+let prettyJournal={sites:{},crystals:{},claimed:{}};
+try{const d=JSON.parse(localStorage.getItem(PRETTY_JOURNAL_KEY)||'null');if(d&&typeof d==='object')prettyJournal={sites:d.sites||{},crystals:d.crystals||{},claimed:d.claimed||{}};}catch(e){}
+function savePrettyJournal(){try{localStorage.setItem(PRETTY_JOURNAL_KEY,JSON.stringify(prettyJournal));}catch(e){}}
+function prettyReward(id,title,goal,progress,coins){
+ if(prettyJournal.claimed[id]||progress<goal)return;
+ prettyJournal.claimed[id]=true;savePrettyJournal();earnCoins(coins,'Pretty Lands achievement');
+ showToast('🏆 '+title+' COMPLETED! +'+coins+' coins','🏆');
+}
+function renderPrettyJournal(){
+ let el=document.getElementById('prettyJournal');
+ if(!el){
+   el=document.createElement('div');el.id='prettyJournal';el.style.cssText='position:fixed;inset:0;display:none;z-index:230;background:#08071cd9;align-items:center;justify-content:center;padding:15px;font:15px system-ui;color:white';
+   el.innerHTML='<div style="background:linear-gradient(145deg,#3b275d,#152e50);border:2px solid #ffa6eb;border-radius:18px;padding:24px;width:min(580px,95vw);max-height:85vh;overflow:auto;box-shadow:0 20px 75px #000a"><h2 style="color:#ffd2f8;margin:0 0 14px">📖 Pretty Lands Explorer Journal</h2><div id="prettyJournalContent"></div><button id="prettyJournalClose" style="padding:12px 20px;border:0;border-radius:10px;margin-top:15px;background:#d9a9ff;cursor:pointer;font-weight:800">CLOSE (K)</button></div>';
+   document.body.appendChild(el);document.getElementById('prettyJournalClose').onclick=()=>togglePrettyJournal(false);
+ }
+ const visited=PRETTY_SITES.filter(p=>prettyJournal.sites[p.name]).length;
+ const crystals=Object.keys(prettyJournal.crystals).length;
+ let html='<p>Discover the nine magical landmarks and collect glowing crystals to earn DinoCoins.</p>';
+ for(const site of PRETTY_SITES)html+='<div style="padding:6px 0;border-bottom:1px solid #ffffff22">'+(prettyJournal.sites[site.name]?'✅':'◻️')+' '+site.emoji+' '+site.name+'</div>';
+ html+='<p>🌸 Explorer: '+visited+'/9 locations'+(prettyJournal.claimed.explorer?' ✅':'')+' — 400 coins</p>';
+ html+='<p>💎 Crystal Collector: '+Math.min(10,crystals)+'/10 crystals'+(prettyJournal.claimed.collector?' ✅':'')+' — 350 coins</p>';
+ html+='<p>🌟 Paradise Legend: '+(visited===PRETTY_SITES.length&&crystals>=10?'Ready!':'Complete both goals')+(prettyJournal.claimed.legend?' ✅':'')+' — 1000 coins</p>';
+ html+='<p style="color:#ccf5ff">Press M to fast-travel to landmarks. Discover a location by visiting it.</p>';
+ document.getElementById('prettyJournalContent').innerHTML=html;
+}
+function togglePrettyJournal(force){
+ if(worldMode!=='pretty'){showToast('Enter Pretty Lands first!','🌸');return;}
+ renderPrettyJournal();const el=document.getElementById('prettyJournal');const show=force===undefined?el.style.display!=='flex':!!force;
+ el.style.display=show?'flex':'none';keys={};mouseDown.left=mouseDown.right=false;
+ if(show){if(document.pointerLockElement)document.exitPointerLock();}else renderer.domElement.focus();
+}
+let prettyDiscoveryCooldown=0;
 let prettyGroup=null, prettyMotion=[], prettyCollectibles=[];
 function clearPrettyWorld(){
  if(prettyGroup){scene.remove(prettyGroup);prettyGroup.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){const mm=Array.isArray(o.material)?o.material:[o.material];mm.forEach(m=>m.dispose());}});prettyGroup=null;}
@@ -4267,9 +4304,49 @@ function generatePrettyWorld(){
    setRaw(x,23,z,B.PLANKS);
    for(let y=24;y<=29;y++)setRaw(x,y,z,B.AIR);
  }
+ // NEW PLACES: four fully built, walkable destinations in Crystal Paradise.
+ // Celestial Observatory: elevated dome, pillars, sparkling telescope.
+ for(let x=34;x<=46;x++)for(let z=7;z<=19;z++){
+   const rr=Math.hypot(x-40,z-13);
+   if(rr<=6){for(let y=21;y<=26;y++)setRaw(x,y,z,B.STONE);setRaw(x,27,z,B.PLANKS);}
+   if(rr>5&&rr<=6)for(let y=28;y<=32;y++)setRaw(x,y,z,y===30?B.GOLD_ORE:B.COBBLE);
+ }
+ for(let y=28;y<=32;y++)for(let x=39;x<=41;x++)setRaw(x,y,19,B.AIR);
+ for(let y=33;y<=37;y++)for(let x=37;x<=43;x++)for(let z=10;z<=16;z++){
+   const r=Math.hypot(x-40,z-13);
+   if(r<=(38-y)*.67+1.5)setRaw(x,y,z,y>=36?B.DIAMOND_ORE:B.GOLD_ORE);
+ }
+ for(let y=29;y<=35;y++)setRaw(40,y,13,B.OBSIDIAN);
+ setRaw(40,36,13,B.DIAMOND_ORE);
+ // Aurora Peaks: snowy-looking crystal spires and an elevated scenic platform.
+ for(let x=58;x<=70;x++)for(let z=6;z<=18;z++){
+   const r=Math.hypot(x-64,z-12);
+   if(r<6){const top=27+Math.floor((6-r)*.8);for(let y=22;y<=top;y++)setRaw(x,y,z,y===top?B.GOLD_ORE:B.STONE);}
+ }
+ for(const [ox,oz,h] of [[-5,-3,9],[5,-4,12],[-4,5,10],[5,4,14],[0,-6,7]]){
+   for(let y=29;y<29+h;y++){const w=Math.max(0,Math.floor((h-(y-29))/4));for(let dx=-w;dx<=w;dx++)for(let dz=-w;dz<=w;dz++)setRaw(64+ox+dx,y,12+oz+dz,y>29+h-4?B.DIAMOND_ORE:B.OBSIDIAN);}
+ }
+ // Whispering Woods: an ancient clearing and concentric flower altar.
+ for(let x=7;x<=19;x++)for(let z=29;z<=41;z++)if(Math.hypot(x-13,z-35)<5){
+  const y=prettyHeight(x,z);setRaw(x,y,z,B.GRASS);for(let yy=y+1;yy<=y+6;yy++)setRaw(x,yy,z,B.AIR);
+ }
+ for(let x=10;x<=16;x++)for(let z=32;z<=38;z++)if(Math.hypot(x-13,z-35)<3.3)setRaw(x,prettyHeight(x,z)+1,z,B.PLANKS);
+ for(let y=prettyHeight(13,35)+1;y<=prettyHeight(13,35)+6;y++)setRaw(13,y,35,y===prettyHeight(13,35)+6?B.DIAMOND_ORE:B.WOOD);
+ // Blossom Tower: elegant four-sided rose garden watchtower.
+ for(let x=63;x<=71;x++)for(let z=45;z<=53;z++){
+   for(let y=22;y<=25;y++)setRaw(x,y,z,B.COBBLE);
+   setRaw(x,26,z,B.PLANKS);
+   if(x===63||x===71||z===45||z===53){for(let y=27;y<=35;y++)setRaw(x,y,z,y%3===0?B.GOLD_ORE:B.COBBLE);}
+   setRaw(x,36,z,B.PLANKS);
+ }
+ for(let y=27;y<=30;y++)for(let x=66;x<=68;x++)setRaw(x,y,45,B.AIR);
+ for(let y=37;y<=45;y++)for(let x=65;x<=69;x++)for(let z=47;z<=51;z++){
+   if(x===65||x===69||z===47||z===51)setRaw(x,y,z,B.GOLD_ORE);
+ }
+ for(let x=65;x<=69;x++)for(let z=47;z<=51;z++)setRaw(x,46,z,B.DIAMOND_ORE);
  // Colourful forest at the edges; avoid landmark centres and the main walking routes.
  for(let x=5;x<75;x+=3)for(let z=5;z<75;z+=3){
-  if(hash2(x,z)<.45||Math.hypot(x-40,z-40)<19||Math.hypot(x-18,z-53)<14||Math.hypot(x-62,z-27)<11||Math.abs(x-40)<4)continue;
+  if(hash2(x,z)<.45||Math.hypot(x-40,z-40)<19||Math.hypot(x-18,z-53)<14||Math.hypot(x-62,z-27)<11||Math.hypot(x-64,z-12)<10||Math.hypot(x-40,z-13)<9||Math.hypot(x-13,z-35)<8||Math.hypot(x-67,z-49)<9||Math.abs(x-40)<4)continue;
   const y=prettyHeight(x,z)+1;
   if(y>41||getBlock(x,y-1,z)!==B.GRASS)continue;
   const tall=3+Math.floor(hash2(x+11,z+1)*3);
@@ -4329,6 +4406,35 @@ function buildPrettyScenery(){
   }
   const light=new THREE.PointLight(i%2?0xffa2eb:0x92dfff,1.4,11,2);light.position.set(x,h+4,z);prettyGroup.add(light);
  }
+ // The Aurora: three animated shimmering ribbons stretching above the peaks.
+ for(let band=0;band<4;band++){
+   const pts=[];
+   for(let k=0;k<=30;k++){
+     const t=k/30;
+     pts.push(new THREE.Vector3(49+t*27,43+Math.sin(t*8+band)*2.2+band*1.2,8+band*2.3+Math.cos(t*7)*2.4));
+   }
+   const curve=new THREE.CatmullRomCurve3(pts);
+   const colors=[0x6affe4,0xffa8e6,0x9eaeff,0xffebaa];
+   const ribbon=new THREE.Mesh(new THREE.TubeGeometry(curve,56,.18,4,false),new THREE.MeshBasicMaterial({color:colors[band],transparent:true,opacity:.76,depthWrite:false}));
+   prettyGroup.add(ribbon);
+   prettyMotion.push({mesh:ribbon,baseY:0,phase:band*1.6,speed:.18,noRotate:true,offset:true});
+ }
+ // Colourful floating blossom crowns turn the forest into a pastel canopy.
+ const blossomGeo=new THREE.SphereGeometry(1,8,6);
+ for(let i=0;i<85;i++){
+   const x=5+hash2(i+71,28)*69,z=5+hash2(i+49,63)*69;
+   if(Math.hypot(x-40,z-40)<17||Math.hypot(x-62,z-27)<10||Math.hypot(x-18,z-53)<11)continue;
+   const y=prettyHeight(Math.floor(x),Math.floor(z));
+   if(y<21)continue;
+   const m=addObj(blossomGeo,palette[i%5],x,y+4+hash2(i,78)*3,z,1.5+hash2(i,93));
+   m.scale.y*=.65;
+ }
+ // Tiny floating lanterns circle the new watchtower and observatory.
+ for(const [sx,sz,sy] of [[67,49,41],[40,13,40],[13,35,34]])for(let i=0;i<14;i++){
+   const a=i/14*Math.PI*2,r=4+(i%3);
+   const m=addObj(spark,palette[(i+sx)%5],sx+Math.cos(a)*r,sy+Math.sin(a*3)*1.5,sz+Math.sin(a)*r,.8);
+   prettyMotion.push({mesh:m,baseY:m.position.y,phase:i*.8,speed:.6+i*.02});
+ }
  // A floating ring of tiny celestial lights around the central castle.
  for(let i=0;i<28;i++){
   const a=i/28*Math.PI*2,r=14+(i%3)*.5;
@@ -4374,7 +4480,7 @@ function buildPrettyScenery(){
   const x=8+Math.floor(hash2(i+29,41)*64),z=8+Math.floor(hash2(i+35,77)*64),h=prettyHeight(x,z);
   if(h<21||h>40||Math.hypot(x-40,z-40)<8)continue;
   const m=addObj(new THREE.OctahedronGeometry(.5,0),mats.gold,x+.5,h+1.75,z+.5);
-  prettyCollectibles.push({mesh:m,x:x+.5,y:h+1.5,z:z+.5,claimed:false});
+  const crystalId='crystal_'+i;const already=!!prettyJournal.crystals[crystalId];m.visible=!already;prettyCollectibles.push({mesh:m,x:x+.5,y:h+1.5,z:z+.5,claimed:already,id:crystalId});
   prettyMotion.push({mesh:m,baseY:m.position.y,phase:i*1.85,speed:.8});
  }
  const skyLight=new THREE.PointLight(0xffb1fa,2.6,65,2);skyLight.position.set(40,44,40);prettyGroup.add(skyLight);
@@ -4389,14 +4495,29 @@ let prettyTick=0;
 function updatePrettyWorld(dt){
  if(worldMode!=='pretty'||!prettyGroup)return;
  prettyTick+=dt;
+ prettyDiscoveryCooldown-=dt;
+ if(prettyDiscoveryCooldown<=0){
+  prettyDiscoveryCooldown=1.5;
+  for(const site of PRETTY_SITES){
+   if(!prettyJournal.sites[site.name] && Math.hypot(player.pos.x-site.x,player.pos.z-site.z)<10){
+    prettyJournal.sites[site.name]=true;savePrettyJournal();earnCoins(50,'Discovered '+site.name);
+    showToast('🧭 NEW DISCOVERY: '+site.name+'! +50 DinoCoins',site.emoji);
+    const n=PRETTY_SITES.filter(p=>prettyJournal.sites[p.name]).length;
+    prettyReward('explorer','Paradise Explorer',PRETTY_SITES.length,n,400);
+    if(n===PRETTY_SITES.length&&Object.keys(prettyJournal.crystals).length>=10)prettyReward('legend','Paradise Legend',1,1,1000);
+   }
+  }
+ }
  for(const o of prettyMotion){
-  o.mesh.position.y=o.baseY+Math.sin(prettyTick*o.speed*2+o.phase)*.2;
-  o.mesh.rotation.y+=dt*(o.butterfly?3:1);
+  o.mesh.position.y=o.baseY+Math.sin(prettyTick*o.speed*2+o.phase)*(o.offset?.6:.2);
+  if(!o.noRotate)o.mesh.rotation.y+=dt*(o.butterfly?3:1);
   if(o.butterfly){o.mesh.position.x=o.baseX+Math.sin(prettyTick*o.speed+o.phase)*.8;o.mesh.position.z=o.baseZ+Math.cos(prettyTick*o.speed*.7+o.phase)*.8;}
  }
  for(const c of prettyCollectibles){
   if(c.claimed||player.dead||player.pos.distanceTo(new THREE.Vector3(c.x,c.y,c.z))>2.3)continue;
-  c.claimed=true;c.mesh.visible=false;earnCoins(35,'Crystal Paradise treasure');
+  c.claimed=true;c.mesh.visible=false;prettyJournal.crystals[c.id]=true;savePrettyJournal();earnCoins(35,'Crystal Paradise treasure');
+  const count=Object.keys(prettyJournal.crystals).length;prettyReward('collector','Crystal Collector',10,count,350);
+  if(PRETTY_SITES.every(site=>prettyJournal.sites[site.name])&&count>=10)prettyReward('legend','Paradise Legend',1,1,1000);
   showToast('✨ Found a star crystal! +35 DinoCoins','💎');
  }
 }
@@ -4462,7 +4583,7 @@ function setupWorld(mode){
     generatePrettyWorld();buildAllMeshes();buildPrettyScenery();
     player.pos.set(40.5,28,54.5);player.spawnPoint.copy(player.pos);
     document.getElementById('weaponQuest').style.display='none';
-    showToast('🌸 Welcome to CRYSTAL PARADISE! Discover 5 beautiful landmarks and collect floating crystals.','✨');
+    showToast('🌸 Welcome to CRYSTAL PARADISE! Discover nine landmarks, collect crystals and press K for quests.','✨');
   } else if(mode === 'city'){
     generateCityWorld();buildAllMeshes();
     player.pos.set(19,23,24);player.spawnPoint.copy(player.pos);
@@ -4649,6 +4770,7 @@ function adminCommand(raw){
  if(cmd==='city'){toggleAdmin(false);changeWorld('city');return;}
  if(cmd==='balance'||cmd==='coins'){showToast('🪙 Your balance: '+bank.coins+' DinoCoins','🪙');return;}
  if(cmd==='sell'){if(worldMode==='pvp'){showToast('Arena starter gear cannot be sold','❌');return;}const id=(a[1]||'').replace(/[ -]+/g,'_');const amount=Math.max(1,Math.min(64,Number.parseInt(a[2],10)||1));if(!SELL_PRICES[id]){showToast('Use /shop to see sellable resources','❌');return;}if(takeInventory(id,amount)){earnCoins(SELL_PRICES[id]*amount,'Sold '+amount+' '+id);}else showToast('Not enough '+id+' in inventory','❌');return;}
+ if(cmd==='journal'||cmd==='prettyquests'){toggleAdmin(false);togglePrettyJournal(true);return;}
  if(cmd==='revolution'){showToast('Survival: enchanted skies, floating islands, prettier forests, more flowers and upgraded loot!','🌍');return;}
  if(cmd==='difficulty'){const v=a[1];if(!['easy','normal','hard','apex'].includes(v)){showToast('Use /difficulty easy, normal, hard, or apex','❌');return;}arenaDifficulty=v;dinoArenaTimer=6;showToast('Dinosaur difficulty: '+v.toUpperCase()+'!','🦖');return;}
  if(cmd==='elytra'){elytraEquipped=a[1]==='off'?false:a[1]==='on'?true:!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'equipped! Jump off a ledge and press Space.':'unequipped.'),'🪽');return;}
@@ -4746,7 +4868,7 @@ function showCommandHelp(){
     overlay.style.cssText='position:fixed;inset:0;z-index:220;background:rgba(5,8,20,.92);display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:15px system-ui';
     const panel=document.createElement('div');panel.style.cssText='width:min(650px,95vw);max-height:85vh;overflow-y:auto;background:#152038;border:2px solid #8dd5ff;border-radius:15px;padding:20px';
     const title=document.createElement('h2');title.textContent='📖 DINOCRAFT COMMAND GUIDE';title.style.color='#ffdc78';panel.appendChild(title);
-    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/world pretty','Travel to the Crystal Paradise world'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
+    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/journal','Pretty Lands explorer quests'],['/world pretty','Travel to the Crystal Paradise world'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
     for(const [cmd,desc] of cmds){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #43516a;padding:9px 2px;flex-wrap:wrap';const code=document.createElement('code');code.textContent=cmd;code.style.color='#96efca';const label=document.createElement('span');label.textContent=desc;row.append(code,label);panel.appendChild(row);}
     const close=document.createElement('button');close.textContent='CLOSE (ESC)';close.style.cssText='margin-top:14px;background:#306da0;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer';close.onclick=()=>overlay.style.display='none';panel.appendChild(close);
     overlay.appendChild(panel);document.body.appendChild(overlay);
@@ -4815,7 +4937,9 @@ window.addEventListener('keydown', e => {
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
+  if(document.getElementById('prettyJournal')?.style.display==='flex'){if(k==='k'||k==='escape'){e.preventDefault();togglePrettyJournal(false);}return;}
   if(document.getElementById('quickMapOverlay').style.display==='flex'){if(k==='m'||k==='escape'){e.preventDefault();toggleQuickMap(false);}return;}
+  if(k==='k' && !e.repeat && worldMode==='pretty' && !adminOpen && !creativeOpen){e.preventDefault();togglePrettyJournal();return;}
   if(k==='m' && !e.repeat && !adminOpen && !creativeOpen && document.getElementById('cityMarket').style.display!=='flex' && document.getElementById('invOverlay').style.display!=='flex'){e.preventDefault();toggleQuickMap(true);return;}
   if(adminOpen){if(k==='escape')toggleAdmin(false);return;}
   if(creativeOpen){if(k==='escape'||k==='i'){e.preventDefault();toggleCreativePanel(false);}return;}
@@ -5010,7 +5134,7 @@ function animate(){
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   updateSky(dt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
-  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
+  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     updatePlayer(dt);
     updatePrettyWorld(dt);
     updateMobs(dt);
@@ -5028,13 +5152,13 @@ function animate(){
     updateBotTargetHUD();
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
   }
-  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
+  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
   updateParticles(dt);
   updatePopups(dt);
   if(pendingLevelRewards.length) deliverPendingRewards();
   updateAmbientAudio(lastNightF, dt);
 
-  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
+  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     if(mouseDown.left && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
     if(mouseDown.right){
       const slot = inventory[hotbar];
