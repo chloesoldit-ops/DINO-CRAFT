@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DinoCraft 2.0 — The Revolution Reforged</title>
+<title>DinoCraft 2.5 — Crystal Paradise</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -50,16 +50,16 @@ canvas{display:block;outline:none}
 .tst.reward{border-color:#ff44aa;border-left-color:#ff44aa;background:linear-gradient(135deg,rgba(60,20,50,0.95),rgba(40,15,35,0.95));box-shadow:0 4px 20px rgba(255,68,170,0.4)}
 @keyframes slideIn{from{transform:translateX(120px);opacity:0}to{transform:none;opacity:1}}
 #dmg{position:fixed;inset:0;background:radial-gradient(circle at center,transparent 25%,rgba(200,0,0,0.75));opacity:0;transition:opacity 0.3s;pointer-events:none}
-#worldSelect{position:fixed;inset:0;background:radial-gradient(ellipse at center,#1a2540 0%,#0a0d18 60%,#05070f 100%);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110;text-align:center;overflow:hidden}
+#worldSelect{position:fixed;inset:0;background:radial-gradient(ellipse at center,#1a2540 0%,#0a0d18 60%,#05070f 100%);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:110;text-align:center;overflow-y:auto;padding:28px 12px;box-sizing:border-box}
 #worldSelect h1{font-size:52px;letter-spacing:8px;background:linear-gradient(180deg,#fff,#8fd4ff);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;margin-bottom:8px;position:relative;z-index:2}
 #worldSelect .sub{font-size:14px;color:#a0c0e0;letter-spacing:3px;margin-bottom:44px;position:relative;z-index:2}
-.worldGrid{display:flex;gap:32px;position:relative;z-index:2;flex-wrap:wrap;justify-content:center;padding:0 20px}
-.worldCard{width:300px;background:linear-gradient(180deg,rgba(40,55,80,0.8),rgba(15,20,30,0.9));border:2px solid rgba(120,150,200,0.3);border-radius:16px;padding:32px 20px;cursor:pointer;transition:all 0.25s cubic-bezier(0.2,0.9,0.3,1.2);display:flex;flex-direction:column;align-items:center;gap:12px}
+.worldGrid{display:flex;gap:18px;max-width:1440px;position:relative;z-index:2;flex-wrap:wrap;justify-content:center;padding:0 20px}
+.worldCard{width:min(260px,84vw);min-height:210px;background:linear-gradient(180deg,rgba(40,55,80,0.8),rgba(15,20,30,0.9));border:2px solid rgba(120,150,200,0.3);border-radius:16px;padding:22px 14px;cursor:pointer;transition:all 0.25s cubic-bezier(0.2,0.9,0.3,1.2);display:flex;flex-direction:column;align-items:center;gap:12px}
 .worldCard:hover{transform:translateY(-8px) scale(1.03);border-color:#ffd966;box-shadow:0 20px 40px rgba(255,220,120,0.25),0 0 40px rgba(255,220,120,0.15)}
 .worldCard .wcIcon{font-size:72px;filter:drop-shadow(0 0 20px rgba(255,220,120,0.4))}
 .worldCard .wcName{font-size:24px;font-weight:900;letter-spacing:3px;color:#ffdc78;text-shadow:0 0 20px rgba(255,220,120,0.5)}
 .worldCard .wcDesc{font-size:12px;color:#a0c0e0;line-height:1.6;text-align:center}
-.worldCard.pvp .wcIcon{filter:drop-shadow(0 0 20px rgba(255,80,80,0.5))}
+.worldCard.pretty{border-color:#e4aaff;background:linear-gradient(170deg,rgba(112,66,137,.8),rgba(17,53,75,.9))}.worldCard.pretty .wcName{color:#ffc8f6;text-shadow:0 0 20px #f28eff}.worldCard.pretty:hover{border-color:#ffb9ef;box-shadow:0 15px 45px #c260fa66}.worldCard.pvp .wcIcon{filter:drop-shadow(0 0 20px rgba(255,80,80,0.5))}
 .worldCard.pvp .wcName{color:#ff6666;text-shadow:0 0 20px rgba(255,60,60,0.5)}
 #killfeed{position:fixed;right:14px;top:120px;display:flex;flex-direction:column;gap:6px;z-index:20;font-size:13px;pointer-events:none;max-width:340px}
 .kfEntry{background:linear-gradient(90deg,rgba(20,25,40,0.95),rgba(30,35,50,0.85));padding:8px 14px;border-radius:8px;border-left:4px solid #666;display:flex;gap:8px;align-items:center;animation:slideInKf 0.35s cubic-bezier(0.2,0.9,0.3,1.2);box-shadow:0 4px 12px rgba(0,0,0,0.6);font-weight:600}
@@ -210,6 +210,7 @@ canvas{display:block;outline:none}
     <div class="worldCard survival" data-mode="survival"><div class="wcIcon">🌲</div><div class="wcName">SURVIVAL</div><div class="wcDesc">REVOLUTION REFORGED: ancient ruins, camps, towers, caves, rare loot, dinosaurs and building.</div></div>
     <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Battle for coins and unlock epic weapons!</div></div>
     <div class="worldCard" data-mode="city"><div class="wcIcon">🏙️</div><div class="wcName">DINO CITY</div><div class="wcDesc">Three cities, missions, shops and fast travel. Sell Survival loot, spend Arena winnings and grow your fortune! Press T.</div></div>
+    <div class="worldCard pretty" data-mode="pretty"><div class="wcIcon">🌸</div><div class="wcName">PRETTY LANDS</div><div class="wcDesc">✨ Crystal Paradise: rainbow gardens, waterfalls, glowing trees, a magical palace and hidden treasures. Peaceful exploration!</div></div>
   </div>
 </div>
 
@@ -1129,7 +1130,7 @@ function buildDecorations(){
     m.material.dispose();
   }
   decorMeshes.length = 0;
-  if(worldMode === 'pvp') return;
+  if(worldMode === 'pvp'||worldMode==='pretty') return;
   for(const colorStr in decor.flowers){
     const color = parseInt(colorStr);
     const positions = decor.flowers[colorStr];
@@ -1415,8 +1416,8 @@ function updateSky(dt){
   sunMesh.position.set(sx, sy, sz); sunGlow.position.set(sx, sy, sz); sunMesh.lookAt(player.pos);
   const mx = player.pos.x - sunX * 1.3, my = player.pos.y - sunY * 1.3, mz = player.pos.z - 40;
   moonMesh.position.set(mx, my, mz); moonGlow.position.set(mx, my, mz); moonMesh.lookAt(player.pos);
-  const dayF = Math.max(0, Math.sin(angle));
-  const nightF = Math.max(0, -Math.sin(angle));
+  const dayF = worldMode==='pretty'?Math.max(.72,Math.sin(angle)):Math.max(0, Math.sin(angle));
+  const nightF = worldMode==='pretty'?0:Math.max(0, -Math.sin(angle));
   lastNightF = nightF;
   const skyTopDay = new THREE.Color(0x3a86d6), skyBotDay = new THREE.Color(0xb8ddf8);
   const skyTopNight = new THREE.Color(0x1a2444), skyBotNight = new THREE.Color(0x2e3a5a);
@@ -1440,18 +1441,19 @@ function updateSky(dt){
       botC = skyBotNight.clone().lerp(dawnBot, blend);
     }
   }
-  if(rainIntensity > 0){
+  if(worldMode==='pretty'){topC=new THREE.Color(0x6575db);botC=new THREE.Color(0xe0bff8);}
+  if(rainIntensity > 0 && worldMode!=='pretty'){
     const gray = new THREE.Color(isBloodMoon ? 0x3a1010 : 0x556678);
     topC.lerp(gray, rainIntensity * 0.7); botC.lerp(gray, rainIntensity * 0.7);
   }
   skyUniforms.topColor.value.copy(topC);
   skyUniforms.bottomColor.value.copy(botC);
-  scene.fog.color.copy(botC);
-  const fogNear = 35 + dayF * 45, fogFar = 130 + dayF * 100;
+  scene.fog.color.copy(worldMode==='pretty'?new THREE.Color(0xc7c2ff):botC);
+  const fogNear = worldMode==='pretty'?110:35 + dayF * 45, fogFar = worldMode==='pretty'?340:130 + dayF * 100;
   const factor = (1 - rainIntensity * 0.35);
   scene.fog.near += (fogNear * factor - scene.fog.near) * 0.06;
   scene.fog.far += (fogFar * factor - scene.fog.far) * 0.06;
-  sun.intensity = dayF * 1.1 + 0.08;
+  sun.intensity = worldMode==='pretty'?1.45:dayF * 1.1 + 0.08;
   sun.color.setHex(isBloodMoon ? 0xff8866 : (rainIntensity > 0.3 ? 0xccddee : 0xfff2cc));
   moonlight.intensity = nightF * 0.65 + 0.05;
   moonlight.color.setHex(isBloodMoon ? 0xff5555 : 0xb8c8ff);
@@ -4108,7 +4110,7 @@ function marketItemButton(text,action){const b=document.createElement('button');
 function takeInventory(id,count){let rem=count;for(const slot of inventory){if(slot&&slot.id===id)rem-=slot.count;}if(rem>0)return false;rem=count;for(let i=0;i<inventory.length&&rem>0;i++){const slot=inventory[i];if(slot&&slot.id===id){const n=Math.min(rem,slot.count);slot.count-=n;rem-=n;if(slot.count<=0)inventory[i]=null;}}lastHotbar=-1;updateHotbarUI();return true;}
 function toggleMarket(force){const overlay=document.getElementById('cityMarket');const open=force===undefined?overlay.style.display!=='flex':force;overlay.style.display=open?'flex':'none';keys={};mouseDown.left=mouseDown.right=false;if(open){if(document.pointerLockElement)document.exitPointerLock();renderMarket();}else renderer.domElement.focus();}
 function renderMarket(){
- document.getElementById('marketBalance').textContent='🪙 Wallet: '+bank.coins.toLocaleString()+' DinoCoins  |  Mode: '+(worldMode==='pvp'?'Arena':worldMode==='city'?'DinoCity':'Survival');
+ document.getElementById('marketBalance').textContent='🪙 Wallet: '+bank.coins.toLocaleString()+' DinoCoins  |  Mode: '+(worldMode==='pvp'?'Arena':worldMode==='city'?'DinoCity':worldMode==='pretty'?'Pretty Lands':'Survival');
  const questBox=document.getElementById('marketQuests');questBox.replaceChildren();
  for(const m of REV_MISSIONS){const progress=Math.min(m.target,Math.floor(Number(bank.missions[m.key])||0));const claimed=!!bank.claimed[m.id];
  questBox.appendChild(marketItemButton(m.name+' · '+progress+'/'+m.target+' · 🪙'+m.reward+(claimed?' ✓ CLAIMED':progress>=m.target?' ✅ CLAIM REWARD':' · '+m.detail),()=>{
@@ -4120,7 +4122,7 @@ function renderMarket(){
  if(worldMode!=='city'){showToast('Enter DinoCity first (type /world city)','🚕');return;}
  player.pos.set(city.x,23,city.z+5);player.vel.set(0,0,0);player.spawnPoint.copy(player.pos);toggleMarket(false);showToast('Welcome to '+city.name+'!','🚕');
  }));}
- for(const [name,mode] of [['🌲 Go to Survival','survival'],['⚔️ Enter Arena','pvp'],['🏙️ Enter DinoCity','city']])travelBox.appendChild(marketItemButton(name,()=>{toggleMarket(false);changeWorld(mode);}));
+ for(const [name,mode] of [['🌲 Go to Survival','survival'],['⚔️ Enter Arena','pvp'],['🏙️ Enter DinoCity','city'],['🌸 Visit Pretty Lands','pretty']])travelBox.appendChild(marketItemButton(name,()=>{toggleMarket(false);changeWorld(mode);}));
  const sell=document.getElementById('marketSell');sell.replaceChildren();
  if(worldMode==='pvp'){sell.textContent='Arena starter gear cannot be sold. Earn coins by winning battles.';}
  else {let has=false;for(const [id,price] of Object.entries(SELL_PRICES)){const total=inventory.reduce((n,x)=>n+(x&&x.id===id?x.count:0),0);if(!total)continue;has=true;for(const count of [1,Math.min(64,total)]){
@@ -4138,17 +4140,24 @@ function toggleQuickMap(force){
  keys={};mouseDown.left=mouseDown.right=false;
  if(open){
   if(document.pointerLockElement)document.exitPointerLock();
-  document.getElementById('quickMapCurrent').textContent='Current map: '+(worldMode==='pvp'?'PvP Arena':worldMode==='city'?'DinoCity':'Survival');
+  document.getElementById('quickMapCurrent').textContent='Current map: '+(worldMode==='pvp'?'PvP Arena':worldMode==='city'?'DinoCity':worldMode==='pretty'?'Pretty Lands':'Survival');
   const choices=document.getElementById('quickMapChoices');choices.replaceChildren();
   for(const [title,mode,desc] of [
    ['🌲 SURVIVAL','survival','Mine, build, explore ruins and hunt dinosaurs'],
    ['⚔️ PVP ARENA','pvp','Battle dinosaurs and earn DinoCoins'],
-   ['🏙️ DINO CITY','city','Visit shops, missions and the three city districts']]){
+   ['🏙️ DINO CITY','city','Visit shops, missions and the three city districts'],
+   ['🌸 PRETTY LANDS','pretty','Explore Crystal Paradise, magical gardens and hidden crystals']]){
    const b=document.createElement('button');b.type='button';
    b.style.cssText='text-align:left;background:#23425a;color:white;border:2px solid '+(worldMode===mode?'#e6c969':'#57849c')+';border-radius:12px;padding:17px;cursor:pointer;font:14px system-ui';
    b.innerHTML='<strong style="font-size:17px">'+title+'</strong><span style="display:block;color:#b9d5e8;margin-top:7px;font-size:12px">'+desc+'</span>';
    b.onclick=()=>{toggleQuickMap(false);if(mode!==worldMode)changeWorld(mode);else showToast('Already in this world!','🗺️');};
    choices.appendChild(b);
+  }
+  const prettyLabel=document.createElement('p');prettyLabel.style.cssText='grid-column:1/-1;color:#ffbfe6;margin-top:6px';prettyLabel.textContent='✨ PRETTY LANDS — discover the landmarks:';choices.appendChild(prettyLabel);
+  for(const site of PRETTY_SITES){
+    const b=document.createElement('button');b.type='button';b.textContent=site.emoji+' '+site.name;
+    b.style.cssText='background:#54366e;color:#fff;border:1px solid #dca8f9;border-radius:9px;padding:12px;cursor:pointer';
+    b.onclick=()=>{toggleQuickMap(false);prettyTravel(site.name);};choices.appendChild(b);
   }
   const cityLabel=document.createElement('p');cityLabel.style.cssText='grid-column:1/-1;color:#ffda8a;margin-top:4px';cityLabel.textContent='🚕 CITY DISTRICTS — travel straight to a city:';choices.appendChild(cityLabel);
   for(let i=0;i<CITY_PLACES.length;i++){
@@ -4167,6 +4176,237 @@ function toggleQuickMap(force){
 document.getElementById('quickMapButton').onclick=()=>{if(worldReady)toggleQuickMap(true);else showToast('Start a world first!','🗺️');};
 document.getElementById('quickMapClose').onclick=()=>toggleQuickMap(false);
 
+
+/* ===== CRYSTAL PARADISE: independent fourth world ===== */
+const PRETTY_SITES=[
+ {name:'Crystal Palace',x:40,z:49,emoji:'🏰'},
+ {name:'Moonflower Lake',x:18,z:53,emoji:'🪷'},
+ {name:'Rainbow Falls',x:62,z:27,emoji:'🌈'},
+ {name:'Fairy Grove',x:19,z:19,emoji:'🧚'},
+ {name:'Starfall Gardens',x:59,z:61,emoji:'🌸'}
+];
+let prettyGroup=null, prettyMotion=[], prettyCollectibles=[];
+function clearPrettyWorld(){
+ if(prettyGroup){scene.remove(prettyGroup);prettyGroup.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){const mm=Array.isArray(o.material)?o.material:[o.material];mm.forEach(m=>m.dispose());}});prettyGroup=null;}
+ prettyMotion.length=0;prettyCollectibles.length=0;
+}
+function prettyHeight(x,z){
+ const lake=Math.hypot(x-18,z-53);
+ const falls=Math.hypot(x-62,z-27);
+ const palace=Math.hypot(x-40,z-40);
+ let h=22+Math.floor(3*Math.sin(x*.13)*Math.cos(z*.11)+sn(x+42,z-30,13)*5);
+ if(lake<13)h=Math.min(h,17+Math.max(0,Math.floor((lake-6)*.5)));
+ if(falls<10)h=23+Math.floor(3*Math.sin((x-62)*.3));
+ if(palace<13)h=24;
+ if(x<8||x>71||z<8||z>71)h+=Math.floor(6+5*sn(x+70,z-25,15));
+ return Math.max(15,Math.min(38,h));
+}
+function generatePrettyWorld(){
+ world.fill(B.AIR);
+ // Clean base layer and smooth, walkable terraced hills around the palace.
+ for(let x=0;x<WORLD_SIZE;x++)for(let z=0;z<WORLD_SIZE;z++){
+   const h=prettyHeight(x,z);
+   for(let y=0;y<=h;y++)setRaw(x,y,z,y===0?B.BEDROCK:y===h?(h<=19?B.SAND:B.GRASS):y>=h-3?B.DIRT:B.STONE);
+   if(h<20)for(let y=h+1;y<=20;y++)setRaw(x,y,z,B.WATER);
+ }
+ // A dazzling palace, built with block architecture that has working collision.
+ function palace(){
+  const cx=40,cz=40,f=25;
+  for(let x=30;x<=50;x++)for(let z=30;z<=50;z++)setRaw(x,24,z,B.COBBLE);
+  for(let x=34;x<=46;x++)for(let z=34;z<=46;z++){
+   setRaw(x,f,z,B.PLANKS);
+   for(let y=f+1;y<=f+11;y++){
+    const edge=x===34||x===46||z===34||z===46;
+    if(edge)setRaw(x,y,z,(y%5===0?B.GOLD_ORE:B.STONE));
+   }
+   setRaw(x,f+12,z,B.GOLD_ORE);
+  }
+  // Main grand entry faces the player's arrival plaza.
+  for(let y=f+1;y<=f+5;y++)for(let x=39;x<=41;x++)setRaw(x,y,46,B.AIR);
+  // Inhabitable central atrium.
+  for(let x=35;x<=45;x++)for(let z=35;z<=45;z++)for(let y=f+1;y<=f+10;y++)setRaw(x,y,z,B.AIR);
+  for(const [px,pz] of [[34,34],[34,46],[46,34],[46,46]]){
+    for(let x=px-2;x<=px+2;x++)for(let z=pz-2;z<=pz+2;z++)for(let y=f+1;y<=f+14;y++){
+      const wall=x===px-2||x===px+2||z===pz-2||z===pz+2;
+      if(wall||y===f+14)setRaw(x,y,z,y>=f+12?B.GOLD_ORE:B.COBBLE);
+    }
+    for(let y=f+15;y<=f+18;y++)setRaw(px,y,pz,B.DIAMOND_ORE);
+  }
+  // Skylit central tower and exposed golden crown.
+  for(let y=f+13;y<=f+18;y++)for(let x=38;x<=42;x++)for(let z=38;z<=42;z++){
+    if(x===38||x===42||z===38||z===42)setRaw(x,y,z,B.GOLD_ORE);
+  }
+  setRaw(40,f+20,40,B.DIAMOND_ORE);
+  // Wide flower-garden walking path.
+  for(let z=47;z<=75;z++)for(let x=39;x<=41;x++){
+    for(let y=21;y<=24;y++)setRaw(x,y,z,z<55?B.PLANKS:B.COBBLE);
+    for(let y=25;y<=34;y++)setRaw(x,y,z,B.AIR);
+  }
+ }
+ palace();
+ // Moonflower Lake boardwalk and pavilion.
+ for(let z=42;z<=62;z++)for(let x=17;x<=19;x++){
+   for(let y=18;y<=21;y++)setRaw(x,y,z,B.PLANKS);
+   for(let y=22;y<=28;y++)setRaw(x,y,z,B.AIR);
+ }
+ for(let x=13;x<=23;x++)for(let z=50;z<=56;z++)setRaw(x,21,z,B.PLANKS);
+ for(let y=22;y<=26;y++)for(let x=13;x<=23;x++)for(let z=50;z<=56;z++){
+   if(x===13||x===23||z===50||z===56)if((x+z)%3===0)setRaw(x,y,z,B.WOOD);
+ }
+ for(let x=12;x<=24;x++)for(let z=49;z<=57;z++)if(x===12||x===24||z===49||z===57)setRaw(x,27,z,B.GOLD_ORE);
+ // Rainbow Falls: a stepped cascade down the violet crystal cliffs.
+ for(let x=58;x<=67;x++)for(let z=23;z<=30;z++){
+   const d=Math.abs(x-62)+Math.abs(z-27);
+   const top=31+Math.max(0,6-d);
+   for(let y=24;y<=top;y++)setRaw(x,y,z,(y>top-2?B.OBSIDIAN:B.STONE));
+ }
+ for(let y=21;y<=36;y++)for(let z=26;z<=28;z++)setRaw(62,y,z,B.WATER);
+ for(let x=57;x<=68;x++)for(let z=29;z<=37;z++)if(Math.hypot(x-62,z-31)<6){setRaw(x,21,z,B.WATER);}
+ // Small walkable fairy bridge over a stream.
+ for(let x=23;x<=38;x++)for(let z=50;z<=52;z++){
+   setRaw(x,23,z,B.PLANKS);
+   for(let y=24;y<=29;y++)setRaw(x,y,z,B.AIR);
+ }
+ // Colourful forest at the edges; avoid landmark centres and the main walking routes.
+ for(let x=5;x<75;x+=3)for(let z=5;z<75;z+=3){
+  if(hash2(x,z)<.45||Math.hypot(x-40,z-40)<19||Math.hypot(x-18,z-53)<14||Math.hypot(x-62,z-27)<11||Math.abs(x-40)<4)continue;
+  const y=prettyHeight(x,z)+1;
+  if(y>41||getBlock(x,y-1,z)!==B.GRASS)continue;
+  const tall=3+Math.floor(hash2(x+11,z+1)*3);
+  for(let j=0;j<tall;j++)setRaw(x,y+j,z,B.WOOD);
+  for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=-1;dy<=2;dy++){
+   if(dx*dx+dz*dz+dy*dy<=6){const yy=y+tall+dy;if(yy<WORLD_HEIGHT-2&&getBlock(x+dx,yy,z+dz)===B.AIR)setRaw(x+dx,yy,z+dz,B.LEAVES);}
+  }
+ }
+}
+function buildPrettyScenery(){
+ clearPrettyWorld();
+ prettyGroup=new THREE.Group();prettyGroup.name='Crystal Paradise scenery';scene.add(prettyGroup);
+ const mats={
+  rose:new THREE.MeshLambertMaterial({color:0xff91dc,emissive:0x9b2264,emissiveIntensity:.28}),
+  lilac:new THREE.MeshLambertMaterial({color:0xc4a0ff,emissive:0x6c3fd3,emissiveIntensity:.35}),
+  aqua:new THREE.MeshLambertMaterial({color:0x80ffe3,emissive:0x17b6b9,emissiveIntensity:.35}),
+  gold:new THREE.MeshLambertMaterial({color:0xffd77b,emissive:0xe7a73a,emissiveIntensity:.36}),
+  white:new THREE.MeshLambertMaterial({color:0xfff0ff,emissive:0xffcafa,emissiveIntensity:.2}),
+  stem:new THREE.MeshLambertMaterial({color:0x348e58}),
+  sparkle:new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.86,depthWrite:false}),
+  crystal:new THREE.MeshPhongMaterial({color:0xb19dff,emissive:0x8158ff,emissiveIntensity:.55,shininess:115,specular:0xffffff,transparent:true,opacity:.84,flatShading:true,side:THREE.DoubleSide})
+ };
+ const palette=[mats.rose,mats.lilac,mats.aqua,mats.gold,mats.white];
+ function addObj(geo,mat,x,y,z,scale=1){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.setScalar(scale);prettyGroup.add(m);return m;}
+ const petal=new THREE.SphereGeometry(.2,6,4),stem=new THREE.CylinderGeometry(.035,.04,.48,4);
+ const crown=new THREE.IcosahedronGeometry(1,0),spark=new THREE.OctahedronGeometry(.17,0);
+ // Instanced flowers are GPU-friendly even with hundreds of blossoms.
+ const groups=Array.from({length:palette.length},()=>[]);
+ for(let x=3;x<77;x++)for(let z=3;z<77;z++){
+  const h=prettyHeight(x,z);const r=hash2(x*3+13,z*5+7);
+  if(h<21||r>.28||Math.hypot(x-40,z-40)<17||Math.hypot(x-62,z-27)<9||Math.abs(x-40)<3)continue;
+  if(getBlock(x,h,z)!==B.GRASS||getBlock(x,h+1,z)!==B.AIR)continue;
+  const k=Math.floor(hash2(x+43,z+67)*5);
+  groups[k].push([x+.25+hash2(x+15,z)*.5,h+1,z+.25+hash2(x,z+25)*.5]);
+ }
+ const dummy=new THREE.Object3D();
+ for(let k=0;k<groups.length;k++){
+  const points=groups[k];if(!points.length)continue;
+  const petals=new THREE.InstancedMesh(petal,palette[k],points.length);
+  const stems=new THREE.InstancedMesh(stem,mats.stem,points.length);
+  for(let i=0;i<points.length;i++){
+   const [x,y,z]=points[i],height=.7+hash2(x,z)*.45;
+   dummy.position.set(x,y+.17,z);dummy.scale.set(.65,height, .65);dummy.rotation.set(0,0,0);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);
+   dummy.position.set(x,y+.45,z);dummy.scale.set(1.3,height*.8,1.3);dummy.updateMatrix();petals.setMatrixAt(i,dummy.matrix);
+  }
+  petals.instanceMatrix.needsUpdate=stems.instanceMatrix.needsUpdate=true;
+  prettyGroup.add(petals,stems);
+ }
+ // Tall pastel crystal clusters at landmark entrances.
+ const crystalPositions=[[29,29],[51,29],[29,51],[51,51],[18,17],[62,61],[54,18],[68,41],[12,65],[21,37]];
+ for(let i=0;i<crystalPositions.length;i++){
+  const [x,z]=crystalPositions[i],h=prettyHeight(x,z);
+  for(let j=0;j<5;j++){
+   const dx=(hash2(i,j)-.5)*3,dz=(hash2(j,i+22)-.5)*3;
+   const m=addObj(new THREE.ConeGeometry(.65,3+hash2(j,i)*3,5),palette[(i+j)%palette.length],x+dx,h+2.2,z+dz);
+   m.rotation.z=(hash2(i+8,j)-.5)*.35;
+  }
+  const light=new THREE.PointLight(i%2?0xffa2eb:0x92dfff,1.4,11,2);light.position.set(x,h+4,z);prettyGroup.add(light);
+ }
+ // A floating ring of tiny celestial lights around the central castle.
+ for(let i=0;i<28;i++){
+  const a=i/28*Math.PI*2,r=14+(i%3)*.5;
+  const m=addObj(spark,palette[i%5],40+Math.cos(a)*r,35+Math.sin(a*4)*2.2,40+Math.sin(a)*r,.7+i%3*.15);
+  prettyMotion.push({mesh:m,baseY:m.position.y,phase:a*4,speed:.7+(i%5)*.11});
+ }
+ // Butterflies flutter over flower beds.
+ for(let i=0;i<36;i++){
+  const x=8+hash2(i+2,77)*64,z=8+hash2(i+18,32)*64;
+  if(Math.hypot(x-40,z-40)<10)continue;
+  const h=prettyHeight(Math.floor(x),Math.floor(z));
+  const m=addObj(new THREE.TetrahedronGeometry(.22,0),palette[i%5],x,h+2,z);
+  prettyMotion.push({mesh:m,baseY:m.position.y,phase:i*1.7,speed:1+(i%4)*.2,butterfly:true,baseX:x,baseZ:z});
+ }
+ // A real curved six-colour rainbow above the waterfalls.
+ const rainbowColours=[0xff5577,0xff9b50,0xffe477,0x88ec91,0x75dfff,0xb59cff];
+ for(let band=0;band<rainbowColours.length;band++){
+   const arc=[];for(let k=0;k<=32;k++){const a=Math.PI-k/32*Math.PI;arc.push(new THREE.Vector3(62+Math.cos(a)*(11+band*.52),31+Math.sin(a)*(11+band*.52),24));}
+   const curve=new THREE.CatmullRomCurve3(arc);
+   const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,32,.28,5,false),new THREE.MeshBasicMaterial({color:rainbowColours[band],transparent:true,opacity:.83}));
+   prettyGroup.add(mesh);
+ }
+ // Lily pads and tiny blossoms on Moonflower Lake.
+ const lilyMat=new THREE.MeshLambertMaterial({color:0x5fcd96,side:THREE.DoubleSide});
+ const lilyPetal=new THREE.MeshLambertMaterial({color:0xffb5ea,emissive:0xab4e8a,emissiveIntensity:.35});
+ for(let i=0;i<34;i++){
+   const x=18+(hash2(i+8,91)-.5)*20,z=53+(hash2(i+17,19)-.5)*20;
+   if(Math.hypot(x-18,z-53)>10||Math.abs(x-18)<2)continue;
+   const ground=prettyHeight(Math.floor(x),Math.floor(z));
+   if(ground>=20)continue;
+   const pad=addObj(new THREE.CylinderGeometry(.55,.55,.08,7),lilyMat,x,20.1,z);
+   pad.rotation.y=hash2(i,48)*Math.PI*2;
+   if(i%3===0)addObj(new THREE.IcosahedronGeometry(.23,0),lilyPetal,x,20.4,z);
+ }
+ // Waterfall mist rising from the pool.
+ for(let i=0;i<42;i++){
+   const x=62+(hash2(i,55)-.5)*9,z=31+(hash2(38,i)-.5)*7;
+   const puff=addObj(spark,mats.sparkle,x,22+hash2(i+5,18)*3,z,.6);
+   prettyMotion.push({mesh:puff,baseY:puff.position.y,phase:i*.63,speed:1.1+(i%5)*.2});
+ }
+ // Glowing collectible crystals: each can be collected once per visit.
+ for(let i=0;i<18;i++){
+  const x=8+Math.floor(hash2(i+29,41)*64),z=8+Math.floor(hash2(i+35,77)*64),h=prettyHeight(x,z);
+  if(h<21||h>40||Math.hypot(x-40,z-40)<8)continue;
+  const m=addObj(new THREE.OctahedronGeometry(.5,0),mats.gold,x+.5,h+1.75,z+.5);
+  prettyCollectibles.push({mesh:m,x:x+.5,y:h+1.5,z:z+.5,claimed:false});
+  prettyMotion.push({mesh:m,baseY:m.position.y,phase:i*1.85,speed:.8});
+ }
+ const skyLight=new THREE.PointLight(0xffb1fa,2.6,65,2);skyLight.position.set(40,44,40);prettyGroup.add(skyLight);
+ // Guiding lanterns along the main promenade.
+ for(let z=53;z<=71;z+=6)for(const x of [36,44]){
+  const h=prettyHeight(x,z);
+  addObj(new THREE.CylinderGeometry(.11,.14,3,6),mats.gold,x,h+1.5,z);
+  addObj(new THREE.SphereGeometry(.44,8,6),mats.aqua,x,h+3.2,z);
+ }
+}
+let prettyTick=0;
+function updatePrettyWorld(dt){
+ if(worldMode!=='pretty'||!prettyGroup)return;
+ prettyTick+=dt;
+ for(const o of prettyMotion){
+  o.mesh.position.y=o.baseY+Math.sin(prettyTick*o.speed*2+o.phase)*.2;
+  o.mesh.rotation.y+=dt*(o.butterfly?3:1);
+  if(o.butterfly){o.mesh.position.x=o.baseX+Math.sin(prettyTick*o.speed+o.phase)*.8;o.mesh.position.z=o.baseZ+Math.cos(prettyTick*o.speed*.7+o.phase)*.8;}
+ }
+ for(const c of prettyCollectibles){
+  if(c.claimed||player.dead||player.pos.distanceTo(new THREE.Vector3(c.x,c.y,c.z))>2.3)continue;
+  c.claimed=true;c.mesh.visible=false;earnCoins(35,'Crystal Paradise treasure');
+  showToast('✨ Found a star crystal! +35 DinoCoins','💎');
+ }
+}
+function prettyTravel(name){
+ const site=PRETTY_SITES.find(p=>p.name===name);if(!site)return;
+ if(worldMode!=='pretty')changeWorld('pretty');
+ const travel=()=>{const tx=site.x,tz=site.z+4;let y=prettyHeight(tx,tz)+3;for(let h=35;h>15;h--)if(BLOCKS[getBlock(tx,h,tz)]?.solid&&!BLOCKS[getBlock(tx,h,tz)]?.leaf){y=h+3;break;}player.pos.set(tx+.5,y,tz+.5);player.vel.set(0,0,0);player.spawnPoint.copy(player.pos);showToast(site.emoji+' '+site.name,'✨');};
+ if(worldMode==='pretty')travel();else setTimeout(()=>{if(worldMode==='pretty'&&worldReady)travel();},240);
+}
+
 /* ===== WORLD SETUP ===== */
 function setupWorld(mode){
   if(worldReady){if(worldMode==='pvp')savePvPProgress();else saveAdventure();}
@@ -4178,6 +4418,7 @@ function setupWorld(mode){
     if(!restored)resetInventory();
   }
   clearAllMeshes();
+  clearPrettyWorld();
   for(const m of mobs){ scene.remove(m.mesh); }
   mobs.length = 0;
   for(const b of fighterBots){ scene.remove(b.mesh); }
@@ -4217,7 +4458,12 @@ function setupWorld(mode){
 
   const pvpProgressLoaded=mode==='pvp' && loadPvPProgress();
 
-  if(mode === 'city'){
+  if(mode === 'pretty'){
+    generatePrettyWorld();buildAllMeshes();buildPrettyScenery();
+    player.pos.set(40.5,28,54.5);player.spawnPoint.copy(player.pos);
+    document.getElementById('weaponQuest').style.display='none';
+    showToast('🌸 Welcome to CRYSTAL PARADISE! Discover 5 beautiful landmarks and collect floating crystals.','✨');
+  } else if(mode === 'city'){
     generateCityWorld();buildAllMeshes();
     player.pos.set(19,23,24);player.spawnPoint.copy(player.pos);
     document.getElementById('weaponQuest').style.display='none';
@@ -4293,18 +4539,18 @@ function setupWorld(mode){
   updateCoins();
   updateHotbarUI();
   buildHeldItem();
-  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (mode === 'pvp' ? '⚔️ PvP' : mode === 'city' ? '🏙️ DinoCity' : '⚔️ Survival');
+  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (mode === 'pvp' ? '⚔️ PvP' : mode === 'city' ? '🏙️ DinoCity' : worldMode==='pretty' ? '🌸 Pretty Lands' : '⚔️ Survival');
 }
 
 function changeWorld(mode){
- if(!['pvp','city','survival'].includes(mode))return;
+ if(!['pvp','city','survival','pretty'].includes(mode))return;
  if(mode===worldMode){showToast('Already in '+mode+'!','🌍');return;}
  if(adminOpen)toggleAdmin(false);
  if(document.getElementById('cityMarket').style.display==='flex')toggleMarket(false);
  if(document.getElementById('quickMapOverlay').style.display==='flex')toggleQuickMap(false);
  const splash=document.getElementById('loading');splash.style.display='flex';
  if(document.pointerLockElement)document.exitPointerLock();
- setTimeout(()=>{try{setupWorld(mode);showToast('🌍 World changed to '+(mode==='pvp'?'PvP Arena':mode==='city'?'DinoCity':'Survival'),'🌍');}
+ setTimeout(()=>{try{setupWorld(mode);showToast('🌍 World changed to '+(mode==='pvp'?'PvP Arena':mode==='city'?'DinoCity':mode==='pretty'?'Pretty Lands':'Survival'),'🌍');}
  finally{splash.style.display='none';lastTime=performance.now()/1000;renderer.domElement.focus();}},40);
 }
 /* Mouse look must be requested from an actual user gesture. */
@@ -4395,8 +4641,8 @@ function adminCommand(raw){
  if(cmd==='help'){toggleAdmin(false);showCommandHelp();return;}
  if(cmd==='shop'||cmd==='market'||cmd==='missions'||cmd==='quests'){toggleAdmin(false);toggleMarket(true);return;}
  if(cmd==='world'||cmd==='travel'||cmd==='goto'){
- const dest={arena:'pvp',pvp:'pvp',city:'city',dinocity:'city',survival:'survival'}[a[1]];
- if(!dest){showToast('Try /world city, /world survival, /world arena','🌍');return;}
+ const dest={arena:'pvp',pvp:'pvp',city:'city',dinocity:'city',survival:'survival',pretty:'pretty',paradise:'pretty',beauty:'pretty'}[a[1]];
+ if(!dest){showToast('Try /world pretty, /world city, /world survival, /world arena','🌍');return;}
  toggleAdmin(false);changeWorld(dest);return;
  }
  if(cmd==='save'){if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();showToast('💾 Inventory, coins, quests and Survival world saved!','💾');return;}
@@ -4500,7 +4746,7 @@ function showCommandHelp(){
     overlay.style.cssText='position:fixed;inset:0;z-index:220;background:rgba(5,8,20,.92);display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:15px system-ui';
     const panel=document.createElement('div');panel.style.cssText='width:min(650px,95vw);max-height:85vh;overflow-y:auto;background:#152038;border:2px solid #8dd5ff;border-radius:15px;padding:20px';
     const title=document.createElement('h2');title.textContent='📖 DINOCRAFT COMMAND GUIDE';title.style.color='#ffdc78';panel.appendChild(title);
-    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
+    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/world pretty','Travel to the Crystal Paradise world'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
     for(const [cmd,desc] of cmds){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #43516a;padding:9px 2px;flex-wrap:wrap';const code=document.createElement('code');code.textContent=cmd;code.style.color='#96efca';const label=document.createElement('span');label.textContent=desc;row.append(code,label);panel.appendChild(row);}
     const close=document.createElement('button');close.textContent='CLOSE (ESC)';close.style.cssText='margin-top:14px;background:#306da0;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer';close.onclick=()=>overlay.style.display='none';panel.appendChild(close);
     overlay.appendChild(panel);document.body.appendChild(overlay);
@@ -4766,6 +5012,7 @@ function animate(){
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
   if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     updatePlayer(dt);
+    updatePrettyWorld(dt);
     updateMobs(dt);
     updateFighterBots(dt);
     updateDinoArena(dt);
