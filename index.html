@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DinoCraft 2.6 — Crystal Paradise</title>
+<title>DinoCraft 2.7 — Six Worlds</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -196,9 +196,9 @@ canvas{display:block;outline:none}
 <div id="respawnOverlay"><div class="big">YOU DIED</div><div class="sub" id="respawnBy">Killed by ???</div><div class="timer" id="respawnTimer">5</div></div>
 <div id="invOverlay">
   <div id="invPanel">
-    <h2>🔨 CRAFTING</h2>
-    <div class="sub">Click a recipe to craft · ESC to close</div>
-    <div id="matsDisplay"></div>
+    <h2>🎒 INVENTORY & ARMOUR</h2>
+    <div class="sub">Click a slot to equip armour. Buy supplies with DinoCoins at the shop (T).</div>
+    <div id="matsDisplay"></div><div id="armourSlots" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0"></div>
     <div class="invGrid" id="recipeGrid"></div>
     <button id="invClose">CLOSE</button>
   </div>
@@ -210,6 +210,8 @@ canvas{display:block;outline:none}
     <div class="worldCard survival" data-mode="survival"><div class="wcIcon">🌲</div><div class="wcName">SURVIVAL</div><div class="wcDesc">REVOLUTION REFORGED: ancient ruins, camps, towers, caves, rare loot, dinosaurs and building.</div></div>
     <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Battle for coins and unlock epic weapons!</div></div>
     <div class="worldCard" data-mode="city"><div class="wcIcon">🏙️</div><div class="wcName">DINO CITY</div><div class="wcDesc">Three cities, missions, shops and fast travel. Sell Survival loot, spend Arena winnings and grow your fortune! Press T.</div></div>
+    <div class="worldCard" data-mode="nether"><div class="wcIcon">🔥</div><div class="wcName">NETHER</div><div class="wcDesc">Hellish fortress, hostile dinosaurs, golden ore and portals!</div></div>
+    <div class="worldCard" data-mode="end"><div class="wcIcon">🌌</div><div class="wcName">THE END</div><div class="wcDesc">Ultimate Ender Dragon boss: destroy healing crystals to win!</div></div>
     <div class="worldCard pretty" data-mode="pretty"><div class="wcIcon">🌸</div><div class="wcName">PRETTY LANDS</div><div class="wcDesc">✨ Crystal Paradise: rainbow gardens, waterfalls, glowing trees, a magical palace and hidden treasures. Peaceful exploration!</div></div>
   </div>
 </div>
@@ -241,9 +243,9 @@ canvas{display:block;outline:none}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>THE REVOLUTION REFORGED 2.0 · THREE WORLDS</p>
+  <p>THE REVOLUTION REFORGED 2.0 · SIX WORLDS</p>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
-  <div class="sub">Three Worlds · Three Cities · Shared Quests & DinoCoins · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Creative Flight · Admin Commands · PvP</div>
+  <div class="sub">Six Worlds · Three Cities · Shared Quests & DinoCoins · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Creative Flight · Admin Commands · PvP</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
@@ -590,7 +592,24 @@ const ITEMS = {
   string:{n:'String',ic:'🕸️',type:'mat'},
   lapis:{n:'Lapis Lazuli',ic:'🔷',type:'mat'},
   enchanting_table:{n:'Enchanting Table',ic:'✨',type:'utility'},
-  emerald:{n:'Emerald',ic:'🟢',type:'mat'}
+  emerald:{n:'Emerald',ic:'🟢',type:'mat'},
+  totem_of_undying:{n:'Totem of Undying',ic:'🗿',type:'totem'},
+  ender_pearl:{n:'Ender Pearl',ic:'🟣',type:'throwable'},
+  splash_healing:{n:'Splash Healing Potion',ic:'💗',type:'potion'},
+  splash_strength:{n:'Splash Strength Potion',ic:'💜',type:'potion'},
+  leather_helmet:{n:'Leather Helmet',ic:'🪖',type:'armor',part:'helmet',armor:1},
+  leather_chestplate:{n:'Leather Chestplate',ic:'🧥',type:'armor',part:'chestplate',armor:2},
+  leather_leggings:{n:'Leather Leggings',ic:'👖',type:'armor',part:'leggings',armor:1},
+  leather_boots:{n:'Leather Boots',ic:'🥾',type:'armor',part:'boots',armor:1},
+  iron_helmet:{n:'Iron Helmet',ic:'🪖',type:'armor',part:'helmet',armor:2},
+  iron_chestplate:{n:'Iron Chestplate',ic:'🛡️',type:'armor',part:'chestplate',armor:5},
+  iron_leggings:{n:'Iron Leggings',ic:'👖',type:'armor',part:'leggings',armor:4},
+  iron_boots:{n:'Iron Boots',ic:'🥾',type:'armor',part:'boots',armor:2},
+  diamond_helmet:{n:'Diamond Helmet',ic:'💎',type:'armor',part:'helmet',armor:3},
+  diamond_chestplate:{n:'Diamond Chestplate',ic:'💎',type:'armor',part:'chestplate',armor:7},
+  diamond_leggings:{n:'Diamond Leggings',ic:'💎',type:'armor',part:'leggings',armor:5},
+  diamond_boots:{n:'Diamond Boots',ic:'💎',type:'armor',part:'boots',armor:3},
+  dragonfang_mace:{n:'Dragonfang Mace',ic:'🐉',type:'mace',tier:6,dmg:38,atkSpeed:0.85}
 };
 
 /* The economy is independent of each world. Coins and purchased items are stored locally. */
@@ -633,12 +652,20 @@ function loadSurvivalWorld(){
  if(j!==decoded.length)return null;world.set(decoded);return Array.isArray(d.position)&&d.position.length===3?d.position:null;
  }catch(e){return null;}
 }
-function saveAdventure(){if(worldMode==='pvp')return;try{localStorage.setItem(ADVENTURE_SAVE,JSON.stringify({items:inventory.slice(0,36),hotbar,version:3}));}catch(e){}saveSurvivalWorld();}
-function loadAdventure(){try{const saved=JSON.parse(localStorage.getItem(ADVENTURE_SAVE)||'null');const items=sanitizeInventory(saved?.items);if(!items)return false;inventory.length=36;for(let i=0;i<36;i++)inventory[i]=items[i];hotbar=Math.max(0,Math.min(8,Number(saved.hotbar)||0));return true;}catch(e){return false;}}
+function saveAdventure(){if(worldMode==='pvp')return;try{localStorage.setItem(ADVENTURE_SAVE,JSON.stringify({items:inventory.slice(0,36),hotbar,armour,version:3}));}catch(e){}saveSurvivalWorld();}
+function loadAdventure(){try{const saved=JSON.parse(localStorage.getItem(ADVENTURE_SAVE)||'null');const items=sanitizeInventory(saved?.items);if(!items)return false;inventory.length=36;for(let i=0;i<36;i++)inventory[i]=items[i];hotbar=Math.max(0,Math.min(8,Number(saved.hotbar)||0));for(const part of Object.keys(armour))armour[part]=(saved.armour&&ITEMS[saved.armour[part]]?.part===part)?saved.armour[part]:null;return true;}catch(e){return false;}}
 function resetInventory(){inventory.length=36;for(let i=0;i<36;i++)inventory[i]=null;hotbar=0;}
 
+const armour={helmet:null,chestplate:null,leggings:null,boots:null};
+let hardcore=false, hardcoreDead=false;try{hardcore=localStorage.getItem('dinocraft_hardcore_active')==='true';hardcoreDead=localStorage.getItem('dinocraft_hardcore_dead')==='true';}catch(e){}
+let summonSequence=0;
+const NO_STACK_TYPES=['potion','totem','armor','shield','mace','sword','axe','spear','dagger','hammer','pickaxe','bow'];
+function noStack(id){return !!(ITEMS[id]&&NO_STACK_TYPES.includes(ITEMS[id].type));}
+function totalArmour(){return Object.values(armour).reduce((n,id)=>n+(ITEMS[id]?.armor||0),0);}
+function useTotem(){const i=inventory.findIndex(x=>x&&x.id==='totem_of_undying');if(i<0)return false;inventory[i].count--;if(inventory[i].count<=0)inventory[i]=null;player.hp=Math.max(12,player.maxHp*.6);player.goldenHp=Math.max(player.goldenHp,8);player.invuln=5;player.vel.y=Math.max(player.vel.y,.18);spawnHitSparks(player.pos.x,player.pos.y+1,player.pos.z,0xffe870,40);showToast('🗿 TOTEM OF UNDYING SAVED YOU!','✨');updateHotbarUI();return true;}
 const SELL_PRICES={wood:3,stone:2,iron:12,gold:18,diamond:75,emerald:90,lapis:16,bone:3,string:3,wood_block:3,stone_block:2,cobble_block:2,planks_block:3,dirt_block:1,grass_block:2,sand_block:2,obsidian_block:25};
-const SHOP_ITEMS={healing_potion:45,golden_apple:85,enchanted_golden_apple:350,speed_potion:75,strength_potion:85,regeneration_potion:90,arrow:4,bow:110,shield:65,iron_sword:120,diamond_sword:400,diamond_spear:410,netherite_mace:950,elytra:900,firework_rocket:28,tnt_minecart:100,wind_charge:38,lapis:22,enchanting_table:240};
+const SHOP_ITEMS={totem_of_undying:550,ender_pearl:85,splash_healing:110,splash_strength:140,leather_helmet:40,leather_chestplate:70,leather_leggings:55,leather_boots:40,iron_helmet:120,iron_chestplate:210,iron_leggings:175,iron_boots:115,diamond_helmet:380,diamond_chestplate:750,diamond_leggings:600,diamond_boots:350,healing_potion:45,golden_apple:85,enchanted_golden_apple:350,speed_potion:75,strength_potion:85,regeneration_potion:90,arrow:4,bow:110,shield:65,iron_sword:120,diamond_sword:400,diamond_spear:410,netherite_mace:950,elytra:900,firework_rocket:28,tnt_minecart:100,wind_charge:38,lapis:22,enchanting_table:240};
+for(const [id,def] of Object.entries(ITEMS)){if(id==='dragonfang_mace'||id==='delete_wand'||id==='totem_of_undying')continue;if(SHOP_ITEMS[id]===undefined){SHOP_ITEMS[id]=def.type==='block'?16:def.type==='mat'?22:def.type==='armor'?200:def.type==='potion'?90:def.type==='mace'?650:def.type==='sword'?280:def.type==='equipment'?650:135;}}
 const inventory = [
   {id:'stone_sword',count:1},
   {id:'shield',count:1},
@@ -1416,7 +1443,7 @@ function updateSky(dt){
   sunMesh.position.set(sx, sy, sz); sunGlow.position.set(sx, sy, sz); sunMesh.lookAt(player.pos);
   const mx = player.pos.x - sunX * 1.3, my = player.pos.y - sunY * 1.3, mz = player.pos.z - 40;
   moonMesh.position.set(mx, my, mz); moonGlow.position.set(mx, my, mz); moonMesh.lookAt(player.pos);
-  const dayF = worldMode==='pretty'?Math.max(.72,Math.sin(angle)):Math.max(0, Math.sin(angle));
+  const dayF = worldMode==='end'?0:worldMode==='nether'?.2:worldMode==='pretty'?Math.max(.72,Math.sin(angle)):Math.max(0, Math.sin(angle));
   const nightF = worldMode==='pretty'?0:Math.max(0, -Math.sin(angle));
   lastNightF = nightF;
   const skyTopDay = new THREE.Color(0x3a86d6), skyBotDay = new THREE.Color(0xb8ddf8);
@@ -1442,6 +1469,8 @@ function updateSky(dt){
     }
   }
   if(worldMode==='pretty'){topC=new THREE.Color(0x6575db);botC=new THREE.Color(0xe0bff8);}
+  if(worldMode==='nether'){topC=new THREE.Color(0x50101a);botC=new THREE.Color(0xb32920);}
+  if(worldMode==='end'){topC=new THREE.Color(0x130b2e);botC=new THREE.Color(0x241547);}
   if(rainIntensity > 0 && worldMode!=='pretty'){
     const gray = new THREE.Color(isBloodMoon ? 0x3a1010 : 0x556678);
     topC.lerp(gray, rainIntensity * 0.7); botC.lerp(gray, rainIntensity * 0.7);
@@ -1753,7 +1782,7 @@ function spawnMob(type, x, y, z){
     hit: 0, dead: false, walkPhase: 0, retreatT: 0
   };
   // Revolution challenge: all hostile Survival dinosaurs and monsters are tougher.
-  if(worldMode==='survival' && def.hostile){
+   if((worldMode==='survival'||worldMode==='nether') && def.hostile){
     const bonus=['rex','triceratops','raptor'].includes(type)?1.55:1.22;
     mob.hp=Math.round(mob.hp*bonus);mob.maxHp=mob.hp;
     mob.def=Object.assign({},mob.def,{speed:mob.def.speed*1.13,dmg:mob.def.dmg*1.15});
@@ -1811,17 +1840,17 @@ function updateMobs(dt){
       m.vel.z = Math.sin(m.wanderDir) * m.def.speed * 0.35;
       if(Math.abs(m.vel.x) + Math.abs(m.vel.z) > 0.001) m.mesh.rotation.y = Math.atan2(m.vel.x, m.vel.z);
     }
-    m.vel.y -= GRAVITY;
+    if(m.def.flying){m.vel.y+=(Math.max(25,player.pos.y+8+Math.sin(performance.now()*.001)*3)-m.pos.y)*.002;m.vel.y=Math.max(-.12,Math.min(.12,m.vel.y));}else m.vel.y -= GRAVITY;
     if(m.vel.y < -0.7) m.vel.y = -0.7;
     const size = m.def.size;
     const nx = m.pos.x + m.vel.x;
-    if(!mobCollides(nx, m.pos.y, m.pos.z, size)) m.pos.x = nx;
+    if(m.def.flying||!mobCollides(nx, m.pos.y, m.pos.z, size)) m.pos.x = nx;
     else m.vel.x = 0;
     const nz = m.pos.z + m.vel.z;
-    if(!mobCollides(m.pos.x, m.pos.y, nz, size)) m.pos.z = nz;
+    if(m.def.flying||!mobCollides(m.pos.x, m.pos.y, nz, size)) m.pos.z = nz;
     else m.vel.z = 0;
     const ny = m.pos.y + m.vel.y;
-    if(!mobCollides(m.pos.x, ny, m.pos.z, size)) m.pos.y = ny;
+    if(m.def.flying||!mobCollides(m.pos.x, ny, m.pos.z, size)) m.pos.y = ny;
     else {
       if(m.vel.y < 0){ m.pos.y = Math.floor(ny) + 1.0001; m.onGround = true; }
       m.vel.y = 0;
@@ -1857,6 +1886,7 @@ function updateMobs(dt){
         player.hp=Math.min(player.maxHp,player.hp+(m.type==='rex'?12:4));
         checkWeaponUnlocks();
       }
+      if(worldMode==='end'&&m.type==='dragon'&&!dragonRewarded){dragonRewarded=true;earnCoins(5000,'Ender Dragon victory');if(!addItem(makeItem('dragonfang_mace'))){bank.vault.dragonfang_mace=(bank.vault.dragonfang_mace||0)+1;saveBank();}showToast('🏆 DRAGON DEFEATED! +5000 DinoCoins · DRAGONFANG MACE!','🐉');lastHotbar=-1;updateHotbarUI();saveAdventure();}
       m.dead = true;
       stats.kills++; score += m.def.boss ? 200 : 5;
       let dropId = null;
@@ -3278,18 +3308,20 @@ function playerHurt(amt, srcBot){
     player.goldenHp-=blocked;
     amt-=blocked;
   }
-  player.hp -= amt;
+  player.hp -= amt*(1-Math.min(.72,totalArmour()*.035));
   player.invuln = 0.5;
   player.shake = Math.min(20, 6 + amt * 1.5);
   const dmg = document.getElementById('dmg');
   dmg.style.opacity = '0.8';
   setTimeout(() => { dmg.style.opacity = '0'; }, 250);
   playSound('hurt');
-  if(player.hp <= 0){ player.hp = 0; playerDeath(srcBot); }
+  if(player.hp <= 0){if(!useTotem()){player.hp = 0; playerDeath(srcBot);}}
   updateHUD();
 }
 function playerDeath(srcBot){
   if(player.dead) return;
+  if(useTotem())return;
+  if(hardcore){hardcoreDead=true;player.dead=true;try{localStorage.setItem('dinocraft_hardcore_dead','true');}catch(e){}document.getElementById('respawnOverlay').style.display='flex';document.getElementById('respawnBy').textContent='HARDCORE: your run has ended';document.getElementById('respawnTimer').textContent='☠';return;}
   player.deaths++;
   player.killStreak = 0;
   if(worldMode === 'pvp'){
@@ -3378,7 +3410,7 @@ function tryMine(){
   if(oldType === B.BEDROCK) return;
   const info = BLOCKS[oldType];
   if(!info) return;
-  if(info.hp >= 9999 && !player.creative) return;
+  if(info.hp >= 9999 && !player.creative)return;
   const item = inventory[hotbar];
   let dmg = 0.4;
   if(player.creative) dmg = 999;
@@ -3392,7 +3424,7 @@ function tryMine(){
   }
   const key = bx+','+by+','+bz;
   const current = blockDamageMap.get(key) || 0;
-  const newDamage = current + dmg;
+  const newDamage = current + (worldMode==='end'&&oldType===B.GOLD_ORE&&dragonCrystals.some(c=>c.x===bx&&c.y===by&&c.z===bz)?10000:dmg);
   spawnHitSparks(bx+0.5, by+0.5, bz+0.5, getBlockColor(oldType), 3);
   playSound('mine');
   if(newDamage >= info.hp){
@@ -3409,6 +3441,7 @@ function tryMine(){
     else if(oldType === B.GRASS || oldType === B.DIRT || oldType === B.SAND) dropId = 'stone';
     else if(oldType === B.PLANKS || oldType === B.LEAVES) dropId = 'wood';
     if(dropId) spawnDroppedItem(dropId, bx+0.5, by+0.5, bz+0.5);
+    if(worldMode==='end'&&dragonCrystals.some(c=>c.x===bx&&c.y===by&&c.z===bz)){earnCoins(100,'End Crystal destroyed');showToast('💎 END CRYSTAL DESTROYED!','💥');}
     if(oldType === B.IRON_ORE) spawnXPOrb(bx+0.5, by+0.5, bz+0.5, 2);
     else if(oldType === B.GOLD_ORE) spawnXPOrb(bx+0.5, by+0.5, bz+0.5, 3);
     else if(oldType === B.DIAMOND_ORE) spawnXPOrb(bx+0.5, by+0.5, bz+0.5, 5);
@@ -3495,7 +3528,7 @@ function tryAttack(){
   const origin = camera.position.clone();
   const dir = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
   const weaponInfo=item && ITEMS[item.id];
-  const heldEnch=(item&&item.ench)||null;
+  const heldEnch=item?.id==='dragonfang_mace'?{sharpness:5,lifesteal:3,wind:5,reach:3}:((item&&item.ench)||null);
   let weaponReach = weaponInfo && weaponInfo.type === 'spear' ? (weaponInfo.reach||6) :
     weaponInfo && weaponInfo.type === 'dagger' ? 2.75 :
     weaponInfo && weaponInfo.type === 'hammer' ? 3.45 :
@@ -3788,7 +3821,7 @@ function updateHUD(){
   document.getElementById('thirstTxt').textContent = '💧 ' + Math.round(player.thirst);
   document.getElementById('xpFill').style.width = Math.max(0, player.xp/player.xpNext*100) + '%';
   document.getElementById('xpTxt').textContent = '✨ ' + player.xp + '/' + player.xpNext;
-  document.getElementById('clock').textContent = (inEnd ? '🌌 End' : inNether ? '🔥 Nether' : (isBloodMoon ? '🩸 Day ' + day : '☀️ Day ' + day));
+  document.getElementById('clock').textContent = (worldMode==='end' ? '🌌 End' : worldMode==='nether' ? '🔥 Nether' : (isBloodMoon ? '🩸 Day ' + day : '☀️ Day ' + day));
   updateBattleStats();
   document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (worldMode === 'pvp' ? '⚔️ PvP' : worldMode === 'city' ? '🏙️ DinoCity' : '⚔️ Survival');
 }
@@ -3922,43 +3955,23 @@ const RECIPES = [
   {out:'end_portal_item', amt:1, cost:{stone:8, diamond:4, gold:2}}
 ];
 function renderInventory(){
-  const grid = document.getElementById('recipeGrid');
-  const matsDiv = document.getElementById('matsDisplay');
-  matsDiv.innerHTML = '🪵 ' + mats.wood + ' · 🪨 ' + mats.stone + ' · ⚙️ ' + mats.iron + ' · ⭐ ' + mats.gold + ' · 💎 ' + mats.diamond;
-  grid.innerHTML = '';
-  for(let i=0;i<RECIPES.length;i++){
-    const r = RECIPES[i];
-    let canMake = true;
-    const costParts = [];
-    for(const m in r.cost){
-      const have = mats[m]||0, need = r.cost[m];
-      costParts.push('<span style="color:' + (have>=need?'#70e070':'#ff6060') + '">' + m + ' ' + have + '/' + need + '</span>');
-      if(have < need) canMake = false;
-    }
-    const card = document.createElement('div');
-    card.className = 'invCard' + (canMake ? '' : ' cant');
-    card.innerHTML = '<div class="ic">' + ITEMS[r.out].ic + '</div><div class="name">' + ITEMS[r.out].n + (r.amt>1?' ×'+r.amt:'') + '</div><div class="cost">' + costParts.join(' · ') + '</div>';
-    if(canMake) card.addEventListener('click', () => { craftRecipe(i); renderInventory(); });
-    grid.appendChild(card);
-  }
-}
-function craftRecipe(idx){
-  const r = RECIPES[idx];
-  for(const m in r.cost) if((mats[m]||0) < r.cost[m]){ showToast('Missing materials', '❌'); return; }
-  const capacity = inventory.slice(0,9).reduce((total,slot) => total + (!slot ? 64 : slot.id === r.out ? Math.max(0,64-slot.count) : 0),0);
-  if(capacity < (r.amt || 1)){ showToast('Not enough inventory space!', '❌'); return; }
-  for(const m in r.cost) mats[m] -= r.cost[m];
-  let made = 0;
-  const amt = r.amt || 1;
-  for(let s=0;s<9 && made<amt;s++){
-    if(inventory[s] === null){ inventory[s] = {id:r.out, count:1}; made++; }
-    else if(inventory[s].id === r.out && inventory[s].count < 64){
-      const add = Math.min(64 - inventory[s].count, amt - made);
-      inventory[s].count += add; made += add;
-    }
-  }
-  if(made > 0){ showToast('Crafted ' + ITEMS[r.out].n + (made>1?' ×'+made:''), '✅'); playSound('place'); updateHotbarUI(); updateHUD(); }
-  else showToast('Inventory full!', '❌');
+ const grid=document.getElementById('recipeGrid');grid.replaceChildren();
+ document.getElementById('matsDisplay').textContent='🪙 '+bank.coins+' DinoCoins · Armour '+totalArmour()+' · T = Shop';
+ const slots=document.getElementById('armourSlots');slots.replaceChildren();
+ for(const part of Object.keys(armour)){
+   const b=document.createElement('button');b.style.cssText='padding:10px;background:#36485e;color:white;border:1px solid #83c2e8;border-radius:8px;cursor:pointer';
+   b.textContent=part.toUpperCase()+': '+(ITEMS[armour[part]]?.n||'Empty')+' (click to unequip)';
+   b.onclick=()=>{if(!armour[part])return;if(!addItem(makeItem(armour[part]))){showToast('Bag full!','❌');return;}armour[part]=null;saveAdventure();renderInventory();updateHotbarUI();};slots.appendChild(b);
+ }
+ for(let i=0;i<inventory.length;i++){
+   const item=inventory[i];const b=document.createElement('button');b.className='invCard';b.style.color='white';
+   b.textContent=item&&ITEMS[item.id]?(i+1)+'. '+ITEMS[item.id].ic+' '+ITEMS[item.id].n+' ×'+item.count:(i+1)+'. Empty';
+   if(item){b.onclick=()=>{const def=ITEMS[item.id];if(def?.type==='armor'){
+     const part=def.part,old=armour[part];armour[part]=item.id;
+     inventory[i]=old?makeItem(old):null;lastHotbar=-1;updateHotbarUI();saveAdventure();renderInventory();showToast('Equipped '+def.n,'🛡️');
+   }else if(i>=9){const dest=inventory.findIndex((v,k)=>k<9&&!v);if(dest>=0){inventory[dest]=item;inventory[i]=null;lastHotbar=-1;updateHotbarUI();renderInventory();}else showToast('Hotbar full','🎒');}};}
+   grid.appendChild(b);
+ }
 }
 function toggleInventory(){
   const ov = document.getElementById('invOverlay');
@@ -3975,39 +3988,67 @@ function toggleInventory(){
 document.getElementById('invClose').addEventListener('click', toggleInventory);
 
 /* ===== DIMENSIONS ===== */
-let inNether = false, inEnd = false;
-function teleportNether(){
-  if(inNether) return;
-  inNether = true; inEnd = false;
-  showToast('Entered the Nether', '🔥');
-  const sx = WORLD_SIZE/2 + 5, sz = WORLD_SIZE/2;
-  player.pos.set(sx, terrainH(sx, sz) + 2, sz);
+let inNether=false,inEnd=false,portalCooldown=0,dragonRewarded=false,dragonCrystals=[];
+function surfaceAt(x,z){for(let y=WORLD_HEIGHT-4;y>3;y--)if(BLOCKS[getBlock(x,y,z)]?.solid)return y+2;return 24;}
+function buildPortalAt(x,z,block){const base=surfaceAt(x,z)-2;for(let dx=-1;dx<=1;dx++)for(let dy=0;dy<=4;dy++)setRaw(x+dx,base+dy,z,(dx===-1||dx===1||dy===0||dy===4)?B.OBSIDIAN:block);}
+function generateNetherWorld(){
+ world.fill(B.AIR);
+ for(let x=0;x<WORLD_SIZE;x++)for(let z=0;z<WORLD_SIZE;z++){
+  const h=18+Math.floor(sn(x+25,z+30,13)*8+Math.sin(x*.15)*3);
+  for(let y=0;y<=h;y++)setRaw(x,y,z,y===0?B.BEDROCK:y===h?B.OBSIDIAN:y>=h-3?B.COBBLE:B.STONE);
+  if(h<19)for(let y=h+1;y<=19;y++)setRaw(x,y,z,B.WATER);
+  if(hash2(x,z)>.987)for(let y=h+1;y<Math.min(48,h+9);y++)setRaw(x,y,z,B.GOLD_ORE);
+ }
+ // Nether fortress, bridge, and crimson pillars.
+ for(let x=18;x<=60;x++)for(let z=37;z<=42;z++)for(let y=25;y<=27;y++)setRaw(x,y,z,B.OBSIDIAN);
+ for(const [x,z] of [[20,39],[59,39],[39,39],[21,20],[58,59]])for(let y=22;y<=42;y++)for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)if(Math.abs(dx)===2||Math.abs(dz)===2)setRaw(x+dx,y,z+dz,y%6===0?B.GOLD_ORE:B.COBBLE);
+ // Clear the arrival and build a two-way portal with a safe platform.
+ for(let x=35;x<=45;x++)for(let z=54;z<=64;z++){for(let y=20;y<=24;y++)setRaw(x,y,z,B.OBSIDIAN);for(let y=25;y<=35;y++)setRaw(x,y,z,B.AIR);}
+ buildPortalAt(40,59,B.NETHER_PORTAL);
+ for(let x=37;x<=43;x++)for(let z=63;z<=70;z++){for(let y=19;y<=25;y++)setRaw(x,y,z,B.OBSIDIAN);for(let y=26;y<=34;y++)setRaw(x,y,z,B.AIR);}
 }
-function teleportEnd(){
-  if(inEnd) return;
-  inEnd = true; inNether = false;
-  showToast('Entered the End', '🌌');
-  const dx = WORLD_SIZE/2 + 20, dz = WORLD_SIZE/2, dy = terrainH(dx, dz) + 14;
-  spawnMob('dragon', dx, dy, dz);
-  showBossBar('🐉 ENDER DRAGON', 400, 400);
+function generateEndWorld(){
+ world.fill(B.AIR);
+ for(let x=5;x<75;x++)for(let z=5;z<75;z++){
+  const distance=Math.hypot(x-40,z-40),h=19+Math.floor(2*sn(x,z,15));
+  if(distance>32||distance<4&&distance>1)continue;
+  for(let y=0;y<=h;y++)setRaw(x,y,z,y===0?B.BEDROCK:y===h?B.SAND:B.STONE);
+ }
+ for(const [x,z,height] of [[20,20,18],[60,20,22],[20,60,25],[60,60,21],[40,13,29],[40,67,27],[13,40,24],[67,40,26]]){
+  for(let y=21;y<Math.min(WORLD_HEIGHT-2,height+21);y++)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)setRaw(x+dx,y,z+dz,B.OBSIDIAN);
+  setRaw(x,Math.min(WORLD_HEIGHT-2,height+21),z,B.GOLD_ORE);
+ }
+ // Portal is away from the boss arena. Safe spawn platform.
+ for(let x=37;x<=43;x++)for(let z=65;z<=71;z++)for(let y=19;y<=21;y++)setRaw(x,y,z,B.STONE);
+ for(let x=37;x<=43;x++)for(let z=65;z<=71;z++)for(let y=22;y<=29;y++)setRaw(x,y,z,B.AIR);
+ buildPortalAt(40,68,B.NETHER_PORTAL);
 }
-function showBossBar(name, hp, maxHp){
-  const bb = document.getElementById('bossBar');
-  bb.style.display = 'flex';
-  bb.querySelector('.name').textContent = name;
-  bb.querySelector('.fill').style.width = Math.max(0, Math.min(100, hp/maxHp*100)) + '%';
+function teleportNether(){if(portalCooldown>0)return;portalCooldown=3;changeWorld(worldMode==='nether'?'survival':'nether');}
+function teleportEnd(){if(portalCooldown>0)return;portalCooldown=3;changeWorld(worldMode==='end'?'survival':'end');}
+function showBossBar(name,hp,maxHp){const bb=document.getElementById('bossBar');bb.style.display='flex';bb.querySelector('.name').textContent=name;bb.querySelector('.fill').style.width=Math.max(0,Math.min(100,hp/maxHp*100))+'%';}
+function hideBossBar(){document.getElementById('bossBar').style.display='none';}
+function checkPortals(dt){portalCooldown=Math.max(0,portalCooldown-(dt||.02));if(worldMode==='pvp'||portalCooldown>0)return;
+ const px=Math.floor(player.pos.x),py=Math.floor(player.pos.y),pz=Math.floor(player.pos.z);
+ // Only actually touching portal blocks triggers travel (not standing five blocks away).
+ for(let dx=0;dx<=0;dx++)for(let dy=0;dy<=1;dy++)for(let dz=0;dz<=0;dz++){
+  const b=getBlock(px+dx,py+dy,pz+dz);
+  if(b===B.NETHER_PORTAL){if(worldMode==='end'){portalCooldown=3;changeWorld('survival');}else teleportNether();return;}
+  if(b===B.END_PORTAL){teleportEnd();return;}
+ }
 }
-function hideBossBar(){ document.getElementById('bossBar').style.display = 'none'; }
-function checkPortals(){
-  if(worldMode === 'pvp') return;
-  const px = Math.floor(player.pos.x), py = Math.floor(player.pos.y), pz = Math.floor(player.pos.z);
-  for(let dx=-2;dx<=2;dx++)for(let dy=-1;dy<=2;dy++)for(let dz=-2;dz<=2;dz++){
-    const b = getBlock(px+dx, py+dy, pz+dz);
-    if(b === B.NETHER_PORTAL && !inNether){ teleportNether(); return; }
-    if(b === B.END_PORTAL && !inEnd){ teleportEnd(); return; }
-  }
+function updateDragonBattle(dt){
+ if(worldMode!=='end'||!worldReady||player.dead)return;
+ const dragon=mobs.find(m=>m.type==='dragon'&&!m.dead);if(!dragon)return;
+ // Dangerous three-stage dragon. Crystals make it regenerate and must be mined.
+ const hpRatio=dragon.hp/dragon.maxHp;
+ dragon.def.speed=hpRatio<.33?.19:hpRatio<.68?.145:.11;
+ if(dragonCrystals.length){const live=dragonCrystals.filter(c=>getBlock(c.x,c.y,c.z)===B.GOLD_ORE);if(live.length){dragon.hp=Math.min(dragon.maxHp,dragon.hp+dt*live.length*1.6);if(Math.random()<dt*.55)showToast('💜 Destroy the End Crystals to stop healing!','💎');}}
+ dragon.userData=dragon.userData||{};dragon.userData.breath=(dragon.userData.breath||0)-dt;
+ if(dragon.userData.breath<=0){dragon.userData.breath=hpRatio<.33?3.2:hpRatio<.68?5:7;
+  const distance=dragon.pos.distanceTo(player.pos);if(distance<27){playerHurt(hpRatio<.33?14:9,dragon);player.vel.y=Math.max(player.vel.y,.25);spawnHitSparks(player.pos.x,player.pos.y+1,player.pos.z,0xa447f9,34);showToast('🐉 DRAGON BREATH! DODGE!','💜');}
+ }
+ showBossBar('🐉 ENDER DRAGON · '+(hpRatio<.33?'FURY':hpRatio<.68?'ENRAGED':'PHASE I'),dragon.hp,dragon.maxHp);
 }
-
 /* Create inventory entries for weapon rewards and dropped equipment. */
 function makeItem(itemId){
   const def = ITEMS[itemId];
@@ -4046,7 +4087,7 @@ function applyEnchantToHeld(kind,level){
 function addItem(item){
  if(!item||!ITEMS[item.id])return false;
  let remaining=Math.max(0,Math.min(576,Math.floor(item.count||1)));
- const unstackable=['pickaxe','axe','sword','bow','armor','shield','totem','spear','dagger','hammer','mace'].includes(ITEMS[item.id].type);
+ const unstackable=noStack(item.id);
  // Never partially consume a sale or a vault delivery if the bag is already full.
  const capacity=inventory.reduce((n,s)=>n+(!s?unstackable?1:64:!unstackable&&s.id===item.id&&!s.ench&&!item.ench?64-s.count:0),0);
  if(capacity<remaining)return false;
@@ -4110,7 +4151,7 @@ function marketItemButton(text,action){const b=document.createElement('button');
 function takeInventory(id,count){let rem=count;for(const slot of inventory){if(slot&&slot.id===id)rem-=slot.count;}if(rem>0)return false;rem=count;for(let i=0;i<inventory.length&&rem>0;i++){const slot=inventory[i];if(slot&&slot.id===id){const n=Math.min(rem,slot.count);slot.count-=n;rem-=n;if(slot.count<=0)inventory[i]=null;}}lastHotbar=-1;updateHotbarUI();return true;}
 function toggleMarket(force){const overlay=document.getElementById('cityMarket');const open=force===undefined?overlay.style.display!=='flex':force;overlay.style.display=open?'flex':'none';keys={};mouseDown.left=mouseDown.right=false;if(open){if(document.pointerLockElement)document.exitPointerLock();renderMarket();}else renderer.domElement.focus();}
 function renderMarket(){
- document.getElementById('marketBalance').textContent='🪙 Wallet: '+bank.coins.toLocaleString()+' DinoCoins  |  Mode: '+(worldMode==='pvp'?'Arena':worldMode==='city'?'DinoCity':worldMode==='pretty'?'Pretty Lands':'Survival');
+ document.getElementById('marketBalance').textContent='🪙 Wallet: '+bank.coins.toLocaleString()+' DinoCoins  |  Mode: '+(worldMode==='pvp'?'Arena':worldMode==='city'?'DinoCity':worldMode==='pretty'?'Pretty Lands':worldMode==='nether'?'Nether':worldMode==='end'?'The End':'Survival');
  const questBox=document.getElementById('marketQuests');questBox.replaceChildren();
  for(const m of REV_MISSIONS){const progress=Math.min(m.target,Math.floor(Number(bank.missions[m.key])||0));const claimed=!!bank.claimed[m.id];
  questBox.appendChild(marketItemButton(m.name+' · '+progress+'/'+m.target+' · 🪙'+m.reward+(claimed?' ✓ CLAIMED':progress>=m.target?' ✅ CLAIM REWARD':' · '+m.detail),()=>{
@@ -4122,7 +4163,7 @@ function renderMarket(){
  if(worldMode!=='city'){showToast('Enter DinoCity first (type /world city)','🚕');return;}
  player.pos.set(city.x,23,city.z+5);player.vel.set(0,0,0);player.spawnPoint.copy(player.pos);toggleMarket(false);showToast('Welcome to '+city.name+'!','🚕');
  }));}
- for(const [name,mode] of [['🌲 Go to Survival','survival'],['⚔️ Enter Arena','pvp'],['🏙️ Enter DinoCity','city'],['🌸 Visit Pretty Lands','pretty']])travelBox.appendChild(marketItemButton(name,()=>{toggleMarket(false);changeWorld(mode);}));
+ for(const [name,mode] of [['🌲 Go to Survival','survival'],['⚔️ Enter Arena','pvp'],['🏙️ Enter DinoCity','city'],['🌸 Visit Pretty Lands','pretty'],['🔥 Go to Nether','nether'],['🌌 Go to End','end']])travelBox.appendChild(marketItemButton(name,()=>{toggleMarket(false);changeWorld(mode);}));
  const sell=document.getElementById('marketSell');sell.replaceChildren();
  if(worldMode==='pvp'){sell.textContent='Arena starter gear cannot be sold. Earn coins by winning battles.';}
  else {let has=false;for(const [id,price] of Object.entries(SELL_PRICES)){const total=inventory.reduce((n,x)=>n+(x&&x.id===id?x.count:0),0);if(!total)continue;has=true;for(const count of [1,Math.min(64,total)]){
@@ -4140,13 +4181,15 @@ function toggleQuickMap(force){
  keys={};mouseDown.left=mouseDown.right=false;
  if(open){
   if(document.pointerLockElement)document.exitPointerLock();
-  document.getElementById('quickMapCurrent').textContent='Current map: '+(worldMode==='pvp'?'PvP Arena':worldMode==='city'?'DinoCity':worldMode==='pretty'?'Pretty Lands':'Survival');
+  document.getElementById('quickMapCurrent').textContent='Current map: '+(worldMode==='pvp'?'PvP Arena':worldMode==='city'?'DinoCity':worldMode==='pretty'?'Pretty Lands':worldMode==='nether'?'Nether':worldMode==='end'?'The End':'Survival');
   const choices=document.getElementById('quickMapChoices');choices.replaceChildren();
   for(const [title,mode,desc] of [
    ['🌲 SURVIVAL','survival','Mine, build, explore ruins and hunt dinosaurs'],
    ['⚔️ PVP ARENA','pvp','Battle dinosaurs and earn DinoCoins'],
    ['🏙️ DINO CITY','city','Visit shops, missions and the three city districts'],
-   ['🌸 PRETTY LANDS','pretty','Explore nine magic landmarks and complete journal quests (K)']]){
+   ['🌸 PRETTY LANDS','pretty','Explore nine magic landmarks and complete journal quests (K)'],
+   ['🔥 NETHER','nether','Nether fortress, dangerous mobs and portal travel'],
+   ['🌌 THE END','end','Hard Ender Dragon boss and End Crystals']]){
    const b=document.createElement('button');b.type='button';
    b.style.cssText='text-align:left;background:#23425a;color:white;border:2px solid '+(worldMode===mode?'#e6c969':'#57849c')+';border-radius:12px;padding:17px;cursor:pointer;font:14px system-ui';
    b.innerHTML='<strong style="font-size:17px">'+title+'</strong><span style="display:block;color:#b9d5e8;margin-top:7px;font-size:12px">'+desc+'</span>';
@@ -4530,7 +4573,7 @@ function prettyTravel(name){
 
 /* ===== WORLD SETUP ===== */
 function setupWorld(mode){
-  if(worldReady){if(worldMode==='pvp')savePvPProgress();else saveAdventure();}
+  if(worldReady){if(worldMode==='pvp')savePvPProgress();else saveAdventure();}portalCooldown=Math.max(portalCooldown,3);
   const previousMode=worldMode;
   worldMode = mode;
   if(mode==='pvp'){resetInventory();}
@@ -4544,6 +4587,7 @@ function setupWorld(mode){
   mobs.length = 0;
   for(const b of fighterBots){ scene.remove(b.mesh); }
   fighterBots.length = 0;
+  for(const p of magicProjectiles){scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();}magicProjectiles.length=0;
   for(const p of botProjectiles){ scene.remove(p); }
   botProjectiles.length = 0;
   for(const d of droppedItems){ scene.remove(d); }
@@ -4579,7 +4623,9 @@ function setupWorld(mode){
 
   const pvpProgressLoaded=mode==='pvp' && loadPvPProgress();
 
-  if(mode === 'pretty'){
+  if(mode==='nether'){generateNetherWorld();buildAllMeshes();player.pos.set(40.5,26.2,66.5);player.spawnPoint.copy(player.pos);for(let i=0;i<14;i++){let x=10+Math.random()*60,z=10+Math.random()*60;spawnMob(i%3?'skeleton':'rex',x,surfaceAt(x,z)+1,z);}showToast('🔥 NETHER: fortress, lava marshes, dangerous enemies!','🔥');}
+  else if(mode==='end'){generateEndWorld();buildAllMeshes();player.pos.set(40.5,24,70.5);player.spawnPoint.copy(player.pos);dragonCrystals=[[20,20,39],[60,20,43],[20,60,46],[60,60,42],[40,13,50],[40,67,48],[13,40,45],[67,40,47]].map(([x,z,y])=>({x,z,y}));const boss=spawnMob('dragon',40,30,39);if(boss){boss.hp=boss.maxHp=1800;boss.def={...boss.def,dmg:22,speed:.11};boss.pos.set(40,30,39);}dragonRewarded=false;showToast('🌌 THE END: destroy eight End Crystals, then defeat the dragon!','🐉');}
+  else if(mode === 'pretty'){
     generatePrettyWorld();buildAllMeshes();buildPrettyScenery();
     player.pos.set(40.5,28,54.5);player.spawnPoint.copy(player.pos);
     document.getElementById('weaponQuest').style.display='none';
@@ -4660,18 +4706,18 @@ function setupWorld(mode){
   updateCoins();
   updateHotbarUI();
   buildHeldItem();
-  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (mode === 'pvp' ? '⚔️ PvP' : mode === 'city' ? '🏙️ DinoCity' : worldMode==='pretty' ? '🌸 Pretty Lands' : '⚔️ Survival');
+  document.getElementById('mode').textContent = player.creative ? '🎨 Creative' : (mode === 'pvp' ? '⚔️ PvP' : mode === 'city' ? '🏙️ DinoCity' : worldMode==='pretty' ? '🌸 Pretty Lands' : mode==='nether'?'🔥 Nether':mode==='end'?'🌌 The End':'⚔️ Survival');
 }
 
 function changeWorld(mode){
- if(!['pvp','city','survival','pretty'].includes(mode))return;
+ if(!['pvp','city','survival','pretty','nether','end'].includes(mode))return;
  if(mode===worldMode){showToast('Already in '+mode+'!','🌍');return;}
  if(adminOpen)toggleAdmin(false);
  if(document.getElementById('cityMarket').style.display==='flex')toggleMarket(false);
  if(document.getElementById('quickMapOverlay').style.display==='flex')toggleQuickMap(false);
  const splash=document.getElementById('loading');splash.style.display='flex';
  if(document.pointerLockElement)document.exitPointerLock();
- setTimeout(()=>{try{setupWorld(mode);showToast('🌍 World changed to '+(mode==='pvp'?'PvP Arena':mode==='city'?'DinoCity':mode==='pretty'?'Pretty Lands':'Survival'),'🌍');}
+ setTimeout(()=>{try{setupWorld(mode);showToast('🌍 World changed to '+(mode==='pvp'?'PvP Arena':mode==='city'?'DinoCity':mode==='pretty'?'Pretty Lands':mode==='nether'?'The Nether':mode==='end'?'The End':'Survival'),'🌍');}
  finally{splash.style.display='none';lastTime=performance.now()/1000;renderer.domElement.focus();}},40);
 }
 /* Mouse look must be requested from an actual user gesture. */
@@ -4749,7 +4795,7 @@ function giveExactItem(id,count){
  if(!ITEMS[id])return 0;
  let given=0;
  while(given<count){
-   const size=['pickaxe','axe','sword','bow','armor','shield','totem','spear','dagger','hammer','mace'].includes(ITEMS[id].type)?1:Math.min(64,count-given), item=makeItem(id);item.count=size;
+   const size=noStack(id)?1:Math.min(64,count-given), item=makeItem(id);item.count=size;
    // Put items straight in the chosen hotbar slot when inventory is otherwise full.
    if(!addItem(item))break;
    given+=size;
@@ -4759,10 +4805,12 @@ function giveExactItem(id,count){
 function adminCommand(raw){
  const a=raw.trim().replace(/^\//,'').toLowerCase().split(/\s+/),cmd=a[0];
  if(!cmd)return;
+ if(cmd==='hardcore'){if(hardcore||hardcoreDead){showToast('Hardcore already active or ended','☠️');return;}hardcore=true;try{localStorage.setItem('dinocraft_hardcore_active','true');}catch(e){}player.creative=false;flying=false;godMode=false;showToast('☠️ HARDCORE: one life, no cheats. Good luck!','☠️');return;}
+ if(hardcore&&['creative','gamemode','fly','flight','god','godmode','invincible','infinitehealth','give','spawn','clear','items','inventory','catalog','heal','speed'].includes(cmd)){showToast('☠️ Cheats disabled in Hardcore Mode','☠️');return;}
  if(cmd==='help'){toggleAdmin(false);showCommandHelp();return;}
  if(cmd==='shop'||cmd==='market'||cmd==='missions'||cmd==='quests'){toggleAdmin(false);toggleMarket(true);return;}
  if(cmd==='world'||cmd==='travel'||cmd==='goto'){
- const dest={arena:'pvp',pvp:'pvp',city:'city',dinocity:'city',survival:'survival',pretty:'pretty',paradise:'pretty',beauty:'pretty'}[a[1]];
+ const dest={nether:'nether',end:'end',arena:'pvp',pvp:'pvp',city:'city',dinocity:'city',survival:'survival',pretty:'pretty',paradise:'pretty',beauty:'pretty'}[a[1]];
  if(!dest){showToast('Try /world pretty, /world city, /world survival, /world arena','🌍');return;}
  toggleAdmin(false);changeWorld(dest);return;
  }
@@ -4821,11 +4869,12 @@ function adminCommand(raw){
    const type=a[1]==='trex'?'rex':a[1];
    if(!MOB_TYPES[type]){showToast('Unknown mob. Try raptor / triceratops / rex','❌');return;}
    const count=Math.min(10,Math.max(1,Number.parseInt(a[2],10)||1));
-   for(let i=0;i<count;i++){
-     const x=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.x-Math.sin(player.yaw)*(8+i*2)));
-     const z=Math.min(WORLD_SIZE-3,Math.max(3,player.pos.z-Math.cos(player.yaw)*(8+i*2)));
-     spawnMob(type,x,player.pos.y+2,z);
-   }showToast('Spawned '+count+' '+type,'🦖');return;
+   let made=0;for(let i=0;i<count;i++){
+     const n=summonSequence++,theta=player.yaw+n*2.39996;const radius=7+(n%4)*2;
+     const x=Math.min(WORLD_SIZE-4,Math.max(4,player.pos.x+Math.sin(theta)*radius));
+     const z=Math.min(WORLD_SIZE-4,Math.max(4,player.pos.z+Math.cos(theta)*radius));
+     if(spawnMob(type,x,surfaceAt(Math.floor(x),Math.floor(z))+1,z))made++;
+   }showToast('Spawned '+made+' NEW '+type+' (total: '+mobs.filter(m=>!m.dead&&m.type===type).length+')','🦖');return;
  }
  if(cmd==='clear'){for(let i=0;i<inventory.length;i++)inventory[i]=null;lastHotbar=-1;updateHotbarUI();showToast('Inventory cleared','🧹');return;}
  showToast('Unknown command. Try /help','❌');
@@ -4868,8 +4917,8 @@ function showCommandHelp(){
     overlay.style.cssText='position:fixed;inset:0;z-index:220;background:rgba(5,8,20,.92);display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:15px system-ui';
     const panel=document.createElement('div');panel.style.cssText='width:min(650px,95vw);max-height:85vh;overflow-y:auto;background:#152038;border:2px solid #8dd5ff;border-radius:15px;padding:20px';
     const title=document.createElement('h2');title.textContent='📖 DINOCRAFT COMMAND GUIDE';title.style.color='#ffdc78';panel.appendChild(title);
-    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/journal','Pretty Lands explorer quests'],['/world pretty','Travel to the Crystal Paradise world'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
-    for(const [cmd,desc] of cmds){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #43516a;padding:9px 2px;flex-wrap:wrap';const code=document.createElement('code');code.textContent=cmd;code.style.color='#96efca';const label=document.createElement('span');label.textContent=desc;row.append(code,label);panel.appendChild(row);}
+    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/journal','Pretty Lands explorer quests'],['/world nether','Enter the Nether'],['/world end','Enter the End'],['/give totem_of_undying 1','Get a lifesaving totem'],['/give ender_pearl 8','Get teleport pearls'],['/hardcore','Start irreversible hardcore run'],['/world pretty','Travel to the Crystal Paradise world'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes (click repeatedly)'],['/spawn raptor 3','Summon three Raptors'],['/spawn triceratops 3','Summon three Triceratops'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
+    for(const [cmd,desc] of cmds){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #43516a;padding:9px 2px;flex-wrap:wrap';const code=document.createElement('code');code.textContent=cmd;code.style.color='#96efca';const label=document.createElement('span');label.textContent=desc;const run=document.createElement('button');run.textContent='▶ RUN';run.style.cssText='background:#367f86;color:white;padding:7px 12px;border:0;border-radius:7px;cursor:pointer';run.onclick=()=>{overlay.style.display='none';adminCommand(cmd);};row.append(code,label,run);panel.appendChild(row);}
     const close=document.createElement('button');close.textContent='CLOSE (ESC)';close.style.cssText='margin-top:14px;background:#306da0;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer';close.onclick=()=>overlay.style.display='none';panel.appendChild(close);
     overlay.appendChild(panel);document.body.appendChild(overlay);
   }
@@ -4877,9 +4926,43 @@ function showCommandHelp(){
 }
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){const h=document.getElementById('commandHelpOverlay');if(h&&h.style.display==='flex'){h.style.display='none';e.stopImmediatePropagation();}}},true);
 
+const magicProjectiles=[];
+function throwMagicProjectile(kind){
+ const direction=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+ const mesh=new THREE.Mesh(new THREE.OctahedronGeometry(kind==='wind'?.36:.27,0),new THREE.MeshBasicMaterial({color:kind==='wind'?0x9eecff:kind==='pearl'?0xaa55ff:kind==='splash_healing'?0xff87b6:0x976bff}));
+ mesh.position.copy(camera.position).addScaledVector(direction,1.1);scene.add(mesh);
+ magicProjectiles.push({mesh,velocity:direction.multiplyScalar(.42),kind,life:3.8});
+ showToast(kind==='wind'?'🌪️ Wind Charge thrown!':kind==='pearl'?'🟣 Ender Pearl thrown!':'🧪 Splash potion thrown!','✨');
+}
+function updateMagicProjectiles(dt){
+ for(let i=magicProjectiles.length-1;i>=0;i--){const p=magicProjectiles[i];p.life-=dt;
+  const old=p.mesh.position.clone();p.velocity.y-=.006;const end=p.mesh.position.add(p.velocity);
+  let impact=false;let at=end.clone();
+  const steps=Math.max(2,Math.ceil(old.distanceTo(end)/.18));
+  for(let n=1;n<=steps;n++){const q=old.clone().lerp(end,n/steps);const b=getBlock(Math.floor(q.x),Math.floor(q.y),Math.floor(q.z));if(b!==B.AIR&&b!==B.WATER&&BLOCKS[b]?.solid){impact=true;at=q;break;}}
+  if(!impact && p.kind==='wind' && (end.distanceTo(player.pos)<1.3) && p.life<3)impact=true;
+  if(!impact && p.life>0)continue;
+  if(p.kind==='wind'){
+   const d=player.pos.distanceTo(at);if(d<6){const strength=1-Math.min(1,d/7);player.vel.y=Math.max(player.vel.y,.28+strength*.29);player.vel.x+=(player.pos.x-at.x)*.055;player.vel.z+=(player.pos.z-at.z)*.055;player.onGround=false;player.fallStartY=null;}
+   for(const m of mobs)if(!m.dead&&m.pos.distanceTo(at)<5){m.hp-=10;m.vel.y=.22;m.vel.x+=(m.pos.x-at.x)*.06;m.vel.z+=(m.pos.z-at.z)*.06;}
+   for(const b of fighterBots)if(!b.dead&&b.pos.distanceTo(at)<5){damageBot(b,11,null,true,false);b.vel.y=.2;}
+   spawnHitSparks(at.x,at.y,at.z,0x9eeaff,25);
+  }else if(p.kind==='pearl'){
+   const x=Math.max(2,Math.min(WORLD_SIZE-3,at.x)),z=Math.max(2,Math.min(WORLD_SIZE-3,at.z));
+   let y=Math.max(3,Math.min(WORLD_HEIGHT-5,Math.floor(at.y)+1));while(playerCollides(x,y,z)&&y<WORLD_HEIGHT-5)y++;
+   if(!playerCollides(x,y,z)){player.pos.set(x,y,z);player.vel.set(0,0,0);player.fallStartY=null;player.invuln=Math.max(player.invuln,.5);showToast('🟣 TELEPORTED!','✨');}
+  }else{
+   if(p.kind==='splash_healing'){if(player.pos.distanceTo(at)<6)player.hp=Math.min(player.maxHp,player.hp+14);}else if(player.pos.distanceTo(at)<6)strengthPotionTimer=Math.max(strengthPotionTimer,60);
+   spawnHitSparks(at.x,at.y,at.z,0xba88ff,20);
+  }
+  scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();magicProjectiles.splice(i,1);
+ }
+}
 const tntCarts=[];
 function useCombatItem(){
  const slot=inventory[hotbar];if(!slot||!ITEMS[slot.id])return false;
+ if(slot.id==='ender_pearl'){throwMagicProjectile('pearl');if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();return true;}
+ if(slot.id==='splash_healing'||slot.id==='splash_strength'){throwMagicProjectile(slot.id);if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();return true;}
  if(slot.id==='elytra'){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'equipped. Jump, then press Space to glide!':'removed.'),'🪽');return true;}
  if(slot.id==='enchanted_golden_apple'){
    player.hp=player.maxHp;player.maxGoldenHp=Math.max(player.maxGoldenHp,16);player.goldenHp=Math.min(player.maxGoldenHp,player.goldenHp+16);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,12);updateHUD();showToast('🌟 Enchanted Apple: full heal, +16 gold HP, resistance!','🌟');
@@ -4900,6 +4983,11 @@ function useCombatItem(){
    toggleAdmin(true);setTimeout(()=>{const input=document.getElementById('adminInput');if(input&&!input.value)input.value='/enchant ';},20);showToast('Type /enchant sharpness 5, /enchant lifesteal 3, or /enchant list','✨');return true;
  }else if(slot.id==='wind_charge'){
    if(chargeCooldown>0){showToast('Wind Charge recharging','⏳');return true;}
+   throwMagicProjectile('wind');
+   chargeCooldown=.35;
+   if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();return true;
+   /* old instant wind burst retained below but unreachable */
+
    chargeCooldown=1.5;const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));
    player.vel.x-=dir.x*.34;player.vel.z-=dir.z*.34;player.vel.y+=.22;
    for(const bot of fighterBots)if(!bot.dead && bot.pos.distanceTo(player.pos)<7){damageBot(bot,9,null,true,false);bot.vel?.add?.(dir.clone().multiplyScalar(.55));}
@@ -4966,13 +5054,14 @@ window.addEventListener('keydown', e => {
   if(e.key === 'Shift') keys['shift'] = true;
   if(k >= '1' && k <= '9'){ hotbar = parseInt(k)-1; updateHotbarUI(); }
   if(k === 'v' && !e.repeat){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'ON · Press Space while falling':'OFF'),'🪽');}
+  if(k === 'g'&&hardcore){showToast('Hardcore: Creative disabled','☠️');return;}
   if(k === 'g'){setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');}
   if(k === 'f'){
     if(player.hunger < 20){ player.hunger = Math.min(20, player.hunger+6); updateHUD(); playSound('place'); }
     else showToast('Not hungry', '❌');
   }
   if(k === 'e') toggleInventory();
-  if(k === 'i'){e.preventDefault();toggleCreativePanel(true);return;}
+  if(k === 'i'){e.preventDefault();if(hardcore){showToast('Creative items unavailable in Hardcore','☠️');return;}toggleCreativePanel(true);return;}
   if(k === 'tab' && !e.repeat && worldMode === 'pvp'){
     e.preventDefault(); statsVisible=!statsVisible;
     document.getElementById('battleStats').style.display=statsVisible?'block':'none';
@@ -4983,7 +5072,7 @@ window.addEventListener('keydown', e => {
   
   if(k === 'x' && !e.repeat && worldReady){const it=inventory[hotbar];if(it){spawnDroppedItem(it.id,player.pos.x,player.pos.y+1,player.pos.z,false);if(!player.creative){it.count--;if(it.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();showToast('Dropped '+ITEMS[it.id].n,'📦');}return;}
   if(k === 'j' && !e.repeat && worldReady && !player.dead){if(!useCombatItem())tryAttack();}
-  if(k === 'k' && !e.repeat && worldReady && !player.dead) tryAttack();
+  if(k === 'k' && !e.repeat && worldReady && !player.dead && worldMode!=='pretty') tryAttack();
   if(k === 'h'){
     const el = document.getElementById('help');
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
@@ -5140,14 +5229,16 @@ function animate(){
     updateMobs(dt);
     updateFighterBots(dt);
     updateDinoArena(dt);
+    updateMagicProjectiles(dt);
+    updateDragonBattle(dt);
     updateBotProjectiles(dt);
     updateRaycast();
-    updateRain(dt);
+    if(worldMode==='survival'||worldMode==='city')updateRain(dt);else{rainActive=false;rainIntensity=0;rainPoints.visible=false;}
     updateAmbientParticles(dt, lastNightF);
     updateDroppedItems(dt);
     updateXPOrbs(dt);
     tickSpawn(dt);
-    checkPortals();
+    checkPortals(dt);
     updateCompass();
     updateBotTargetHUD();
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
