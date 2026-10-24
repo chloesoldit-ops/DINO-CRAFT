@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.1 — Player Names Preview</title>
+<title>DinoCraft 3.2 — Play Smooth</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -292,6 +292,37 @@ canvas{display:block;outline:none}
 #worldPlayerName{margin-bottom:14px}
 .touchDevice #playerNameBadge{display:none}
 @media(max-width:600px){.playerNameCard{padding:16px}#titlePlayerName,#worldPlayerName{font-size:12px;min-height:36px;padding:7px 12px}}
+
+/* 3.2 — Responsive, touch-friendly pause and settings */
+#desktopPause{display:none;position:fixed;top:139px;right:14px;z-index:120;background:#173a54f2;color:#fff;border:2px solid #7cc5e7;border-radius:10px;padding:10px 13px;font:800 13px system-ui;cursor:pointer}
+html.playing #desktopPause{display:block}
+.touchDevice #desktopPause{display:none!important}
+#fpsDisplay{display:none;position:fixed;top:195px;right:14px;z-index:120;pointer-events:none;color:#a5ffc2;background:#101f30ed;border:1px solid #5d9c83;border-radius:9px;padding:7px 10px;font:700 12px monospace}
+#fpsDisplay.slow{color:#ffd090;border-color:#ab7852}
+.touchDevice #fpsDisplay{right:calc(env(safe-area-inset-right) + 10px);top:calc(env(safe-area-inset-top) + 9px);z-index:130}
+#pauseOverlay{position:fixed;inset:0;z-index:240;display:none;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);background:#030b1ae9;color:#fff;font:14px system-ui;overflow:auto}
+.pauseCard{width:min(570px,100%);max-height:95dvh;overflow:auto;background:linear-gradient(145deg,#203953,#111b2b);border:2px solid #76cce9;border-radius:19px;padding:clamp(14px,3vw,22px);box-shadow:0 22px 75px #000c}
+.pauseHeading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:15px}
+.pauseHeading h2{font-size:clamp(22px,5vw,28px);color:#e2f5ff}
+.pauseHeading p,.pauseBottom p{color:#b4cbdf;font-size:12px;line-height:1.6;margin-top:5px}
+#pauseOverlay button{min-height:43px;border:1px solid #6ebde5;border-radius:10px;padding:9px 13px;background:#24506d;color:#fff;font:750 13px system-ui;cursor:pointer;touch-action:manipulation}
+#pauseX{flex-shrink:0}
+.pauseMainButtons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:15px}
+#pausePlay{background:#287e55!important;border-color:#97ecc0!important}
+.pauseSettings{padding:13px;background:#0a1a2ba8;border:1px solid #426584;border-radius:13px}
+.pauseSettings h3{font-size:16px;color:#f5dc91;margin-bottom:9px}
+.pauseRow{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #2c465d;padding:10px 2px;font-weight:700}
+.pauseRow:last-of-type{border:0}
+.pauseRow span{max-width:53%}
+.pauseRow small{display:block;font-size:11px;color:#aac0d4;font-weight:400;margin-top:4px}
+.pauseRow select{max-width:47%;padding:9px 7px;border:1px solid #659cba;border-radius:8px;background:#193952;color:#fff;font-size:12px}
+.pauseRow input[type=range]{width:min(195px,44%);accent-color:#86d4ff;touch-action:pan-x}
+.pauseRow input[type=checkbox]{width:21px;height:21px;accent-color:#50b7ea}
+#resetGameSettings{margin-top:11px;min-height:36px!important;font-size:12px!important}
+.pauseBottom{margin-top:15px;padding-top:12px;border-top:1px solid #355a74}
+#pauseWorlds{width:100%}
+@media(max-width:410px){.pauseCard{padding:13px}.pauseMainButtons{grid-template-columns:1fr}}
+@media(max-height:480px){.pauseRow{padding:6px 2px}.pauseHeading{margin-bottom:8px}.pauseMainButtons{margin-bottom:8px}}
 </style>
 </head>
 <body>
@@ -315,6 +346,27 @@ canvas{display:block;outline:none}
     <button id="gateOpenCommands" type="button">⌨️ Creative Commands</button>
     <button id="gateLockAgain" type="button">🔒 Lock Creative Again</button>
    </div>
+  </div>
+ </div>
+</div>
+<button id="desktopPause" type="button" aria-label="Pause game">⏸ PAUSE (ESC)</button>
+<div id="fpsDisplay" aria-live="off">FPS: --</div>
+<div id="pauseOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+ <div class="pauseCard">
+  <div class="pauseHeading"><div><h2 id="pauseTitle">⏸️ GAME PAUSED</h2><p>Make DinoCraft feel better on your device.</p></div><button type="button" id="pauseX" aria-label="Close settings">✕</button></div>
+  <div class="pauseMainButtons"><button id="pausePlay" type="button">▶ RESUME</button><button id="pauseSave" type="button">💾 SAVE NOW</button></div>
+  <div class="pauseSettings">
+   <h3>⚙️ GAME SETTINGS</h3>
+   <label class="pauseRow" for="graphicsSelect"><span>Graphics quality<small>Low = faster on older phones</small></span><select id="graphicsSelect"><option value="low">⚡ Low</option><option value="medium">⚖️ Balanced</option><option value="high">✨ High</option></select></label>
+   <label class="pauseRow" for="mouseSpeed"><span>Mouse look speed<small id="mouseSpeedText">1.0×</small></span><input id="mouseSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
+   <label class="pauseRow" for="touchSpeed"><span>Touch look speed<small id="touchSpeedText">1.0×</small></span><input id="touchSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
+   <label class="pauseRow" for="fpsCheck"><span>FPS counter<small>See how smooth the game runs</small></span><input id="fpsCheck" type="checkbox"/></label>
+   <button id="resetGameSettings" type="button">↩ Reset settings</button>
+  </div>
+  <div class="pauseBottom">
+   <button id="pauseWorlds" type="button">🌍 CHOOSE ANOTHER WORLD</button>
+   <p>PC: WASD move · Mouse look · Space jump · Shift sprint · E bag · I Creative access · ESC pause</p>
+   <p>Phone/tablet: Joystick to move · Swipe to look · ☰ MENU to pause.</p>
   </div>
  </div>
 </div>
@@ -386,6 +438,7 @@ canvas{display:block;outline:none}
  <button class="touchButton" id="touchMap" type="button">🗺️ Change World</button>
  <button class="touchButton" id="touchHelp" type="button">❔ Help & Commands</button>
  <button class="touchButton" id="touchProfile" type="button">👤 Change Username</button>
+ <button class="touchButton" id="touchSettings" type="button">⚙️ Pause & Settings</button>
 </div>
 
 <div id="touchLook" aria-label="Swipe to look"></div>
@@ -445,7 +498,7 @@ canvas{display:block;outline:none}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.1 · PLAYER NAMES PREVIEW · SIX WORLDS</p>
+  <p>3.2 · PLAY SMOOTH · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
@@ -906,6 +959,23 @@ let score = 0;
 const stats = {kills:0, placed:0, mined:0};
 let worldMode = 'survival';
 
+
+/* 3.2: Graphics/preferences stored separately from worlds and inventory. */
+const DINO_SETTINGS_KEY='dinocraft_settings_3_2';
+const isTouchForGraphics='ontouchstart' in window || navigator.maxTouchPoints>0;
+function defaultDinoSettings(){return {graphics:isTouchForGraphics?'low':'medium',mouse:1,touch:1,fps:false};}
+function cleanDinoSettings(v){
+ const base=defaultDinoSettings(),n=x=>Number.isFinite(+x)?Math.round(Math.min(2,Math.max(.5,+x))*10)/10:1;
+ return v&&typeof v==='object'?{
+  graphics:['low','medium','high'].includes(v.graphics)?v.graphics:base.graphics,
+  mouse:n(v.mouse),touch:n(v.touch),fps:v.fps===true
+ }:base;
+}
+let dinoSettings=defaultDinoSettings();
+try{dinoSettings=cleanDinoSettings(JSON.parse(localStorage.getItem(DINO_SETTINGS_KEY)||'null'));}catch(e){}
+function dinoPixelRatio(){return Math.min(window.devicePixelRatio||1,{low:1,medium:1.25,high:1.6}[dinoSettings.graphics]);}
+function saveDinoSettings(){try{localStorage.setItem(DINO_SETTINGS_KEY,JSON.stringify(dinoSettings));}catch(e){}}
+
 /* ===== SCENE ===== */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87cfff);
@@ -915,8 +985,8 @@ camera.rotation.order = 'YXZ';
 const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
 renderer.domElement.tabIndex = 0;
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-renderer.shadowMap.enabled = true;
+renderer.setPixelRatio(dinoPixelRatio());
+renderer.shadowMap.enabled = dinoSettings.graphics!=='low';
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -930,8 +1000,8 @@ addEventListener('resize', () => {
 
 const sun = new THREE.DirectionalLight(0xfff2cc, 1.35);
 sun.position.set(80, 140, 40);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.castShadow = dinoSettings.graphics!=='low';
+sun.shadow.mapSize.set(dinoSettings.graphics==='high'?2048:1024,dinoSettings.graphics==='high'?2048:1024);
 sun.shadow.camera.left = -70; sun.shadow.camera.right = 70;
 sun.shadow.camera.top = 70; sun.shadow.camera.bottom = -70;
 sun.shadow.camera.far = 260;
@@ -4077,11 +4147,13 @@ function updateHotbarUI(){
   }
 }
 function showToast(txt, ic){
-  const el = document.createElement('div');
-  el.className = 'tst';
-  el.innerHTML = '<span style="font-size:20px">' + ic + '</span><span>' + txt + '</span>';
-  document.getElementById('toast').appendChild(el);
-  setTimeout(() => el.remove(), 2600);
+ const el=document.createElement('div');el.className='tst';
+ const icon=document.createElement('span');icon.style.fontSize='20px';icon.textContent=String(ic||'🎮');
+ const words=document.createElement('span');words.textContent=String(txt||'');
+ el.append(icon,words);
+ const toast=document.getElementById('toast');toast.appendChild(el);
+ while(toast.children.length>4)toast.firstElementChild.remove();
+ setTimeout(()=>el.remove(),2800);
 }
 function addKillfeedEntry(killerName, victimName, color){
   const kf = document.getElementById('killfeed');
@@ -5005,7 +5077,7 @@ renderer.domElement.addEventListener('pointermove', e => {
   if(!fallbackDragging || document.pointerLockElement === renderer.domElement) return;
   const dx = e.clientX - fallbackX, dy = e.clientY - fallbackY;
   fallbackX = e.clientX; fallbackY = e.clientY;
-  player.yaw -= dx * 0.004; player.pitch -= dy * 0.004;
+  player.yaw -= dx * 0.004 * dinoSettings.mouse; player.pitch -= dy * 0.004 * dinoSettings.mouse;
   player.pitch = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, player.pitch));
 });
 // Preview-safe camera controls: pointer lock is often forbidden in embedded file viewers.
@@ -5026,8 +5098,8 @@ renderer.domElement.addEventListener('pointermove', e => {
   const dy = Math.max(-90, Math.min(90, e.clientY - unlockedLastY));
   unlockedLastX = e.clientX; unlockedLastY = e.clientY;
   if(fallbackDragging) return; // existing drag-to-look listener already handles this gesture
-  player.yaw -= dx * 0.004;
-  player.pitch = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, player.pitch - dy*0.004));
+  player.yaw -= dx * 0.004 * dinoSettings.mouse;
+  player.pitch = Math.max(-Math.PI/2+0.01, Math.min(Math.PI/2-0.01, player.pitch - dy*0.004*dinoSettings.mouse));
 });
 renderer.domElement.setAttribute('tabindex', '0');
 renderer.domElement.addEventListener('click', lockGameMouse);
@@ -5418,7 +5490,14 @@ window.addEventListener('keydown', e => {
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
+  if(document.getElementById('pauseOverlay').style.display==='flex'){
+    if(k==='escape'||k==='f10'){e.preventDefault();closeDinoPause();}
+    return;
+  }
   if(document.getElementById('playerNameDialog').style.display==='flex')return;
+  if((k==='escape'||k==='f10')&&!e.repeat&&worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex'&&!adminOpen&&!creativeOpen&&document.getElementById('invOverlay').style.display!=='flex'&&document.getElementById('quickMapOverlay').style.display!=='flex'&&document.getElementById('cityMarket').style.display!=='flex'&&document.getElementById('creativeGate').style.display!=='flex'&&document.getElementById('commandHelpOverlay')?.style.display!=='flex'&&document.getElementById('prettyJournal')?.style.display!=='flex'){
+    e.preventDefault();openDinoPause();return;
+  }
   if(e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)){
     if(k==='escape' && creativeOpen){e.preventDefault();toggleCreativePanel(false);}
     return;
@@ -5487,8 +5566,8 @@ window.addEventListener('keyup', e => {
 window.addEventListener('blur', () => { keys = {}; mouseDown.left = mouseDown.right = false; });
 document.addEventListener('mousemove', e => {
   if(document.pointerLockElement !== renderer.domElement) return;
-  player.yaw -= e.movementX * 0.0022;
-  player.pitch -= e.movementY * 0.0022;
+  player.yaw -= e.movementX * 0.0022 * dinoSettings.mouse;
+  player.pitch -= e.movementY * 0.0022 * dinoSettings.mouse;
   player.pitch = Math.max(-Math.PI/2 + 0.01, Math.min(Math.PI/2 - 0.01, player.pitch));
 });
 document.addEventListener('mousedown', e => {
@@ -5576,7 +5655,7 @@ document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
  setTouchMenuExpanded(!touchMenuExpanded);
 });
 function mobileReady(){return worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
-function mobileMenuOpen(){return document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
+function mobileMenuOpen(){return document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
 function mobileSyncShift(){
  keys.shift=flying?mobileDownOn:(mobileSprintOn||mobileDownOn);
@@ -5604,7 +5683,7 @@ for(const t of ['pointerup','pointercancel','lostpointercapture'])touchJoy.addEv
 touchLook.addEventListener('pointerdown',e=>{if(!mobileReady()||mobileMenuOpen())return;e.preventDefault();lookPointer=e.pointerId;lookX=e.clientX;lookY=e.clientY;touchLook.setPointerCapture(e.pointerId);});
 touchLook.addEventListener('pointermove',e=>{
  if(e.pointerId!==lookPointer||mobileMenuOpen())return;
- e.preventDefault();player.yaw-=(e.clientX-lookX)*.006;player.pitch-=(e.clientY-lookY)*.006;
+ e.preventDefault();player.yaw-=(e.clientX-lookX)*.006*dinoSettings.touch;player.pitch-=(e.clientY-lookY)*.006*dinoSettings.touch;
  player.pitch=Math.max(-Math.PI/2+.01,Math.min(Math.PI/2-.01,player.pitch));lookX=e.clientX;lookY=e.clientY;
 });
 for(const t of ['pointerup','pointercancel','lostpointercapture'])touchLook.addEventListener(t,e=>{if(e.pointerId===lookPointer)lookPointer=null;});
@@ -5668,6 +5747,7 @@ touchAction('touchMap',()=>{
 });
 touchAction('touchHelp',()=>{mobileClearMovement();showCommandHelp();});
 touchAction('touchProfile',()=>{mobileClearMovement();openPlayerNameDialog();});
+touchAction('touchSettings',()=>{mobileClearMovement();openDinoPause();});
 document.getElementById('hotbar').addEventListener('pointerdown',e=>{
  if(!touchCapable||!mobileReady())return;
  const slot=e.target.closest('.slot');if(!slot)return;
@@ -5741,11 +5821,93 @@ function saveOnSuspend(){
 }
 window.addEventListener('pagehide',saveOnSuspend);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveOnSuspend();});
+
+/* 3.2: Pause actions, settings, and FPS counter. */
+function refreshDinoSettings(){
+ document.getElementById('graphicsSelect').value=dinoSettings.graphics;
+ document.getElementById('mouseSpeed').value=String(dinoSettings.mouse);
+ document.getElementById('touchSpeed').value=String(dinoSettings.touch);
+ document.getElementById('mouseSpeedText').textContent=dinoSettings.mouse.toFixed(1)+'×';
+ document.getElementById('touchSpeedText').textContent=dinoSettings.touch.toFixed(1)+'×';
+ document.getElementById('fpsCheck').checked=dinoSettings.fps;
+ document.getElementById('fpsDisplay').style.display=dinoSettings.fps?'block':'none';
+}
+function applyDinoQuality(){
+ const level=dinoSettings.graphics;
+ renderer.setPixelRatio(dinoPixelRatio());
+ renderer.setSize(innerWidth,innerHeight);
+ renderer.shadowMap.enabled=level!=='low';
+ sun.castShadow=level!=='low';
+ const resolution=level==='high'?2048:1024;
+ if(sun.shadow.mapSize.x!==resolution||sun.shadow.mapSize.y!==resolution){
+  if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}
+  sun.shadow.mapSize.set(resolution,resolution);
+ }
+ sun.shadow.needsUpdate=true;renderer.shadowMap.needsUpdate=true;
+ refreshDinoSettings();
+}
+function closeDinoPause(){
+ document.getElementById('pauseOverlay').style.display='none';
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ lastTime=performance.now()/1000;renderer.domElement.focus();
+}
+function openDinoPause(){
+ if(!worldReady||player.dead||document.getElementById('worldSelect').style.display==='flex')return;
+ if(typeof setTouchMenuExpanded==='function'&&touchMenuExpanded)setTouchMenuExpanded(false);
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ refreshDinoSettings();
+ document.getElementById('pauseOverlay').style.display='flex';
+ if(document.pointerLockElement)document.exitPointerLock();
+}
+document.getElementById('desktopPause').onclick=openDinoPause;
+document.getElementById('pausePlay').onclick=closeDinoPause;
+document.getElementById('pauseX').onclick=closeDinoPause;
+document.getElementById('pauseSave').onclick=()=>{
+ saveOnSuspend();showToast('Your game is saved!','💾');
+};
+document.getElementById('pauseWorlds').onclick=()=>{
+ saveOnSuspend();closeDinoPause();
+ document.getElementById('worldSelect').style.display='flex';
+ document.documentElement.classList.remove('playing');
+ if(document.pointerLockElement)document.exitPointerLock();
+};
+document.getElementById('graphicsSelect').addEventListener('change',e=>{
+ dinoSettings.graphics=e.target.value;dinoSettings=cleanDinoSettings(dinoSettings);
+ applyDinoQuality();saveDinoSettings();
+});
+for(const [id,key] of [['mouseSpeed','mouse'],['touchSpeed','touch']]){
+ document.getElementById(id).addEventListener('input',e=>{
+  dinoSettings[key]=Number(e.target.value);dinoSettings=cleanDinoSettings(dinoSettings);
+  refreshDinoSettings();saveDinoSettings();
+ });
+}
+document.getElementById('fpsCheck').addEventListener('change',e=>{
+ dinoSettings.fps=e.target.checked;refreshDinoSettings();saveDinoSettings();
+});
+document.getElementById('resetGameSettings').onclick=()=>{
+ dinoSettings=defaultDinoSettings();applyDinoQuality();saveDinoSettings();
+ showToast('Settings reset to default','⚙️');
+};
+let fpsCount=0,fpsTime=performance.now();
+function updateDinoFps(now){
+ if(!dinoSettings.fps){fpsCount=0;fpsTime=now;return;}
+ fpsCount++;
+ if(now-fpsTime<800)return;
+ const fps=Math.round(fpsCount*1000/Math.max(1,now-fpsTime));
+ const box=document.getElementById('fpsDisplay');box.textContent='FPS: '+fps;
+ box.classList.toggle('slow',fps<27);
+ fpsCount=0;fpsTime=now;
+}
+refreshDinoSettings();
+
 /* ===== MAIN LOOP ===== */
 let lastTime = performance.now() / 1000;
 function animate(){
   requestAnimationFrame(animate);
   const now = performance.now() / 1000;
+  updateDinoFps(now*1000);
   let dt = now - lastTime;
   lastTime = now;
   if(dt > 0.1) dt = 0.1;
@@ -5758,9 +5920,11 @@ function animate(){
     return;
   }
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
-  const modalOpen = document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
+  const modalOpen = document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
-  updateSky(dt);
+  const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
+  const simDt=simPaused?0:dt;
+  updateSky(simDt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
   if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     updatePlayer(dt);
@@ -5784,10 +5948,10 @@ function animate(){
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
   }
   if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
-  updateParticles(dt);
-  updatePopups(dt);
+  updateParticles(simDt);
+  updatePopups(simDt);
   if(pendingLevelRewards.length) deliverPendingRewards();
-  updateAmbientAudio(lastNightF, dt);
+  updateAmbientAudio(lastNightF, simDt);
 
   if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     if(mouseDown.left && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
@@ -5820,7 +5984,7 @@ function animate(){
   if(!invOpen && isMobInFront()) ch.classList.add('hit'); else ch.classList.remove('hit');
   flushDirty();
   skyDome.position.copy(camera.position);
-  clouds.position.x += dt * 0.5;
+  clouds.position.x += simDt * 0.5;
   if(clouds.position.x > 140) clouds.position.x -= 280;
   for(const light of portalLights){
     const positions = light.userData.positions || [];
