@@ -329,6 +329,19 @@ html.playing #desktopPause{display:block}
 .touchDevice #info .tag{max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html:not(.playing) #fpsDisplay{display:none!important}
 @media(max-height:480px){.touchDevice #info{display:none!important}}
+
+/* DinoCraft 3.3 player records — readable on mobile */
+.pauseRecords{margin-top:12px;padding:12px;background:#10253cba;border:1px solid #406789;border-radius:12px}
+.pauseRecords h3{font-size:15px;color:#fbda96;margin-bottom:10px}
+.pauseRecords h3 small{font-size:10px;color:#acbed2;font-weight:500}
+.pauseStatsGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pauseStatsGrid>div{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;background:#122c47;border:1px solid #365572;border-radius:9px;padding:10px 3px;font-size:15px}
+.pauseStatsGrid strong{font-size:19px;color:#e9f6ff;font-variant-numeric:tabular-nums}
+.pauseStatsGrid span{font-size:10px;line-height:1.3;color:#bfd1df}
+.pauseRecords p{font-size:11px;color:#a2bacd;margin-top:10px;line-height:1.6}
+@media(max-width:510px){.pauseStatsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-height:480px){.pauseRecords{padding:8px}.pauseStatsGrid>div{padding:5px 2px}}
+
 </style>
 </head>
 <body>
@@ -368,6 +381,16 @@ html:not(.playing) #fpsDisplay{display:none!important}
    <label class="pauseRow" for="touchSpeed"><span>Touch look speed<small id="touchSpeedText">1.0×</small></span><input id="touchSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
    <label class="pauseRow" for="fpsCheck"><span>FPS counter<small>See how smooth the game runs</small></span><input id="fpsCheck" type="checkbox"/></label>
    <button id="resetGameSettings" type="button">↩ Reset settings</button>
+  </div>
+  <div class="pauseRecords">
+   <h3>🏅 YOUR RECORDS <small>(THIS DEVICE ONLY)</small></h3>
+   <div class="pauseStatsGrid">
+    <div>🦖 <strong id="recordKills">0</strong><span>Dinosaurs defeated</span></div>
+    <div>⛏️ <strong id="recordMined">0</strong><span>Blocks mined</span></div>
+    <div>🧱 <strong id="recordPlaced">0</strong><span>Blocks built</span></div>
+    <div>⏱️ <strong id="recordPlaytime">0m</strong><span>Time played</span></div>
+   </div>
+   <p>Stored privately on this device. These are not multiplayer accounts or a global leaderboard.</p>
   </div>
   <div class="pauseBottom">
    <button id="pauseWorlds" type="button">🌍 CHOOSE ANOTHER WORLD</button>
@@ -5873,11 +5896,57 @@ function tickSpawn(dt){
   }
 }
 
+
+/* Personal statistics remain offline; no fake online or public leaderboard. */
+const DINO_LOCAL_STATS_KEY='dinocraft_device_stats_v1';
+const DINO_STATS_FIELDS=['kills','mined','placed'];
+function dinoCleanCount(value){
+ const n=Number(value);
+ return Number.isFinite(n)&&n>=0?Math.min(999999999,Math.floor(n)):0;
+}
+let dinoDeviceRecords={kills:0,mined:0,placed:0,seconds:0};
+try{
+ const data=JSON.parse(localStorage.getItem(DINO_LOCAL_STATS_KEY)||'null');
+ if(data&&typeof data==='object')
+  for(const key of [...DINO_STATS_FIELDS,'seconds'])
+   dinoDeviceRecords[key]=dinoCleanCount(data[key]);
+}catch(e){}
+const dinoLastCounts={kills:stats.kills,mined:stats.mined,placed:stats.placed};
+let dinoUnsavedSeconds=0;
+function snapshotDinoRecords(){
+ for(const key of DINO_STATS_FIELDS){
+  const current=dinoCleanCount(stats[key]);
+  const last=dinoLastCounts[key];
+  const gain=current>=last?current-last:current;
+  dinoDeviceRecords[key]=Math.min(999999999,dinoDeviceRecords[key]+gain);
+  dinoLastCounts[key]=current;
+ }
+ const wholeSeconds=Math.floor(dinoUnsavedSeconds);
+ if(wholeSeconds>0){
+  dinoDeviceRecords.seconds=Math.min(999999999,dinoDeviceRecords.seconds+wholeSeconds);
+  dinoUnsavedSeconds-=wholeSeconds;
+ }
+ try{localStorage.setItem(DINO_LOCAL_STATS_KEY,JSON.stringify(dinoDeviceRecords));}
+ catch(e){console.warn('Personal records could not be saved',e);}
+ return dinoDeviceRecords;
+}
+function showDinoPersonalRecords(){
+ const data=snapshotDinoRecords();
+ document.getElementById('recordKills').textContent=data.kills.toLocaleString();
+ document.getElementById('recordMined').textContent=data.mined.toLocaleString();
+ document.getElementById('recordPlaced').textContent=data.placed.toLocaleString();
+ const mins=Math.floor((data.seconds+dinoUnsavedSeconds)/60);
+ document.getElementById('recordPlaytime').textContent=
+  mins>=60?Math.floor(mins/60)+'h '+mins%60+'m':mins+'m';
+}
+
 /* Save progress when mobile browsers suspend or close a tab. */
 function saveOnSuspend(){
  if(!worldReady)return;
- try{if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();}
- catch(e){console.warn('DinoCraft autosave unavailable',e);}
+ try{
+  if(worldMode==='pvp')savePvPProgress();else saveAdventure();
+  saveBank();snapshotDinoRecords();
+ }catch(e){console.warn('DinoCraft autosave unavailable',e);}
 }
 window.addEventListener('pagehide',saveOnSuspend);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveOnSuspend();});
@@ -5918,6 +5987,7 @@ function openDinoPause(){
  keys={};mouseDown.left=mouseDown.right=false;
  if(typeof mobileClearMovement==='function')mobileClearMovement();
  refreshDinoSettings();
+ showDinoPersonalRecords();
  document.getElementById('pauseOverlay').style.display='flex';
  if(document.pointerLockElement)document.exitPointerLock();
 }
@@ -5974,7 +6044,7 @@ function animate(){
   const titleVisible = document.getElementById('title').style.display !== 'none';
   const worldSelectVisible = document.getElementById('worldSelect').style.display === 'flex';
   if(titleVisible || worldSelectVisible){
-    updateSky(dt);
+    updateSky(worldSelectVisible?0:dt);
     skyDome.position.copy(camera.position);
     renderer.render(scene, camera);
     return;
@@ -5984,8 +6054,9 @@ function animate(){
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
   const simDt=simPaused?0:dt;
+  if(worldReady&&simDt>0)dinoUnsavedSeconds+=simDt;
   updateSky(simDt);
-  if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
+  if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();snapshotDinoRecords();} }
   if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     updatePlayer(dt);
     updatePrettyWorld(dt);
