@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.0 — Six Worlds</title>
+<title>DinoCraft 3.0 — The New Bug Fix</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -212,12 +212,25 @@ canvas{display:block;outline:none}
  .touchDevice #bars{display:none}
  .touchDevice #hotbar{margin-bottom:0}
 }
+
+/* DinoCraft 3.0 — The New Bug Fix */
+#title{padding:16px;max-width:100vw}
+#title h1{font-size:clamp(30px,10.5vw,96px);letter-spacing:clamp(1px,1.5vw,14px);max-width:100%;overflow-wrap:anywhere}
+#title p{font-size:clamp(10px,2.5vw,16px);letter-spacing:clamp(.2px,.4vw,3px);margin-bottom:clamp(14px,5vh,44px)}
+#title .cta{font-size:clamp(14px,4vw,22px);padding:clamp(8px,2.5vw,14px) clamp(16px,5vw,40px)}
+#title .sub{margin-top:clamp(12px,4vh,40px);font-size:clamp(10px,2vw,12px);max-width:90vw}
+.touchDevice #mobileControls{display:none}
+.touchDevice.playing #mobileControls{display:block}
+.touchDevice #help{display:none!important}
+#creativeDestination{align-self:flex-start;border:1px solid #6fbce9;border-radius:8px;padding:8px 13px;color:#d6f0ff;background:#234160;font:700 12px system-ui;cursor:pointer}
+#creativeDestination.active{background:#38875c;border-color:#a4ffd0;color:white}
+@media(max-width:570px){#worldSelect{padding:14px 6px}.worldGrid{justify-content:center;gap:8px}.touchDevice .worldCard{min-height:138px}.touchDevice #title{padding:12px}}
 </style>
 </head>
 <body>
 <div id="runtimeError" style="display:none;position:fixed;top:8px;left:8px;right:8px;z-index:1000;background:#480b16;border:1px solid #ff6f81;color:white;font:13px monospace;padding:12px;border-radius:9px;max-height:38vh;overflow:auto"></div>
 <div id="adminPanel"><b>⌨️ DINOCRAFT COMMAND CONSOLE</b><p>/help · /creative · /survival · /fly · /god · /give any_item 64 · /give all · /items · /spawn rex</p><input id="adminInput" placeholder="Type /help" autocomplete="off"/><button id="adminRun">Run Command</button> <button id="adminClose">Close</button></div>
-<div id="creativePanel"><div class="creativeTop"><div><b style="font-size:21px;color:#ffdf88">🎨 CREATIVE INVENTORY 2.9</b><div style="color:#a9c8e2;font-size:12px">All DinoCraft items · click an item to equip · Shift+click to add to backpack</div></div><button id="creativeClose">✕ Close (I / Esc)</button></div><input id="creativeSearch" placeholder="🔎 Search weapons, armour, Ender Pearls, Totems..." autocomplete="off"/><div id="creativeCategories"></div><div class="creativeStatus"><span id="creativeCount">0 items</span><span id="creativeSelection">Selected hotbar slot: 1</span></div><div id="creativeGrid"></div><div id="creativeHotbar"></div></div><div id="creativeHUD"></div>
+<div id="creativePanel"><div class="creativeTop"><div><b style="font-size:21px;color:#ffdf88">🎨 CREATIVE INVENTORY 3.0</b><div style="color:#a9c8e2;font-size:12px">All DinoCraft items · choose a hotbar slot or switch to Backpack below</div></div><button id="creativeClose">✕ Close (I / Esc)</button></div><input id="creativeSearch" placeholder="🔎 Search weapons, armour, Ender Pearls, Totems..." autocomplete="off"/><div id="creativeCategories"></div><button id="creativeDestination" type="button">🎒 Send to Backpack: OFF</button><div class="creativeStatus"><span id="creativeCount">0 items</span><span id="creativeSelection">Selected hotbar slot: 1</span></div><div id="creativeGrid"></div><div id="creativeHotbar"></div></div><div id="creativeHUD"></div>
 <div id="loading"><div class="spin"></div><div>GENERATING WORLD…</div></div>
 <div id="sunset-tint"></div>
 <div id="bloodmoon-tint"></div>
@@ -247,7 +260,7 @@ canvas{display:block;outline:none}
   <div id="weaponQuest"><div class="wqTitle">⭐ NEXT LEVEL WEAPON</div><div class="wqTask" id="wqTask">Gain XP to unlock weapons</div><div class="wqProgress"><span id="wqKills">0</span> / <span id="wqNeed">3</span></div><div class="wqBar"><div class="wqFill" id="wqFill" style="width:0%"></div></div></div>
   <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP</div><div style="opacity:.72">J / Click attack · Q dash · I creative items · Tab stats</div></div>
 <div id="bossBar"><div class="name"></div><div class="track"><div class="fill"></div></div></div>
-  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump / Elytra toggle in air · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> craft · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> mute · <b>P</b> save PvP</div>
+  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump / Elytra toggle in air · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> inventory · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> map · <b>N</b> mute · <b>P</b> save PvP</div>
   <div id="hud">
     <div id="bars">
       <div class="bar"><i id="hpFill" style="width:100%"></i><span id="hpTxt">❤️ 20/20</span></div>
@@ -320,7 +333,7 @@ canvas{display:block;outline:none}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>THE REVOLUTION REFORGED 2.0 · SIX WORLDS</p>
+  <p>3.0 · THE NEW BUG FIX · SIX WORLDS</p>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · Three Cities · Shared Quests & DinoCoins · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Creative Flight · Admin Commands · PvP</div>
 </div>
@@ -4848,6 +4861,7 @@ function changeWorld(mode){
 /* Mouse look must be requested from an actual user gesture. */
 let worldReady = false;
 function lockGameMouse(){
+  if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))return;
   if(!worldReady || document.getElementById('invOverlay').style.display === 'flex') return;
   if(document.pointerLockElement === renderer.domElement) return;
   try {
@@ -4858,7 +4872,7 @@ function lockGameMouse(){
   } catch(e){ document.getElementById('mouseHint').style.display = 'block'; }
 }
 function updateMouseHint(){
-  document.getElementById('mouseHint').style.display = worldReady &&
+  document.getElementById('mouseHint').style.display = !(('ontouchstart' in window)||(navigator.maxTouchPoints>0)) && worldReady &&
     document.pointerLockElement !== renderer.domElement &&
     document.getElementById('invOverlay').style.display !== 'flex' && !player.dead ? 'block' : 'none';
   mouseDown.left = mouseDown.right = false;
@@ -5004,6 +5018,12 @@ function adminCommand(raw){
  if(cmd==='clear'){for(let i=0;i<inventory.length;i++)inventory[i]=null;lastHotbar=-1;updateHotbarUI();showToast('Inventory cleared','🧹');return;}
  showToast('Unknown command. Try /help','❌');
 }
+let creativeToBackpack=false;
+document.getElementById('creativeDestination').onclick=()=>{
+ creativeToBackpack=!creativeToBackpack;
+ document.getElementById('creativeDestination').textContent='🎒 Send to Backpack: '+(creativeToBackpack?'ON':'OFF');
+ document.getElementById('creativeDestination').classList.toggle('active',creativeToBackpack);
+};
 const CREATIVE_CATEGORIES=[['all','🌟 All'],['weapons','⚔️ Weapons'],['armor','🛡️ Armour'],['blocks','🧱 Blocks'],['tools','⛏️ Tools'],['food','🍎 Food & Potions'],['magic','✨ Magic'],['materials','💎 Materials']];
 let creativeCategory='all';
 function creativeCategoryOf(id,item){
@@ -5044,10 +5064,10 @@ function populateCreativeItems(){
   const name=document.createElement('span');name.className='itemName';name.textContent=item.n;
   const type=document.createElement('span');type.className='itemType';type.textContent=id.replaceAll('_',' ');
   b.append(icon,name,type);
-  b.title='Click: equip selected slot • Shift+click: add to backpack';
+  b.title='Click: equip selected slot • Shift+click or turn on Backpack: store item';
   b.onclick=e=>{
    const count=creativeStackCount(item);
-   if(e.shiftKey){
+   if(e.shiftKey||creativeToBackpack){
     const ok=addItem({id,count});showToast(ok?'Added '+item.n+' to backpack':'Backpack is full!',ok?'🎒':'❌');
    }else{
     inventory[hotbar]={...makeItem(id),count};
@@ -5190,6 +5210,10 @@ window.addEventListener('keydown', e => {
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
+  if(e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)){
+    if(k==='escape' && creativeOpen){e.preventDefault();toggleCreativePanel(false);}
+    return;
+  }
   if(document.getElementById('prettyJournal')?.style.display==='flex'){if(k==='k'||k==='escape'){e.preventDefault();togglePrettyJournal(false);}return;}
   if(document.getElementById('quickMapOverlay').style.display==='flex'){if(k==='m'||k==='escape'){e.preventDefault();toggleQuickMap(false);}return;}
   if(k==='k' && !e.repeat && worldMode==='pretty' && !adminOpen && !creativeOpen){e.preventDefault();togglePrettyJournal();return;}
@@ -5242,7 +5266,7 @@ window.addEventListener('keydown', e => {
     const el = document.getElementById('help');
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
   }
-  if(k === 'm'){ muted = !muted; showToast(muted ? 'Muted' : 'Sound on', muted ? '🔇' : '🔊'); }
+  if(k === 'n'){ muted = !muted; showToast(muted ? 'Muted' : 'Sound on', muted ? '🔇' : '🔊'); }
   if(k === 'escape' && document.pointerLockElement) document.exitPointerLock();
 });
 window.addEventListener('keyup', e => {
@@ -5289,6 +5313,7 @@ document.getElementById('title').addEventListener('click', () => {
   document.getElementById('worldSelect').style.display = 'flex';
 });
 function lockGameMouseEarly(){
+  if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))return;
   try {
     const result = renderer.domElement.requestPointerLock();
     if(result && typeof result.catch === 'function') result.catch(()=>{});
@@ -5305,6 +5330,7 @@ document.querySelectorAll('.worldCard').forEach(card => {
       setupWorld(mode);
       document.getElementById('loading').style.display = 'none';
       worldReady = true;
+      document.documentElement.classList.add('playing');
       updateMouseHint();
       renderer.domElement.focus();
       lastTime = performance.now() / 1000;
@@ -5322,8 +5348,21 @@ const touchJoy=document.getElementById('touchJoystick'),touchKnob=document.getEl
 let joystickPointer=null,lookPointer=null,lookX=0,lookY=0;
 const mobileHeld={};
 function mobileReady(){return worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
-function mobileMenuOpen(){return creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex';}
-function mobileClearMovement(){for(const k of ['w','a','s','d',' ','shift'])keys[k]=false;touchKnob.style.transform='translate(-50%,-50%)';joystickPointer=null;}
+function mobileMenuOpen(){return creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
+let mobileSprintOn=false,mobileDownOn=false;
+function mobileSyncShift(){
+ keys.shift=flying?mobileDownOn:(mobileSprintOn||mobileDownOn);
+ document.getElementById('touchSprint').classList.toggle('pressed',mobileSprintOn);
+}
+function mobileReleaseJoystick(){
+ for(const k of ['w','a','s','d'])keys[k]=false;
+ touchKnob.style.transform='translate(-50%,-50%)';joystickPointer=null;
+}
+function mobileClearMovement(){
+ mobileReleaseJoystick();keys[' ']=false;mobileSprintOn=false;mobileDownOn=false;mobileSyncShift();
+ document.getElementById('touchJump').classList.remove('pressed');
+ document.getElementById('touchDown').classList.remove('pressed');
+}
 function mobileUpdateJoystick(e){
  const r=touchJoy.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
  const limit=r.width*.33,length=Math.hypot(dx,dy),scale=length>limit?limit/length:1;
@@ -5333,7 +5372,7 @@ function mobileUpdateJoystick(e){
 }
 touchJoy.addEventListener('pointerdown',e=>{if(!mobileReady()||mobileMenuOpen())return;e.preventDefault();joystickPointer=e.pointerId;touchJoy.setPointerCapture(e.pointerId);mobileUpdateJoystick(e);});
 touchJoy.addEventListener('pointermove',e=>{if(e.pointerId===joystickPointer){e.preventDefault();mobileUpdateJoystick(e);}});
-for(const t of ['pointerup','pointercancel','lostpointercapture'])touchJoy.addEventListener(t,e=>{if(e.pointerId===joystickPointer)mobileClearMovement();});
+for(const t of ['pointerup','pointercancel','lostpointercapture'])touchJoy.addEventListener(t,e=>{if(e.pointerId===joystickPointer)mobileReleaseJoystick();});
 touchLook.addEventListener('pointerdown',e=>{if(!mobileReady()||mobileMenuOpen())return;e.preventDefault();lookPointer=e.pointerId;lookX=e.clientX;lookY=e.clientY;touchLook.setPointerCapture(e.pointerId);});
 touchLook.addEventListener('pointermove',e=>{
  if(e.pointerId!==lookPointer||mobileMenuOpen())return;
@@ -5348,14 +5387,59 @@ function touchHold(id,key){const b=document.getElementById(id);b.addEventListene
 touchAction('touchAttack',()=>{if(!mobileMenuOpen()){if(!useCombatItem())tryAttack();}});
 touchAction('touchPlace',()=>{if(!mobileMenuOpen())tryPlace();});
 touchHold('touchJump',' ');
-touchHold('touchDown','shift');
-touchAction('touchSprint',()=>{if(!mobileMenuOpen()){keys.shift=!keys.shift;document.getElementById('touchSprint').classList.toggle('pressed',keys.shift);}});
-touchAction('touchFly',()=>{if(!mobileMenuOpen()){if(hardcore){showToast('Hardcore: no Creative flight','☠️');return;}flying=!flying;showToast(flying?'Flight enabled':'Flight disabled','🪽');}});
-touchAction('touchInventory',()=>{mobileClearMovement();if(!creativeOpen&&!adminOpen)toggleInventory();});
-touchAction('touchCreative',()=>{mobileClearMovement();if(hardcore){showToast('Creative items disabled in Hardcore','☠️');return;}if(document.getElementById('invOverlay').style.display==='flex')toggleInventory();toggleCreativePanel(!creativeOpen);});
-touchAction('touchShop',()=>{mobileClearMovement();toggleMarket();});
-touchAction('touchMap',()=>{mobileClearMovement();toggleQuickMap();});
-touchAction('touchHelp',()=>{const h=document.getElementById('help');h.style.display=h.style.display==='none'?'block':'none';});
+const mobileDownButton=document.getElementById('touchDown');
+mobileDownButton.addEventListener('pointerdown',e=>{
+ e.preventDefault();e.stopPropagation();if(!mobileReady()||mobileMenuOpen())return;
+ mobileDownButton.setPointerCapture(e.pointerId);
+ mobileDownOn=true;mobileSyncShift();mobileDownButton.classList.add('pressed');
+});
+for(const t of ['pointerup','pointercancel','lostpointercapture'])mobileDownButton.addEventListener(t,()=>{
+ mobileDownOn=false;mobileSyncShift();mobileDownButton.classList.remove('pressed');
+});
+touchAction('touchSprint',()=>{
+ if(mobileMenuOpen())return;
+ mobileSprintOn=!mobileSprintOn;mobileSyncShift();
+ showToast(mobileSprintOn?'Sprint enabled':'Sprint disabled','🏃');
+});
+touchAction('touchFly',()=>{
+ if(mobileMenuOpen())return;
+ if(hardcore){showToast('Hardcore: no Creative flight','☠️');return;}
+ flying=!flying;player.vel.set(0,0,0);mobileSyncShift();creativeStatus();
+ showToast(flying?'Flight enabled':'Flight disabled','🪽');
+});
+touchAction('touchInventory',()=>{
+ mobileClearMovement();
+ if(creativeOpen)toggleCreativePanel(false);
+ if(document.getElementById('cityMarket').style.display==='flex')toggleMarket(false);
+ if(document.getElementById('quickMapOverlay').style.display==='flex')toggleQuickMap(false);
+ toggleInventory();
+});
+touchAction('touchCreative',()=>{
+ mobileClearMovement();
+ if(hardcore){showToast('Creative items disabled in Hardcore','☠️');return;}
+ const open=!creativeOpen;
+ if(document.getElementById('invOverlay').style.display==='flex')toggleInventory();
+ if(document.getElementById('cityMarket').style.display==='flex')toggleMarket(false);
+ if(document.getElementById('quickMapOverlay').style.display==='flex')toggleQuickMap(false);
+ toggleCreativePanel(open);
+});
+touchAction('touchShop',()=>{
+ mobileClearMovement();
+ const open=document.getElementById('cityMarket').style.display!=='flex';
+ if(creativeOpen)toggleCreativePanel(false);
+ if(document.getElementById('invOverlay').style.display==='flex')toggleInventory();
+ if(document.getElementById('quickMapOverlay').style.display==='flex')toggleQuickMap(false);
+ toggleMarket(open);
+});
+touchAction('touchMap',()=>{
+ mobileClearMovement();
+ const open=document.getElementById('quickMapOverlay').style.display!=='flex';
+ if(creativeOpen)toggleCreativePanel(false);
+ if(document.getElementById('invOverlay').style.display==='flex')toggleInventory();
+ if(document.getElementById('cityMarket').style.display==='flex')toggleMarket(false);
+ toggleQuickMap(open);
+});
+touchAction('touchHelp',()=>{mobileClearMovement();showCommandHelp();});
 document.getElementById('hotbar').addEventListener('pointerdown',e=>{
  if(!touchCapable||!mobileReady())return;
  const slot=e.target.closest('.slot');if(!slot)return;
@@ -5421,6 +5505,14 @@ function tickSpawn(dt){
   }
 }
 
+/* Save progress when mobile browsers suspend or close a tab. */
+function saveOnSuspend(){
+ if(!worldReady)return;
+ try{if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();}
+ catch(e){console.warn('DinoCraft autosave unavailable',e);}
+}
+window.addEventListener('pagehide',saveOnSuspend);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveOnSuspend();});
 /* ===== MAIN LOOP ===== */
 let lastTime = performance.now() / 1000;
 function animate(){
@@ -5438,10 +5530,11 @@ function animate(){
     return;
   }
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
+  const modalOpen = document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   updateSky(dt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
-  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
+  if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     updatePlayer(dt);
     updatePrettyWorld(dt);
     updateNetherExploration(dt);
@@ -5462,13 +5555,13 @@ function animate(){
     updateBotTargetHUD();
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
   }
-  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
+  if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
   updateParticles(dt);
   updatePopups(dt);
   if(pendingLevelRewards.length) deliverPendingRewards();
   updateAmbientAudio(lastNightF, dt);
 
-  if(!invOpen && !creativeOpen && !adminOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
+  if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
     if(mouseDown.left && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
     if(mouseDown.right){
       const slot = inventory[hotbar];
