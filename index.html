@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.3 — Better Gameplay</title>
+<title>DinoCraft 3.3.1 — Choose Your Controls</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -342,6 +342,12 @@ html:not(.playing) #fpsDisplay{display:none!important}
 @media(max-width:510px){.pauseStatsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-height:480px){.pauseRecords{padding:8px}.pauseStatsGrid>div{padding:5px 2px}}
 
+
+/* Selectable control scheme; settings accessible on either mode. */
+#controlModeSelect{font-weight:750}
+html.playing:not(.touchDevice) #desktopPause{display:block}
+.touchDevice.playing #mobileControls{display:block}
+.touchDevice #desktopPause{display:none!important}
 </style>
 </head>
 <body>
@@ -376,6 +382,7 @@ html:not(.playing) #fpsDisplay{display:none!important}
   <div class="pauseMainButtons"><button id="pausePlay" type="button">▶ RESUME</button><button id="pauseSave" type="button">💾 SAVE NOW</button></div>
   <div class="pauseSettings">
    <h3>⚙️ GAME SETTINGS</h3>
+   <label class="pauseRow" for="controlModeSelect"><span>Controls Mode<small>Change anytime · Mobile or keyboard &amp; mouse</small></span><select id="controlModeSelect"><option value="auto">🤖 Automatic</option><option value="touch">📱 Mobile / Touch</option><option value="desktop">💻 Computer / Mouse</option></select></label>
    <label class="pauseRow" for="graphicsSelect"><span>Graphics quality<small>Low = faster on older phones</small></span><select id="graphicsSelect"><option value="low">⚡ Low</option><option value="medium">⚖️ Balanced</option><option value="high">✨ High</option></select></label>
    <label class="pauseRow" for="mouseSpeed"><span>Mouse look speed<small id="mouseSpeedText">1.0×</small></span><input id="mouseSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
    <label class="pauseRow" for="touchSpeed"><span>Touch look speed<small id="touchSpeedText">1.0×</small></span><input id="touchSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
@@ -527,7 +534,7 @@ html:not(.playing) #fpsDisplay{display:none!important}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.3 · BETTER GAMEPLAY · SIX WORLDS</p>
+  <p>3.3.1 · CHOOSE YOUR CONTROLS · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
@@ -992,12 +999,12 @@ let worldMode = 'survival';
 /* 3.2: Graphics/preferences stored separately from worlds and inventory. */
 const DINO_SETTINGS_KEY='dinocraft_settings_3_2';
 const isTouchForGraphics='ontouchstart' in window || navigator.maxTouchPoints>0;
-function defaultDinoSettings(){return {graphics:isTouchForGraphics?'low':'medium',mouse:1,touch:1,fps:false};}
+function defaultDinoSettings(){return {graphics:isTouchForGraphics?'low':'medium',mouse:1,touch:1,fps:false,controls:'auto'};}
 function cleanDinoSettings(v){
  const base=defaultDinoSettings(),n=x=>Number.isFinite(+x)?Math.round(Math.min(2,Math.max(.5,+x))*10)/10:1;
  return v&&typeof v==='object'?{
   graphics:['low','medium','high'].includes(v.graphics)?v.graphics:base.graphics,
-  mouse:n(v.mouse),touch:n(v.touch),fps:v.fps===true
+  mouse:n(v.mouse),touch:n(v.touch),fps:v.fps===true,controls:['auto','touch','desktop'].includes(v.controls)?v.controls:'auto'
  }:base;
 }
 let dinoSettings=defaultDinoSettings();
@@ -5075,7 +5082,7 @@ function changeWorld(mode){
 /* Mouse look must be requested from an actual user gesture. */
 let worldReady = false;
 function lockGameMouse(){
-  if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))return;
+  if(document.documentElement.classList.contains('touchDevice'))return;
   if(!worldReady || document.getElementById('invOverlay').style.display === 'flex') return;
   if(document.pointerLockElement === renderer.domElement) return;
   try {
@@ -5086,7 +5093,7 @@ function lockGameMouse(){
   } catch(e){ document.getElementById('mouseHint').style.display = 'block'; }
 }
 function updateMouseHint(){
-  document.getElementById('mouseHint').style.display = !(('ontouchstart' in window)||(navigator.maxTouchPoints>0)) && worldReady &&
+  document.getElementById('mouseHint').style.display = !document.documentElement.classList.contains('touchDevice') && worldReady &&
     document.pointerLockElement !== renderer.domElement &&
     document.getElementById('invOverlay').style.display !== 'flex' && !player.dead ? 'block' : 'none';
   mouseDown.left = mouseDown.right = false;
@@ -5660,7 +5667,7 @@ document.getElementById('title').addEventListener('click',e=>{
 document.getElementById('titlePlayerName').addEventListener('click',e=>{e.stopPropagation();openPlayerNameDialog();});
 document.getElementById('worldPlayerName').addEventListener('click',()=>openPlayerNameDialog());
 function lockGameMouseEarly(){
-  if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))return;
+  if(document.documentElement.classList.contains('touchDevice'))return;
   try {
     const result = renderer.domElement.requestPointerLock();
     if(result && typeof result.catch === 'function') result.catch(()=>{});
@@ -5688,8 +5695,16 @@ document.querySelectorAll('.worldCard').forEach(card => {
 
 
 /* DinoCraft 3.0: real multi-touch input; desktop keyboard and mouse still work */
-const touchCapable=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
-if(touchCapable)document.documentElement.classList.add('touchDevice');
+let touchCapable=false;
+function applyDinoControlMode(){
+ touchCapable=dinoSettings.controls==='touch'||(dinoSettings.controls==='auto'&&isTouchForGraphics);
+ document.documentElement.classList.toggle('touchDevice',touchCapable);
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ if(typeof setTouchMenuExpanded==='function'&&touchMenuExpanded)setTouchMenuExpanded(false);
+ if(touchCapable&&document.pointerLockElement)document.exitPointerLock();
+ if(typeof updateMouseHint==='function')updateMouseHint();
+}
 const mobileControls=document.getElementById('mobileControls');
 const touchJoy=document.getElementById('touchJoystick'),touchKnob=document.getElementById('touchKnob'),touchLook=document.getElementById('touchLook');
 let joystickPointer=null,lookPointer=null,lookX=0,lookY=0;
@@ -5706,7 +5721,7 @@ document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
  if(!mobileReady())return;
  setTouchMenuExpanded(!touchMenuExpanded);
 });
-function mobileReady(){return worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
+function mobileReady(){return touchCapable&&worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
 function mobileMenuOpen(){return document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
 let mobileAttackHeld=false,mobilePlaceHeld=false;
@@ -5840,6 +5855,8 @@ document.getElementById('hotbar').addEventListener('pointerdown',e=>{
 window.addEventListener('blur',()=>{mobileClearMovement();keys.shift=false;});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){mobileClearMovement();keys.shift=false;}});
 document.addEventListener('touchmove',e=>{if(e.target.closest('#touchJoystick,#touchLook,#touchActions'))e.preventDefault();},{passive:false});
+/* Apply saved controls after mobile joystick state is ready. */
+applyDinoControlMode();
 
 /* ===== DINOCRAFT COMBAT 1.0: DINO ARENA EVENTS ===== */
 let dinoArenaTimer=35, dinoArenaWave=0;
@@ -5953,6 +5970,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* 3.2: Pause actions, settings, and FPS counter. */
 function refreshDinoSettings(){
+ document.getElementById('controlModeSelect').value=dinoSettings.controls;
  document.getElementById('graphicsSelect').value=dinoSettings.graphics;
  document.getElementById('mouseSpeed').value=String(dinoSettings.mouse);
  document.getElementById('touchSpeed').value=String(dinoSettings.touch);
@@ -6003,6 +6021,12 @@ document.getElementById('pauseWorlds').onclick=()=>{
  document.documentElement.classList.remove('playing');
  if(document.pointerLockElement)document.exitPointerLock();
 };
+document.getElementById('controlModeSelect').addEventListener('change',e=>{
+ dinoSettings.controls=e.target.value;
+ dinoSettings=cleanDinoSettings(dinoSettings);
+ applyDinoControlMode();refreshDinoSettings();saveDinoSettings();
+ showToast(touchCapable?'Mobile touch controls selected':'Keyboard & mouse controls selected','⚙️');
+});
 document.getElementById('graphicsSelect').addEventListener('change',e=>{
  dinoSettings.graphics=e.target.value;dinoSettings=cleanDinoSettings(dinoSettings);
  applyDinoQuality();saveDinoSettings();
@@ -6017,7 +6041,7 @@ document.getElementById('fpsCheck').addEventListener('change',e=>{
  dinoSettings.fps=e.target.checked;refreshDinoSettings();saveDinoSettings();
 });
 document.getElementById('resetGameSettings').onclick=()=>{
- dinoSettings=defaultDinoSettings();applyDinoQuality();saveDinoSettings();
+ dinoSettings=defaultDinoSettings();applyDinoControlMode();applyDinoQuality();saveDinoSettings();
  showToast('Settings reset to default','⚙️');
 };
 let fpsCount=0,fpsTime=performance.now();
