@@ -1,0 +1,1 @@
+DinoCraft 3.4 Poki Inspector build. Open https://inspector.poki.dev/ and upload this folder containing index.html and three.min.js. SDK is the official Poki CDN only. Controls: Pause & Settings -> Controls Mode -> Automatic, Mobile, Computer. Poki QA and approval not yet completed. Original game at repository root is unchanged.

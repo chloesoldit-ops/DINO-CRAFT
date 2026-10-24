@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft — Poki Preview: Switch Controls</title>
+<title>DinoCraft 3.4 — Poki Prep</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -343,26 +343,10 @@ html:not(.playing) #fpsDisplay{display:none!important}
 @media(max-height:480px){.pauseRecords{padding:8px}.pauseStatsGrid>div{padding:5px 2px}}
 
 
-/* Poki version: conceal creator tests and preserve iframe scrolling. */
-#touchCreative,#creativeGate,#adminPanel,#creativePanel,#creativeHUD{display:none!important}
-#touchMenuToggle{z-index:132}
-#pauseOverlay{overscroll-behavior:contain}
-html,body{overscroll-behavior:none}
-
-/* Poki UI polish: fast entry, clean help, and scrollable mobile world selection. */
-#title .cta{background:linear-gradient(140deg,#236d57,#2b83a1);border:2px solid #8ff6c9;border-radius:15px;box-shadow:0 8px 32px #12877669}
-#title .sub{line-height:1.65}
-#worldSelect{overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
-#commandHelpOverlay button{touch-action:manipulation}
-@media(max-width:600px){#title h1{font-size:clamp(33px,10vw,75px)}#title .cta{min-height:48px}}
-
-/* Choose Auto, Mobile or Computer control style in Pause & Settings. */
-#controlModeDescription{font:600 12px/1.5 system-ui;color:#bde5fb;background:#234c6770;
- border-radius:8px;margin:2px 0 10px;padding:8px 10px}
-#controlModeSelect{font-weight:750;min-height:40px}
-html.computerControls #mobileControls{display:none!important}
-html.touchDevice.playing #mobileControls{display:block}
-@media(max-height:470px){#controlModeDescription{padding:5px 8px;margin-bottom:6px}}
+#controlModeSelect{font-weight:700}
+.touchDevice.playing #mobileControls{display:block}
+html.playing:not(.touchDevice) #desktopPause{display:block}
+.touchDevice #desktopPause{display:none!important}
 </style>
 </head>
 <body>
@@ -397,15 +381,7 @@ html.touchDevice.playing #mobileControls{display:block}
   <div class="pauseMainButtons"><button id="pausePlay" type="button">▶ RESUME</button><button id="pauseSave" type="button">💾 SAVE NOW</button></div>
   <div class="pauseSettings">
    <h3>⚙️ GAME SETTINGS</h3>
-   <label class="pauseRow" for="controlModeSelect">
-    <span>🎮 Control Mode<small>Switch instantly—no restart</small></span>
-    <select id="controlModeSelect" aria-label="Choose mobile or computer controls">
-     <option value="auto">✨ Auto Detect</option>
-     <option value="mobile">📱 Mobile / Touch</option>
-     <option value="computer">🖥️ Computer / Mouse</option>
-    </select>
-   </label>
-   <p id="controlModeDescription">Choose touch buttons or keyboard and mouse controls.</p>
+   <label class="pauseRow" for="controlModeSelect"><span>Controls Mode<small>Choose touch or keyboard & mouse</small></span><select id="controlModeSelect"><option value="auto">🤖 Automatic</option><option value="touch">📱 Mobile / Touch</option><option value="desktop">💻 Computer / Mouse</option></select></label>
    <label class="pauseRow" for="graphicsSelect"><span>Graphics quality<small>Low = faster on older phones</small></span><select id="graphicsSelect"><option value="low">⚡ Low</option><option value="medium">⚖️ Balanced</option><option value="high">✨ High</option></select></label>
    <label class="pauseRow" for="mouseSpeed"><span>Mouse look speed<small id="mouseSpeedText">1.0×</small></span><input id="mouseSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
    <label class="pauseRow" for="touchSpeed"><span>Touch look speed<small id="touchSpeedText">1.0×</small></span><input id="touchSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
@@ -424,7 +400,7 @@ html.touchDevice.playing #mobileControls{display:block}
   </div>
   <div class="pauseBottom">
    <button id="pauseWorlds" type="button">🌍 CHOOSE ANOTHER WORLD</button>
-   <p>PC: WASD move · Mouse look · Wheel/1–9 select · Space jump · Shift sprint · E bag · ESC pause</p>
+   <p>Controls: set Mobile or Computer above. On PC use WASD, mouse, wheel/1–9, Space, E and Esc.</p>
    <p>Phone/tablet: Joystick move · Swipe to look · Hold ⚔️ to mine/attack · Hold 🧱 to build · ☰ MENU to pause.</p>
   </div>
  </div>
@@ -557,54 +533,14 @@ html.touchDevice.playing #mobileControls{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>SIX WORLDS · BUILD · EXPLORE · SURVIVE</p>
+  <p>3.4 · POKI PREP · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
-  <div class="cta">▶ PLAY DINOCRAFT ◀</div>
-  <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🌲 Explore six worlds · Collect DinoCoins · Fight dinosaurs · Save progress</div>
+  <div class="cta">▶ CLICK TO PLAY ◀</div>
+  <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
-<!-- Official Poki SDK: only approved external request. -->
 <script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js"></script>
-<script>
-(function(){
- 'use strict';
- const sdk=window.PokiSDK;
- let ready=false,loaded=false,loadingSent=false,playing=false,adActive=false;
- function event(name){try{if(sdk&&typeof sdk[name]==='function')sdk[name]();}catch(e){console.warn('Poki SDK:',name,e);}}
- function loading(){if(ready&&loaded&&!loadingSent){loadingSent=true;event('gameLoadingFinished');}}
- const api={
-  ready:()=>ready,inAd:()=>adActive,
-  finishLoading(){loaded=true;loading();},
-  gameplay(active){
-   if(!ready||!loadingSent||adActive)return;
-   active=!!active;
-   if(active===playing)return;
-   playing=active;event(active?'gameplayStart':'gameplayStop');
-  },
-  async commercialBreak(){
-   if(adActive)return false;
-   api.gameplay(false);
-   if(!ready||!sdk||typeof sdk.commercialBreak!=='function')return true;
-   adActive=true;
-   try{await sdk.commercialBreak();}
-   catch(e){console.warn('Poki ad unavailable; continuing game',e);}
-   finally{adActive=false;}
-   return true;
-  }
- };
- window.DinoPoki=api;
- if(sdk&&typeof sdk.init==='function'){
-  Promise.resolve().then(()=>sdk.init()).then(()=>{ready=true;loading();}).catch(e=>console.warn('Poki SDK unavailable',e));
- }
- window.addEventListener('keydown',e=>{
-  if(adActive){e.preventDefault();e.stopImmediatePropagation();return;}
-  const t=e.target,typing=!!(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable));
-  if(!typing&&[' ','ArrowDown','ArrowUp'].includes(e.key))e.preventDefault();
- },true);
- document.addEventListener('visibilitychange',()=>{if(document.hidden)api.gameplay(false);});
-})();
-</script>
 <script src="./three.min.js"></script>
 <script>
 (function(){
@@ -1068,30 +1004,13 @@ function cleanDinoSettings(v){
  const base=defaultDinoSettings(),n=x=>Number.isFinite(+x)?Math.round(Math.min(2,Math.max(.5,+x))*10)/10:1;
  return v&&typeof v==='object'?{
   graphics:['low','medium','high'].includes(v.graphics)?v.graphics:base.graphics,
-  mouse:n(v.mouse),touch:n(v.touch),fps:v.fps===true,
-  controls:['auto','mobile','computer'].includes(v.controls)?v.controls:'auto'
+  mouse:n(v.mouse),touch:n(v.touch),fps:v.fps===true,controls:['auto','touch','desktop'].includes(v.controls)?v.controls:'auto'
  }:base;
 }
 let dinoSettings=defaultDinoSettings();
 try{dinoSettings=cleanDinoSettings(JSON.parse(localStorage.getItem(DINO_SETTINGS_KEY)||'null'));}catch(e){}
 function dinoPixelRatio(){return Math.min(window.devicePixelRatio||1,{low:1,medium:1.25,high:1.6}[dinoSettings.graphics]);}
 function saveDinoSettings(){try{localStorage.setItem(DINO_SETTINGS_KEY,JSON.stringify(dinoSettings));}catch(e){}}
-function dinoUseTouchControls(){
- return dinoSettings.controls==='mobile'||(dinoSettings.controls==='auto'&&isTouchForGraphics);
-}
-function setDinoControlMode(mode){
- if(!['auto','mobile','computer'].includes(mode))mode='auto';
- dinoSettings.controls=mode;
- const touch=dinoUseTouchControls();
- if(typeof mobileClearMovement==='function')mobileClearMovement();
- keys={};mouseDown.left=mouseDown.right=false;
- if(touch&&document.pointerLockElement)document.exitPointerLock();
- document.documentElement.classList.toggle('touchDevice',touch);
- document.documentElement.classList.toggle('computerControls',!touch);
- refreshDinoSettings();
- if(typeof updateMouseHint==='function')updateMouseHint();
- saveDinoSettings();
-}
 
 /* ===== SCENE ===== */
 const scene = new THREE.Scene();
@@ -3760,7 +3679,6 @@ function playerDeath(srcBot){
       if(timer <= 0){
         clearInterval(player._respawnInterval);
         player._respawnInterval = null;
-        const respawn=()=>{
         const mid = Math.floor(WORLD_SIZE / 2);
         player.pos.set(mid, 22.0, mid - 14);
         player.vel.set(0,0,0);
@@ -3772,14 +3690,6 @@ function playerDeath(srcBot){
         player.blocking = false;
         overlay.style.display = 'none';
         player.dead = false;
-        };
-        window.DinoPoki.gameplay(false);
-        const soundRunning=!!(audioCtx&&audioCtx.state==='running');
-        if(soundRunning)audioCtx.suspend().catch(()=>{});
-        Promise.resolve(window.DinoPoki.commercialBreak()).then(()=>{
-          if(soundRunning&&!muted)audioCtx.resume().catch(()=>{});
-          respawn();
-        },respawn);
       }
     }, 1000);
     player.dead = true;
@@ -5048,7 +4958,6 @@ let starterKitClaimedThisSession=false;
 /* ===== WORLD SETUP ===== */
 function setupWorld(mode){
   if(worldReady){if(worldMode==='pvp')savePvPProgress();else saveAdventure();}portalCooldown=Math.max(portalCooldown,3);
-  window.DinoPoki.gameplay(false);
   const previousMode=worldMode;
   worldMode = mode;
   if(mode==='pvp'){resetInventory();}
@@ -5203,7 +5112,7 @@ function changeWorld(mode){
 /* Mouse look must be requested from an actual user gesture. */
 let worldReady = false;
 function lockGameMouse(){
-  if(dinoUseTouchControls())return;
+  if(document.documentElement.classList.contains('touchDevice'))return;
   if(!worldReady || document.getElementById('invOverlay').style.display === 'flex') return;
   if(document.pointerLockElement === renderer.domElement) return;
   try {
@@ -5214,7 +5123,7 @@ function lockGameMouse(){
   } catch(e){ document.getElementById('mouseHint').style.display = 'block'; }
 }
 function updateMouseHint(){
-  document.getElementById('mouseHint').style.display = !dinoUseTouchControls() && worldReady &&
+  document.getElementById('mouseHint').style.display = !document.documentElement.classList.contains('touchDevice') && worldReady &&
     document.pointerLockElement !== renderer.domElement &&
     document.getElementById('invOverlay').style.display !== 'flex' && !player.dead ? 'block' : 'none';
   mouseDown.left = mouseDown.right = false;
@@ -5263,7 +5172,7 @@ renderer.domElement.addEventListener('click', lockGameMouse);
 
 /* Ignore combat and camera input while any game menu is open. */
 function gameplayInputAllowed(){
- return !window.DinoPoki.inAd()&&worldReady&&!player.dead&&
+ return !pokiAdPlaying&&worldReady&&!player.dead&&
  document.getElementById('title').style.display==='none'&&
  document.getElementById('worldSelect').style.display!=='flex'&&
  document.getElementById('pauseOverlay').style.display!=='flex'&&
@@ -5282,7 +5191,6 @@ let adminOpen=false, creativeOpen=false, flying=false, godMode=false, creativeSp
 let creativeUnlocked=false,creativePendingAction=null;
 const CREATIVE_CODE_SHA256='ceb22a5f926d61e564924a233869735fd3e171fd5cc7cc56ab82d2ca9c22efb5';
 function creativeAccessDenied(){
- if(window.DinoPoki){showToast('Creative is only in the DinoCraft testing edition.','🔒');return true;}
  if(hardcore){showToast('☠️ Hardcore mode cannot use Creative access.','☠️');return true;}
  return false;
 }
@@ -5393,7 +5301,6 @@ function giveExactItem(id,count){
  updateHotbarUI();updateHUD();return given;
 }
 function adminCommand(raw){
- if(window.DinoPoki){showToast('Cheat commands are disabled in the Poki edition.','🌲');return;}
  const a=raw.trim().replace(/^\//,'').toLowerCase().split(/\s+/),cmd=a[0];
  if(!cmd)return;
  if(cmd==='hardcore'){if(hardcore||hardcoreDead){showToast('Hardcore already active or ended','☠️');return;}hardcore=true;try{localStorage.setItem('dinocraft_hardcore_active','true');}catch(e){}creativeUnlocked=false;player.creative=false;flying=false;godMode=false;creativeSpeed=1;updateCreativeGateView();showToast('☠️ HARDCORE: one life, no cheats. Good luck!','☠️');return;}
@@ -5551,44 +5458,18 @@ let chargeCooldown=0;
 let speedPotionTimer=0, strengthPotionTimer=0, regenerationPotionTimer=0;
 let arenaDifficulty='hard';
 function showCommandHelp(){
- let overlay=document.getElementById('commandHelpOverlay');
- if(!overlay){
-  overlay=document.createElement('div');
-  overlay.id='commandHelpOverlay';
-  overlay.setAttribute('role','dialog');
-  overlay.setAttribute('aria-modal','true');
-  overlay.style.cssText='position:fixed;inset:0;z-index:220;background:#081427ef;display:flex;align-items:center;justify-content:center;padding:12px;color:white;font:14px system-ui';
-  const panel=document.createElement('section');
-  panel.style.cssText='width:min(490px,100%);max-height:92dvh;overflow:auto;background:linear-gradient(155deg,#24516a,#10243b);border:2px solid #8cdeff;border-radius:18px;padding:clamp(15px,4vw,24px);line-height:1.65';
-  const title=document.createElement('h2');
-  title.textContent='🦖 HOW TO PLAY DINOCRAFT';
-  title.style.cssText='font-size:22px;color:#ffe49d;margin:0 0 15px';
-  panel.appendChild(title);
-  const tips=[
-   '🌲 Explore SIX different worlds, build shelters and fight dinosaurs!',
-   '💻 PC: WASD to move. Move the mouse to look around.',
-   '⛏️ Hold left mouse button to mine or attack. Right-click to place blocks.',
-   '⌨️ Space jump · Shift sprint · E inventory · 1–9 or wheel select items.',
-   '📱 Phone/tablet: use the left joystick and swipe the right side to look.',
-   '⚔️ Hold the attack or build button to repeat actions on mobile.',
-   '🗺️ M to switch worlds · T for shops · ESC/☰ MENU to pause.',
-   '💾 Your progress is saved on this browser; it is not a multiplayer account.'
-  ];
-  for(const line of tips){
-   const p=document.createElement('p');
-   p.textContent=line;
-   p.style.cssText='margin:11px 0;padding-bottom:8px;border-bottom:1px solid #3b6385';
-   panel.appendChild(p);
+  let overlay=document.getElementById('commandHelpOverlay');
+  if(!overlay){
+    overlay=document.createElement('div');overlay.id='commandHelpOverlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:220;background:rgba(5,8,20,.92);display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:15px system-ui';
+    const panel=document.createElement('div');panel.style.cssText='width:min(650px,95vw);max-height:85vh;overflow-y:auto;background:#152038;border:2px solid #8dd5ff;border-radius:15px;padding:20px';
+    const title=document.createElement('h2');title.textContent='📖 DINOCRAFT COMMAND GUIDE';title.style.color='#ffdc78';panel.appendChild(title);
+    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/journal','Pretty Lands explorer quests'],['/world nether','Enter Magma Depths'],['/world end','Enter the Void Realm'],['/give totem_of_undying 1','Get a lifesaving totem'],['/give ender_pearl 8','Get teleport pearls'],['/hardcore','Start irreversible hardcore run'],['/world pretty','Travel to the Crystal Paradise world'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes (click repeatedly)'],['/spawn raptor 3','Summon three Raptors'],['/spawn triceratops 3','Summon three Triceratops'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
+    for(const [cmd,desc] of cmds){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #43516a;padding:9px 2px;flex-wrap:wrap';const code=document.createElement('code');code.textContent=cmd;code.style.color='#96efca';const label=document.createElement('span');label.textContent=desc;const run=document.createElement('button');run.textContent='▶ RUN';run.style.cssText='background:#367f86;color:white;padding:7px 12px;border:0;border-radius:7px;cursor:pointer';run.onclick=()=>{overlay.style.display='none';adminCommand(cmd);};row.append(code,label,run);panel.appendChild(row);}
+    const close=document.createElement('button');close.textContent='CLOSE (ESC)';close.style.cssText='margin-top:14px;background:#306da0;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer';close.onclick=()=>overlay.style.display='none';panel.appendChild(close);
+    overlay.appendChild(panel);document.body.appendChild(overlay);
   }
-  const close=document.createElement('button');
-  close.type='button';
-  close.textContent='▶ BACK TO GAME';
-  close.style.cssText='width:100%;min-height:46px;margin-top:12px;padding:10px;background:#237e55;border:1px solid #93e6b7;color:white;border-radius:11px;font:800 14px system-ui;cursor:pointer';
-  close.onclick=()=>{overlay.style.display='none';renderer.domElement.focus();};
-  panel.appendChild(close);overlay.appendChild(panel);document.body.appendChild(overlay);
- }
- overlay.style.display='flex';keys={};mouseDown.left=mouseDown.right=false;
- if(document.pointerLockElement)document.exitPointerLock();
+  overlay.style.display='flex';if(document.pointerLockElement)document.exitPointerLock();
 }
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){const h=document.getElementById('commandHelpOverlay');if(h&&h.style.display==='flex'){h.style.display='none';e.stopImmediatePropagation();}}},true);
 
@@ -5688,7 +5569,6 @@ function updateCombatItems(dt){
 
 let placeCooldown = 0;
 window.addEventListener('keydown', e => {
-  if(window.DinoPoki.inAd())return;
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
@@ -5712,9 +5592,9 @@ window.addEventListener('keydown', e => {
   if(creativeOpen){if(k==='escape'||k==='i'){e.preventDefault();toggleCreativePanel(false);}return;}
   if(document.getElementById('cityMarket').style.display==='flex'){if(k==='t'||k==='escape'){e.preventDefault();toggleMarket(false);}return;}
   if(k==='t' && !e.repeat){e.preventDefault();toggleMarket();return;}
-  if(k==='/' || k==='enter'){e.preventDefault();return;}
+  if(k==='/' || k==='enter'){e.preventDefault();toggleAdmin(true);return;}
   if(k==='u'&&!e.repeat){e.preventDefault();openPlayerNameDialog();return;}
-  if(k==='c'&&!e.repeat){e.preventDefault();return;}
+  if(k==='c'&&!e.repeat){e.preventDefault();openCreativeGate();return;}
   if(document.getElementById('invOverlay').style.display === 'flex'){
     if(k === 'escape' || k === 'e') toggleInventory();
     return;
@@ -5735,13 +5615,13 @@ window.addEventListener('keydown', e => {
   if(e.key === 'Shift') keys['shift'] = true;
   if(k >= '1' && k <= '9'){ hotbar = parseInt(k)-1; updateHotbarUI(); }
   if(k === 'v' && !e.repeat){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'ON · Press Space while falling':'OFF'),'🪽');}
-  if(k==='g'&&!e.repeat){e.preventDefault();return;}
+  if(k==='g'&&!e.repeat){e.preventDefault();openCreativeGate(()=>{setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');});return;}
   if(k==='f'&&!e.repeat){
     showToast('Select a Golden Apple in your hotbar and use it to eat.','🍎');
     return;
   }
   if(k==='e'&&!e.repeat){toggleInventory();return;}
-  if(k==='i'&&!e.repeat){e.preventDefault();return;}
+  if(k==='i'&&!e.repeat){e.preventDefault();toggleCreativePanel(true);return;}
   if(k === 'tab' && !e.repeat && worldMode === 'pvp'){
     e.preventDefault(); statsVisible=!statsVisible;
     document.getElementById('battleStats').style.display=statsVisible?'block':'none';
@@ -5811,12 +5691,13 @@ function continueFromTitle(){
 document.getElementById('title').addEventListener('click',e=>{
  if(e.target.closest('#titlePlayerName'))return;
  initAudio();startAmbient();
- continueFromTitle();
+ if(!playerUsername)openPlayerNameDialog(continueFromTitle);
+ else continueFromTitle();
 });
 document.getElementById('titlePlayerName').addEventListener('click',e=>{e.stopPropagation();openPlayerNameDialog();});
 document.getElementById('worldPlayerName').addEventListener('click',()=>openPlayerNameDialog());
 function lockGameMouseEarly(){
-  if(dinoUseTouchControls())return;
+  if(document.documentElement.classList.contains('touchDevice'))return;
   try {
     const result = renderer.domElement.requestPointerLock();
     if(result && typeof result.catch === 'function') result.catch(()=>{});
@@ -5844,9 +5725,16 @@ document.querySelectorAll('.worldCard').forEach(card => {
 
 
 /* DinoCraft 3.0: real multi-touch input; desktop keyboard and mouse still work */
-const touchCapable=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
-document.documentElement.classList.toggle('touchDevice',dinoUseTouchControls());
-document.documentElement.classList.toggle('computerControls',!dinoUseTouchControls());
+let touchCapable=false;
+function applyDinoControlMode(){
+ touchCapable=dinoSettings.controls==='touch'||(dinoSettings.controls==='auto'&&isTouchForGraphics);
+ document.documentElement.classList.toggle('touchDevice',touchCapable);
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ if(touchCapable&&document.pointerLockElement)document.exitPointerLock();
+ if(typeof updateMouseHint==='function')updateMouseHint();
+}
+applyDinoControlMode();
 const mobileControls=document.getElementById('mobileControls');
 const touchJoy=document.getElementById('touchJoystick'),touchKnob=document.getElementById('touchKnob'),touchLook=document.getElementById('touchLook');
 let joystickPointer=null,lookPointer=null,lookX=0,lookY=0;
@@ -5863,8 +5751,8 @@ document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
  if(!mobileReady())return;
  setTouchMenuExpanded(!touchMenuExpanded);
 });
-function mobileReady(){return dinoUseTouchControls()&&!window.DinoPoki.inAd()&&worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
-function mobileMenuOpen(){return window.DinoPoki.inAd()||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
+function mobileReady(){return touchCapable&&worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
+function mobileMenuOpen(){return pokiAdPlaying||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
 let mobileAttackHeld=false,mobilePlaceHeld=false;
 const touchActionPointers={attack:null,place:null};
@@ -5989,7 +5877,7 @@ touchAction('touchHelp',()=>{mobileClearMovement();showCommandHelp();});
 touchAction('touchProfile',()=>{mobileClearMovement();openPlayerNameDialog();});
 touchAction('touchSettings',()=>{mobileClearMovement();openDinoPause();});
 document.getElementById('hotbar').addEventListener('pointerdown',e=>{
- if(!dinoUseTouchControls()||!mobileReady())return;
+ if(!touchCapable||!mobileReady())return;
  const slot=e.target.closest('.slot');if(!slot)return;
  const index=Array.from(slot.parentNode.children).indexOf(slot);
  if(index>=0&&index<9){e.preventDefault();e.stopPropagation();hotbar=index;lastHotbar=-1;updateHotbarUI();}
@@ -6111,10 +5999,6 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 /* 3.2: Pause actions, settings, and FPS counter. */
 function refreshDinoSettings(){
  document.getElementById('controlModeSelect').value=dinoSettings.controls;
- document.getElementById('controlModeDescription').textContent=
-  dinoSettings.controls==='mobile'?'📱 Touch joystick and on-screen actions enabled.':
-  dinoSettings.controls==='computer'?'🖥️ Keyboard and mouse enabled.':
-  '✨ Auto: '+(dinoUseTouchControls()?'Mobile / Touch':'Computer / Mouse')+' detected.';
  document.getElementById('graphicsSelect').value=dinoSettings.graphics;
  document.getElementById('mouseSpeed').value=String(dinoSettings.mouse);
  document.getElementById('touchSpeed').value=String(dinoSettings.touch);
@@ -6137,23 +6021,22 @@ function applyDinoQuality(){
  sun.shadow.needsUpdate=true;renderer.shadowMap.needsUpdate=true;
  refreshDinoSettings();
 }
-let pokiResuming=false;
-async function closeDinoPause(resume=true){
- if(pokiResuming)return;
- pokiResuming=true;
+function finishDinoPause(){
+ document.getElementById('pauseOverlay').style.display='none';
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ lastTime=performance.now()/1000;renderer.domElement.focus();
+}
+function closeDinoPause(){
+ if(pokiAdPlaying)return;
+ if(!pokiSDKAvailable){finishDinoPause();return;}
+ pokiAdPlaying=true;keys={};mouseDown.left=mouseDown.right=false;
+ const oldMute=muted;muted=true;
  try{
-  if(resume){
-   window.DinoPoki.gameplay(false);
-   const audioRunning=!!(audioCtx&&audioCtx.state==='running');
-   if(audioRunning)try{await audioCtx.suspend();}catch(e){}
-   try{await window.DinoPoki.commercialBreak();}
-   finally{if(audioRunning&&!muted)try{await audioCtx.resume();}catch(e){}}
-  }
-  document.getElementById('pauseOverlay').style.display='none';
-  keys={};mouseDown.left=mouseDown.right=false;
-  if(typeof mobileClearMovement==='function')mobileClearMovement();
-  lastTime=performance.now()/1000;renderer.domElement.focus();
- }finally{pokiResuming=false;}
+  Promise.resolve(PokiSDK.commercialBreak()).catch(()=>{}).then(()=>{
+   muted=oldMute;pokiAdPlaying=false;finishDinoPause();
+  });
+ }catch(e){muted=oldMute;pokiAdPlaying=false;finishDinoPause();}
 }
 function openDinoPause(){
  if(!worldReady||player.dead||document.getElementById('worldSelect').style.display==='flex')return;
@@ -6162,23 +6045,26 @@ function openDinoPause(){
  if(typeof mobileClearMovement==='function')mobileClearMovement();
  refreshDinoSettings();
  showDinoPersonalRecords();
- window.DinoPoki.gameplay(false);
  document.getElementById('pauseOverlay').style.display='flex';
  if(document.pointerLockElement)document.exitPointerLock();
 }
 document.getElementById('desktopPause').onclick=openDinoPause;
-document.getElementById('pausePlay').onclick=()=>closeDinoPause(true);
-document.getElementById('pauseX').onclick=()=>closeDinoPause(true);
+document.getElementById('pausePlay').onclick=closeDinoPause;
+document.getElementById('pauseX').onclick=closeDinoPause;
 document.getElementById('pauseSave').onclick=()=>{
  saveOnSuspend();showToast('Save requested for this browser','💾');
 };
 document.getElementById('pauseWorlds').onclick=()=>{
- saveOnSuspend();closeDinoPause(false);
+ saveOnSuspend();finishDinoPause();
  document.getElementById('worldSelect').style.display='flex';
  document.documentElement.classList.remove('playing');
  if(document.pointerLockElement)document.exitPointerLock();
 };
-document.getElementById('controlModeSelect').addEventListener('change',e=>setDinoControlMode(e.target.value));
+document.getElementById('controlModeSelect').addEventListener('change',e=>{
+ dinoSettings.controls=e.target.value;
+ dinoSettings=cleanDinoSettings(dinoSettings);
+ applyDinoControlMode();refreshDinoSettings();saveDinoSettings();
+});
 document.getElementById('graphicsSelect').addEventListener('change',e=>{
  dinoSettings.graphics=e.target.value;dinoSettings=cleanDinoSettings(dinoSettings);
  applyDinoQuality();saveDinoSettings();
@@ -6193,7 +6079,7 @@ document.getElementById('fpsCheck').addEventListener('change',e=>{
  dinoSettings.fps=e.target.checked;refreshDinoSettings();saveDinoSettings();
 });
 document.getElementById('resetGameSettings').onclick=()=>{
- dinoSettings=defaultDinoSettings();applyDinoQuality();setDinoControlMode('auto');
+ dinoSettings=defaultDinoSettings();applyDinoControlMode();applyDinoQuality();saveDinoSettings();
  showToast('Settings reset to default','⚙️');
 };
 let fpsCount=0,fpsTime=performance.now();
@@ -6213,14 +6099,13 @@ let lastTime = performance.now() / 1000;
 function animate(){
   requestAnimationFrame(animate);
   const now = performance.now() / 1000;
-  updateDinoFps(now*1000);
+  pokiTrackGameplay();updateDinoFps(now*1000);
   let dt = now - lastTime;
   lastTime = now;
   if(dt > 0.1) dt = 0.1;
   const titleVisible = document.getElementById('title').style.display !== 'none';
   const worldSelectVisible = document.getElementById('worldSelect').style.display === 'flex';
   if(titleVisible || worldSelectVisible){
-    window.DinoPoki.gameplay(false);
     updateSky(worldSelectVisible?0:dt);
     skyDome.position.copy(camera.position);
     renderer.render(scene, camera);
@@ -6229,11 +6114,8 @@ function animate(){
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
   const modalOpen = document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
-  const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
-  const loadingWorld=document.getElementById('loading').style.display==='flex';
-  const playingNow=worldReady&&!document.hidden&&!simPaused&&!loadingWorld&&!window.DinoPoki.inAd();
-  window.DinoPoki.gameplay(playingNow);
-  const simDt=playingNow?dt:0;
+  const simPaused=pokiAdPlaying||invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
+  const simDt=simPaused?0:dt;
   if(worldReady&&simDt>0)dinoUnsavedSeconds+=simDt;
   updateSky(simDt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();snapshotDinoRecords();} }
@@ -6412,6 +6294,44 @@ try{
 }catch(e){}
 renderPlayerName();
 
+
+/* Poki SDK: only in dedicated Poki build. One start or stop per state transition. */
+let pokiSDKAvailable=false,pokiInitSettled=false,pokiLoadingComplete=false;
+let pokiLoadingReported=false,pokiGameplayActive=false,pokiAdPlaying=false;
+function pokiReportLoaded(){
+ if(!pokiInitSettled||!pokiLoadingComplete||pokiLoadingReported)return;
+ pokiLoadingReported=true;
+ if(pokiSDKAvailable)try{PokiSDK.gameLoadingFinished();}catch(e){}
+}
+function pokiTrackGameplay(){
+ if(!pokiInitSettled||!pokiLoadingReported||pokiAdPlaying)return;
+ const playing=worldReady&&!player.dead&&document.visibilityState!=='hidden'&&
+ document.getElementById('title').style.display==='none'&&
+ document.getElementById('worldSelect').style.display!=='flex'&&
+ document.getElementById('pauseOverlay').style.display!=='flex'&&
+ document.getElementById('playerNameDialog').style.display!=='flex'&&
+ document.getElementById('creativeGate').style.display!=='flex'&&
+ document.getElementById('invOverlay').style.display!=='flex'&&
+ document.getElementById('cityMarket').style.display!=='flex'&&
+ document.getElementById('quickMapOverlay').style.display!=='flex'&&
+ document.getElementById('prettyJournal')?.style.display!=='flex'&&
+ document.getElementById('commandHelpOverlay')?.style.display!=='flex'&&
+ !touchMenuExpanded&&!creativeOpen&&!adminOpen;
+ if(playing===pokiGameplayActive)return;
+ pokiGameplayActive=playing;
+ if(pokiSDKAvailable)try{if(playing)PokiSDK.gameplayStart();else PokiSDK.gameplayStop();}catch(e){}
+}
+function pokiInit(){
+ if(typeof PokiSDK==='undefined'||typeof PokiSDK.init!=='function'){
+  pokiInitSettled=true;pokiReportLoaded();return;
+ }
+ try{Promise.resolve(PokiSDK.init()).then(()=>{
+  pokiSDKAvailable=true;pokiInitSettled=true;pokiReportLoaded();
+ }).catch(()=>{pokiInitSettled=true;pokiReportLoaded();});}
+ catch(e){pokiInitSettled=true;pokiReportLoaded();}
+}
+pokiInit();
+
 /* ===== BOOT ===== */
 setTimeout(() => {
   try {
@@ -6422,8 +6342,7 @@ setTimeout(() => {
     updateHotbarUI();
     buildHeldItem();
     document.getElementById('loading').style.display = 'none';
-    window.DinoPoki.finishLoading();
-    animate();
+    pokiLoadingComplete=true;pokiReportLoaded();animate();
   } catch(e){
     console.error('Boot error:', e);
     document.getElementById('loading').innerHTML =
