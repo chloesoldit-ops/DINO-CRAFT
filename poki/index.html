@@ -5734,7 +5734,7 @@ function applyDinoControlMode(){
  if(touchCapable&&document.pointerLockElement)document.exitPointerLock();
  if(typeof updateMouseHint==='function')updateMouseHint();
 }
-applyDinoControlMode();
+/* The control mode is applied only after touch-related variables initialize. */
 const mobileControls=document.getElementById('mobileControls');
 const touchJoy=document.getElementById('touchJoystick'),touchKnob=document.getElementById('touchKnob'),touchLook=document.getElementById('touchLook');
 let joystickPointer=null,lookPointer=null,lookX=0,lookY=0;
@@ -5885,6 +5885,8 @@ document.getElementById('hotbar').addEventListener('pointerdown',e=>{
 window.addEventListener('blur',()=>{mobileClearMovement();keys.shift=false;});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){mobileClearMovement();keys.shift=false;}});
 document.addEventListener('touchmove',e=>{if(e.target.closest('#touchJoystick,#touchLook,#touchActions'))e.preventDefault();},{passive:false});
+/* Initialize controls after all touch state exists, avoiding a startup crash. */
+applyDinoControlMode();
 
 /* ===== DINOCRAFT COMBAT 1.0: DINO ARENA EVENTS ===== */
 let dinoArenaTimer=35, dinoArenaWave=0;
