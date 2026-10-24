@@ -348,6 +348,13 @@ html:not(.playing) #fpsDisplay{display:none!important}
 #touchMenuToggle{z-index:132}
 #pauseOverlay{overscroll-behavior:contain}
 html,body{overscroll-behavior:none}
+
+/* Poki UI polish: fast entry, clean help, and scrollable mobile world selection. */
+#title .cta{background:linear-gradient(140deg,#236d57,#2b83a1);border:2px solid #8ff6c9;border-radius:15px;box-shadow:0 8px 32px #12877669}
+#title .sub{line-height:1.65}
+#worldSelect{overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}
+#commandHelpOverlay button{touch-action:manipulation}
+@media(max-width:600px){#title h1{font-size:clamp(33px,10vw,75px)}#title .cta{min-height:48px}}
 </style>
 </head>
 <body>
@@ -535,8 +542,8 @@ html,body{overscroll-behavior:none}
   <h1>DINOCRAFT</h1>
   <p>SIX WORLDS · BUILD · EXPLORE · SURVIVE</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
-  <div class="cta">▶ CLICK TO PLAY ◀</div>
-  <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
+  <div class="cta">▶ PLAY DINOCRAFT ◀</div>
+  <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🌲 Explore six worlds · Collect DinoCoins · Fight dinosaurs · Save progress</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
@@ -5352,6 +5359,7 @@ function giveExactItem(id,count){
  updateHotbarUI();updateHUD();return given;
 }
 function adminCommand(raw){
+ if(window.DinoPoki){showToast('Cheat commands are disabled in the Poki edition.','🌲');return;}
  const a=raw.trim().replace(/^\//,'').toLowerCase().split(/\s+/),cmd=a[0];
  if(!cmd)return;
  if(cmd==='hardcore'){if(hardcore||hardcoreDead){showToast('Hardcore already active or ended','☠️');return;}hardcore=true;try{localStorage.setItem('dinocraft_hardcore_active','true');}catch(e){}creativeUnlocked=false;player.creative=false;flying=false;godMode=false;creativeSpeed=1;updateCreativeGateView();showToast('☠️ HARDCORE: one life, no cheats. Good luck!','☠️');return;}
@@ -5509,18 +5517,44 @@ let chargeCooldown=0;
 let speedPotionTimer=0, strengthPotionTimer=0, regenerationPotionTimer=0;
 let arenaDifficulty='hard';
 function showCommandHelp(){
-  let overlay=document.getElementById('commandHelpOverlay');
-  if(!overlay){
-    overlay=document.createElement('div');overlay.id='commandHelpOverlay';
-    overlay.style.cssText='position:fixed;inset:0;z-index:220;background:rgba(5,8,20,.92);display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:15px system-ui';
-    const panel=document.createElement('div');panel.style.cssText='width:min(650px,95vw);max-height:85vh;overflow-y:auto;background:#152038;border:2px solid #8dd5ff;border-radius:15px;padding:20px';
-    const title=document.createElement('h2');title.textContent='📖 DINOCRAFT COMMAND GUIDE';title.style.color='#ffdc78';panel.appendChild(title);
-    const cmds=[['/help','Open this guide'],['/enchant sharpness 5','Enchant held weapon'],['/enchant list','List enchantments'],['/journal','Pretty Lands explorer quests'],['/world nether','Enter Magma Depths'],['/world end','Enter the Void Realm'],['/give totem_of_undying 1','Get a lifesaving totem'],['/give ender_pearl 8','Get teleport pearls'],['/hardcore','Start irreversible hardcore run'],['/world pretty','Travel to the Crystal Paradise world'],['/world city','Travel to DinoCity'],['/world survival','Travel to Survival'],['/world arena','Travel to PvP Arena'],['/missions','View quests and earn rewards'],['/save','Save inventory, coins and progress'],['/shop','Open DinoCity trading market'],['/balance','See your saved DinoCoins'],['/sell diamond 1','Sell a Survival diamond for coins'],['/give speed_potion 8','Get speed potions'],['/give strength_potion 8','Get strength potions'],['/give regeneration_potion 8','Get regeneration potions'],['/give bow 1','Get a bow'],['/give arrow 64','Get arrows'],['/give tnt_minecart 8','Get TNT minecarts'],['/give enchanted_golden_apple 8','Get Notch apples'],['/difficulty easy','Relaxed dinosaur battles'],['/difficulty normal','Normal dinosaurs'],['/difficulty hard','Harder and stronger dinosaurs'],['/difficulty apex','Only Rex bosses in arena waves'],['/spawn rex 3','Summon three Rexes (click repeatedly)'],['/spawn raptor 3','Summon three Raptors'],['/spawn triceratops 3','Summon three Triceratops'],['/items','Browse all items'],['/creative','Creative mode'],['/fly','Toggle flight'],['/elytra','Toggle wings'],['/survival','Survival mode'],['/revolution','Explore new survival landmarks']];
-    for(const [cmd,desc] of cmds){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #43516a;padding:9px 2px;flex-wrap:wrap';const code=document.createElement('code');code.textContent=cmd;code.style.color='#96efca';const label=document.createElement('span');label.textContent=desc;const run=document.createElement('button');run.textContent='▶ RUN';run.style.cssText='background:#367f86;color:white;padding:7px 12px;border:0;border-radius:7px;cursor:pointer';run.onclick=()=>{overlay.style.display='none';adminCommand(cmd);};row.append(code,label,run);panel.appendChild(row);}
-    const close=document.createElement('button');close.textContent='CLOSE (ESC)';close.style.cssText='margin-top:14px;background:#306da0;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer';close.onclick=()=>overlay.style.display='none';panel.appendChild(close);
-    overlay.appendChild(panel);document.body.appendChild(overlay);
+ let overlay=document.getElementById('commandHelpOverlay');
+ if(!overlay){
+  overlay=document.createElement('div');
+  overlay.id='commandHelpOverlay';
+  overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');
+  overlay.style.cssText='position:fixed;inset:0;z-index:220;background:#081427ef;display:flex;align-items:center;justify-content:center;padding:12px;color:white;font:14px system-ui';
+  const panel=document.createElement('section');
+  panel.style.cssText='width:min(490px,100%);max-height:92dvh;overflow:auto;background:linear-gradient(155deg,#24516a,#10243b);border:2px solid #8cdeff;border-radius:18px;padding:clamp(15px,4vw,24px);line-height:1.65';
+  const title=document.createElement('h2');
+  title.textContent='🦖 HOW TO PLAY DINOCRAFT';
+  title.style.cssText='font-size:22px;color:#ffe49d;margin:0 0 15px';
+  panel.appendChild(title);
+  const tips=[
+   '🌲 Explore SIX different worlds, build shelters and fight dinosaurs!',
+   '💻 PC: WASD to move. Move the mouse to look around.',
+   '⛏️ Hold left mouse button to mine or attack. Right-click to place blocks.',
+   '⌨️ Space jump · Shift sprint · E inventory · 1–9 or wheel select items.',
+   '📱 Phone/tablet: use the left joystick and swipe the right side to look.',
+   '⚔️ Hold the attack or build button to repeat actions on mobile.',
+   '🗺️ M to switch worlds · T for shops · ESC/☰ MENU to pause.',
+   '💾 Your progress is saved on this browser; it is not a multiplayer account.'
+  ];
+  for(const line of tips){
+   const p=document.createElement('p');
+   p.textContent=line;
+   p.style.cssText='margin:11px 0;padding-bottom:8px;border-bottom:1px solid #3b6385';
+   panel.appendChild(p);
   }
-  overlay.style.display='flex';if(document.pointerLockElement)document.exitPointerLock();
+  const close=document.createElement('button');
+  close.type='button';
+  close.textContent='▶ BACK TO GAME';
+  close.style.cssText='width:100%;min-height:46px;margin-top:12px;padding:10px;background:#237e55;border:1px solid #93e6b7;color:white;border-radius:11px;font:800 14px system-ui;cursor:pointer';
+  close.onclick=()=>{overlay.style.display='none';renderer.domElement.focus();};
+  panel.appendChild(close);overlay.appendChild(panel);document.body.appendChild(overlay);
+ }
+ overlay.style.display='flex';keys={};mouseDown.left=mouseDown.right=false;
+ if(document.pointerLockElement)document.exitPointerLock();
 }
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){const h=document.getElementById('commandHelpOverlay');if(h&&h.style.display==='flex'){h.style.display='none';e.stopImmediatePropagation();}}},true);
 
@@ -5743,8 +5777,7 @@ function continueFromTitle(){
 document.getElementById('title').addEventListener('click',e=>{
  if(e.target.closest('#titlePlayerName'))return;
  initAudio();startAmbient();
- if(!playerUsername)openPlayerNameDialog(continueFromTitle);
- else continueFromTitle();
+ continueFromTitle();
 });
 document.getElementById('titlePlayerName').addEventListener('click',e=>{e.stopPropagation();openPlayerNameDialog();});
 document.getElementById('worldPlayerName').addEventListener('click',()=>openPlayerNameDialog());
@@ -5796,7 +5829,7 @@ document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
  setTouchMenuExpanded(!touchMenuExpanded);
 });
 function mobileReady(){return !window.DinoPoki.inAd()&&worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
-function mobileMenuOpen(){return document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
+function mobileMenuOpen(){return window.DinoPoki.inAd()||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
 let mobileAttackHeld=false,mobilePlaceHeld=false;
 const touchActionPointers={attack:null,place:null};
@@ -6094,8 +6127,8 @@ function openDinoPause(){
  if(document.pointerLockElement)document.exitPointerLock();
 }
 document.getElementById('desktopPause').onclick=openDinoPause;
-document.getElementById('pausePlay').onclick=closeDinoPause;
-document.getElementById('pauseX').onclick=closeDinoPause;
+document.getElementById('pausePlay').onclick=()=>closeDinoPause(true);
+document.getElementById('pauseX').onclick=()=>closeDinoPause(true);
 document.getElementById('pauseSave').onclick=()=>{
  saveOnSuspend();showToast('Save requested for this browser','💾');
 };
@@ -6157,7 +6190,7 @@ function animate(){
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
   const loadingWorld=document.getElementById('loading').style.display==='flex';
-  const playingNow=worldReady&&!simPaused&&!loadingWorld&&!window.DinoPoki.inAd();
+  const playingNow=worldReady&&!document.hidden&&!simPaused&&!loadingWorld&&!window.DinoPoki.inAd();
   window.DinoPoki.gameplay(playingNow);
   const simDt=playingNow?dt:0;
   if(worldReady&&simDt>0)dinoUnsavedSeconds+=simDt;
