@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.2 — Play Smooth</title>
+<title>DinoCraft 3.3 — Better Gameplay</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -323,6 +323,12 @@ html.playing #desktopPause{display:block}
 #pauseWorlds{width:100%}
 @media(max-width:410px){.pauseCard{padding:13px}.pauseMainButtons{grid-template-columns:1fr}}
 @media(max-height:480px){.pauseRow{padding:6px 2px}.pauseHeading{margin-bottom:8px}.pauseMainButtons{margin-bottom:8px}}
+
+/* DinoCraft 3.3: clean mobile HUD and keep FPS only while playing. */
+.touchDevice #info{top:calc(env(safe-area-inset-top) + 61px);left:calc(env(safe-area-inset-left) + 8px);max-width:46vw}
+.touchDevice #info .tag{max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:not(.playing) #fpsDisplay{display:none!important}
+@media(max-height:480px){.touchDevice #info{display:none!important}}
 </style>
 </head>
 <body>
@@ -365,8 +371,8 @@ html.playing #desktopPause{display:block}
   </div>
   <div class="pauseBottom">
    <button id="pauseWorlds" type="button">🌍 CHOOSE ANOTHER WORLD</button>
-   <p>PC: WASD move · Mouse look · Space jump · Shift sprint · E bag · I Creative access · ESC pause</p>
-   <p>Phone/tablet: Joystick to move · Swipe to look · ☰ MENU to pause.</p>
+   <p>PC: WASD move · Mouse look · Mouse wheel/1–9 items · Space jump · Shift sprint · E bag · I Creative access · ESC pause</p>
+   <p>Phone/tablet: Joystick move · Swipe to look · Hold ⚔️ to mine/attack · Hold 🧱 to build · ☰ MENU to pause.</p>
   </div>
  </div>
 </div>
@@ -498,7 +504,7 @@ html.playing #desktopPause{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.2 · PLAY SMOOTH · SIX WORLDS</p>
+  <p>3.3 · BETTER GAMEPLAY · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
@@ -5067,14 +5073,14 @@ document.addEventListener('pointerlockerror', updateMouseHint);
 // Mouse-lock fallbacks for browsers that deny pointer lock (including local files).
 let fallbackDragging = false, fallbackX = 0, fallbackY = 0;
 renderer.domElement.addEventListener('pointerdown', e => {
-  if(!worldReady || e.button !== 0 || document.pointerLockElement === renderer.domElement) return;
+  if(!gameplayInputAllowed() || e.pointerType==='touch' || e.button !== 0 || document.pointerLockElement === renderer.domElement) return;
   fallbackDragging = true; fallbackX = e.clientX; fallbackY = e.clientY;
 });
 window.addEventListener('pointerup', () => { fallbackDragging = false; });
 window.addEventListener('pointercancel', () => { fallbackDragging = false; });
 window.addEventListener('blur', () => { fallbackDragging = false; });
 renderer.domElement.addEventListener('pointermove', e => {
-  if(!fallbackDragging || document.pointerLockElement === renderer.domElement) return;
+  if(!fallbackDragging || !gameplayInputAllowed() || e.pointerType==='touch' || document.pointerLockElement === renderer.domElement) return;
   const dx = e.clientX - fallbackX, dy = e.clientY - fallbackY;
   fallbackX = e.clientX; fallbackY = e.clientY;
   player.yaw -= dx * 0.004 * dinoSettings.mouse; player.pitch -= dy * 0.004 * dinoSettings.mouse;
@@ -5091,7 +5097,7 @@ renderer.domElement.addEventListener('pointerleave', () => {
   unlockedLastX = unlockedLastY = null;
 });
 renderer.domElement.addEventListener('pointermove', e => {
-  if(!worldReady || player.dead || document.pointerLockElement === renderer.domElement) return;
+  if(!gameplayInputAllowed() || e.pointerType==='touch' || document.pointerLockElement === renderer.domElement) return;
   if(document.getElementById('invOverlay').style.display === 'flex') return;
   if(unlockedLastX === null){ unlockedLastX=e.clientX; unlockedLastY=e.clientY; return; }
   const dx = Math.max(-90, Math.min(90, e.clientX - unlockedLastX));
@@ -5103,6 +5109,22 @@ renderer.domElement.addEventListener('pointermove', e => {
 });
 renderer.domElement.setAttribute('tabindex', '0');
 renderer.domElement.addEventListener('click', lockGameMouse);
+
+/* Ignore combat and camera input while any game menu is open. */
+function gameplayInputAllowed(){
+ return worldReady&&!player.dead&&
+ document.getElementById('title').style.display==='none'&&
+ document.getElementById('worldSelect').style.display!=='flex'&&
+ document.getElementById('pauseOverlay').style.display!=='flex'&&
+ document.getElementById('playerNameDialog').style.display!=='flex'&&
+ document.getElementById('creativeGate').style.display!=='flex'&&
+ document.getElementById('invOverlay').style.display!=='flex'&&
+ document.getElementById('cityMarket').style.display!=='flex'&&
+ document.getElementById('quickMapOverlay').style.display!=='flex'&&
+ document.getElementById('prettyJournal')?.style.display!=='flex'&&
+ document.getElementById('commandHelpOverlay')?.style.display!=='flex'&&
+ !creativeOpen&&!adminOpen&&!touchMenuExpanded;
+}
 /* ===== INPUT ===== */
 const mouseDown = {left:false, right:false};
 let adminOpen=false, creativeOpen=false, flying=false, godMode=false, creativeSpeed=1;
@@ -5534,12 +5556,12 @@ window.addEventListener('keydown', e => {
   if(k >= '1' && k <= '9'){ hotbar = parseInt(k)-1; updateHotbarUI(); }
   if(k === 'v' && !e.repeat){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'ON · Press Space while falling':'OFF'),'🪽');}
   if(k==='g'&&!e.repeat){e.preventDefault();openCreativeGate(()=>{setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');});return;}
-  if(k === 'f'){
-    if(player.hunger < 20){ player.hunger = Math.min(20, player.hunger+6); updateHUD(); playSound('place'); }
-    else showToast('Not hungry', '❌');
+  if(k==='f'&&!e.repeat){
+    showToast('Select a Golden Apple in your hotbar and use it to eat.','🍎');
+    return;
   }
-  if(k === 'e') toggleInventory();
-  if(k === 'i'){e.preventDefault();toggleCreativePanel(true);return;}
+  if(k==='e'&&!e.repeat){toggleInventory();return;}
+  if(k==='i'&&!e.repeat){e.preventDefault();toggleCreativePanel(true);return;}
   if(k === 'tab' && !e.repeat && worldMode === 'pvp'){
     e.preventDefault(); statsVisible=!statsVisible;
     document.getElementById('battleStats').style.display=statsVisible?'block':'none';
@@ -5564,6 +5586,13 @@ window.addEventListener('keyup', e => {
   if(e.key === 'Shift') keys['shift'] = false;
 });
 window.addEventListener('blur', () => { keys = {}; mouseDown.left = mouseDown.right = false; });
+/* Mouse wheel cycles hotbar slots, like other block-building games. */
+renderer.domElement.addEventListener('wheel',e=>{
+ if(!gameplayInputAllowed()||!Number.isFinite(e.deltaY)||e.deltaY===0)return;
+ e.preventDefault();
+ hotbar=(hotbar+(e.deltaY>0?1:8))%9;
+ lastHotbar=-1;updateHotbarUI();
+},{passive:false});
 document.addEventListener('mousemove', e => {
   if(document.pointerLockElement !== renderer.domElement) return;
   player.yaw -= e.movementX * 0.0022 * dinoSettings.mouse;
@@ -5576,7 +5605,7 @@ document.addEventListener('mousedown', e => {
   if(document.getElementById('invOverlay').style.display === 'flex') return;
   // Pointer lock is optional for combat. Embedded previews often block it.
   // Only clicks on the game canvas should attack, never clicks on the menus/UI.
-  if(e.target !== renderer.domElement || !worldReady || player.dead) return;
+  if(e.target !== renderer.domElement || !gameplayInputAllowed()) return;
   if(document.pointerLockElement !== renderer.domElement) lockGameMouse();
   if(e.button === 0){ if(!useCombatItem()){mouseDown.left = true;tryAttack();} }
   if(e.button === 2){
@@ -5657,6 +5686,8 @@ document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
 function mobileReady(){return worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
 function mobileMenuOpen(){return document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
+let mobileAttackHeld=false,mobilePlaceHeld=false;
+const touchActionPointers={attack:null,place:null};
 function mobileSyncShift(){
  keys.shift=flying?mobileDownOn:(mobileSprintOn||mobileDownOn);
  document.getElementById('touchSprint').classList.toggle('pressed',mobileSprintOn);
@@ -5666,9 +5697,12 @@ function mobileReleaseJoystick(){
  touchKnob.style.transform='translate(-50%,-50%)';joystickPointer=null;
 }
 function mobileClearMovement(){
- mobileReleaseJoystick();keys[' ']=false;mobileSprintOn=false;mobileDownOn=false;mobileSyncShift();
- document.getElementById('touchJump').classList.remove('pressed');
- document.getElementById('touchDown').classList.remove('pressed');
+ mobileReleaseJoystick();keys[' ']=false;mobileSprintOn=false;mobileDownOn=false;
+ mobileAttackHeld=false;mobilePlaceHeld=false;
+ touchActionPointers.attack=null;touchActionPointers.place=null;
+ lookPointer=null;mobileSyncShift();
+ for(const id of ['touchJump','touchDown','touchAttack','touchPlace'])
+  document.getElementById(id).classList.remove('pressed');
 }
 function mobileUpdateJoystick(e){
  const r=touchJoy.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
@@ -5691,8 +5725,34 @@ function touchAction(id,fn){const b=document.getElementById(id);b.addEventListen
 function touchHold(id,key){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!mobileReady()||mobileMenuOpen())return;b.setPointerCapture(e.pointerId);keys[key]=true;b.classList.add('pressed');});
  for(const t of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(t,e=>{keys[key]=false;b.classList.remove('pressed');});
 }
-touchAction('touchAttack',()=>{if(!mobileMenuOpen()){if(!useCombatItem())tryAttack();}});
-touchAction('touchPlace',()=>{if(!mobileMenuOpen())tryPlace();});
+touchAction('touchAttack',()=>{
+ if(mobileMenuOpen())return;
+ if(!useCombatItem()){mobileAttackHeld=true;tryAttack();}
+});
+touchAction('touchPlace',()=>{
+ if(mobileMenuOpen())return;
+ mobilePlaceHeld=true;tryPlace();placeCooldown=.22;
+});
+/* Each finger holds its own mobile action; both can work simultaneously. */
+for(const [id,kind] of [['touchAttack','attack'],['touchPlace','place']]){
+ const button=document.getElementById(id);
+ button.addEventListener('pointerdown',e=>{
+  if(!mobileReady()||mobileMenuOpen())return;
+  touchActionPointers[kind]=e.pointerId;
+  try{button.setPointerCapture(e.pointerId);}catch(err){}
+  button.classList.add('pressed');
+ });
+ const stop=e=>{
+  if(e.pointerId!==touchActionPointers[kind])return;
+  touchActionPointers[kind]=null;
+  if(kind==='attack')mobileAttackHeld=false;
+  else mobilePlaceHeld=false;
+  button.classList.remove('pressed');
+ };
+ for(const event of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,stop);
+ window.addEventListener('pointerup',stop);
+ window.addEventListener('pointercancel',stop);
+}
 touchHold('touchJump',' ');
 const mobileDownButton=document.getElementById('touchDown');
 mobileDownButton.addEventListener('pointerdown',e=>{
@@ -5865,7 +5925,7 @@ document.getElementById('desktopPause').onclick=openDinoPause;
 document.getElementById('pausePlay').onclick=closeDinoPause;
 document.getElementById('pauseX').onclick=closeDinoPause;
 document.getElementById('pauseSave').onclick=()=>{
- saveOnSuspend();showToast('Your game is saved!','💾');
+ saveOnSuspend();showToast('Save requested for this browser','💾');
 };
 document.getElementById('pauseWorlds').onclick=()=>{
  saveOnSuspend();closeDinoPause();
@@ -5954,8 +6014,8 @@ function animate(){
   updateAmbientAudio(lastNightF, simDt);
 
   if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
-    if(mouseDown.left && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
-    if(mouseDown.right){
+    if((mouseDown.left||mobileAttackHeld) && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
+    if(mouseDown.right||mobilePlaceHeld){
       const slot = inventory[hotbar];
       if(!(slot && ITEMS[slot.id] && ITEMS[slot.id].type === 'shield')){
         placeCooldown -= dt;
