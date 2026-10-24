@@ -225,10 +225,76 @@ canvas{display:block;outline:none}
 #creativeDestination{align-self:flex-start;border:1px solid #6fbce9;border-radius:8px;padding:8px 13px;color:#d6f0ff;background:#234160;font:700 12px system-ui;cursor:pointer}
 #creativeDestination.active{background:#38875c;border-color:#a4ffd0;color:white}
 @media(max-width:570px){#worldSelect{padding:14px 6px}.worldGrid{justify-content:center;gap:8px}.touchDevice .worldCard{min-height:138px}.touchDevice #title{padding:12px}}
+
+/* Creative Access — session-only code gate and clean mobile dropdown */
+#creativeGate{position:fixed;inset:0;z-index:245;background:#050917e8;display:none;justify-content:center;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);color:#fff;font:14px system-ui;overflow-y:auto;overscroll-behavior:contain}
+#creativeGateCard{width:min(465px,100%);max-height:92dvh;overflow:auto;border:2px solid #8dd6ff;border-radius:20px;padding:clamp(16px,4vw,24px);background:linear-gradient(150deg,#223b58,#10182b 80%);box-shadow:0 24px 80px #000c}
+.gateHeader{display:flex;align-items:start;justify-content:space-between;gap:15px;margin-bottom:22px}
+.gateHeader h2{font-size:clamp(22px,5vw,28px);color:#e5f5ff;letter-spacing:.5px;margin-bottom:9px}
+.gateHeader p{color:#a6c3dd;line-height:1.55}
+#creativeGate button{border:1px solid #7fbbdf;border-radius:11px;min-height:43px;padding:10px 14px;color:#fff;background:#234a6e;font:bold 14px system-ui;cursor:pointer;touch-action:manipulation}
+#creativeGate button:hover{background:#2e658f}
+#creativeGateClose{min-width:43px;flex-shrink:0}
+#creativeGateForm{display:flex;flex-direction:column;gap:13px}
+#creativeGateForm label{font-size:12px;font-weight:900;letter-spacing:1px;color:#f5dc9d}
+.gateInputRow{display:flex;gap:8px}
+#creativeGateInput{min-width:0;flex:1;padding:13px 12px;border-radius:10px;border:2px solid #729cbe;background:#0c1a31;color:#fff;font:700 17px system-ui;letter-spacing:1px;user-select:text;-webkit-user-select:text}
+#creativeGateInput:focus{outline:2px solid #7bdfff}
+#creativeGateUnlock{background:#31885b!important;border-color:#b3f5c7!important}
+#creativeGateUnlock:disabled{opacity:.55}
+#creativeGateFeedback{margin-top:15px;font-size:12px;line-height:1.6;color:#b6cbdf}
+#creativeGateFeedback.error{color:#ff9c98}
+.gateSuccess{background:#17604d;color:#d1ffe8;border:1px solid #67cda3;padding:11px;border-radius:9px;line-height:1.5;margin-bottom:15px}
+.gateTools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.gateTools button{min-height:65px!important}
+#gateLockAgain{background:#583444!important}
+.touchDevice #quickMapButton{display:none!important}
+.touchDevice #touchHint{display:none!important}
+.touchDevice #touchMenuToggle{display:block;position:absolute;z-index:5;top:calc(env(safe-area-inset-top) + 10px);left:calc(env(safe-area-inset-left) + 10px);min-height:43px!important;min-width:93px!important;font-size:13px!important;background:#173b53e8!important;border-radius:12px}
+.touchDevice #touchMenu{display:none;position:absolute;z-index:6;top:calc(env(safe-area-inset-top) + 59px);left:calc(env(safe-area-inset-left) + 10px);width:clamp(185px,45vw,260px);max-width:75vw;max-height:calc(100dvh - 120px);overflow-y:auto;background:#11243bf4;border:1px solid #85c7e3;border-radius:14px;padding:9px;box-shadow:0 12px 35px #000b;gap:6px;flex-direction:column;flex-wrap:nowrap;pointer-events:none}
+.touchDevice #touchMenu.open{display:flex;pointer-events:auto}
+.touchDevice #touchMenu .touchButton{width:100%;text-align:left;min-height:43px!important;background:#24445e!important;font-size:13px!important;justify-content:flex-start}
+.touchDevice:not(.creativeAuthorized) #touchFly,.touchDevice:not(.creativeAuthorized) #touchDown{display:none!important}
+.touchDevice:not(.creativeAuthorized) #touchActions{grid-template-columns:repeat(2,clamp(46px,10vw,55px));gap:7px}
+.touchDevice #touchActions{gap:7px}
+.touchDevice #touchActions .touchButton{border-radius:14px}
+@media(max-width:620px){
+ #creativeGateCard{max-height:95dvh}
+ .gateTools{grid-template-columns:1fr 1fr}
+ .gateTools button{font-size:12px!important;min-height:61px!important;padding:8px!important}
+ .touchDevice:not(.creativeAuthorized) #touchActions{grid-template-columns:repeat(2,46px)}
+}
+@media(max-height:470px){
+ .touchDevice #touchMenu{top:calc(env(safe-area-inset-top) + 49px);max-height:calc(100dvh - 70px)}
+ .touchDevice #touchMenuToggle{top:calc(env(safe-area-inset-top) + 4px)}
+ #creativeGateCard{max-height:94dvh}
+}
 </style>
 </head>
 <body>
 <div id="runtimeError" style="display:none;position:fixed;top:8px;left:8px;right:8px;z-index:1000;background:#480b16;border:1px solid #ff6f81;color:white;font:13px monospace;padding:12px;border-radius:9px;max-height:38vh;overflow:auto"></div>
+<div id="creativeGate" role="dialog" aria-modal="true" aria-labelledby="creativeGateTitle" style="display:none">
+ <div id="creativeGateCard">
+  <div class="gateHeader"><div><h2 id="creativeGateTitle">🔐 CREATIVE ACCESS</h2><p>Play normally for free. A code unlocks Creative powers for this session.</p></div><button id="creativeGateClose" type="button" aria-label="Close Creative Access">✕</button></div>
+  <div id="creativeGateLocked">
+   <form id="creativeGateForm" autocomplete="off">
+    <label for="creativeGateInput">ENTER CREATIVE CODE</label>
+    <div class="gateInputRow"><input id="creativeGateInput" type="password" placeholder="UPPERCASE CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" required/><button id="creativeGateReveal" type="button">Show</button></div>
+    <button id="creativeGateUnlock" type="submit">🔓 UNLOCK CREATIVE</button>
+   </form>
+   <p id="creativeGateFeedback" role="status" aria-live="polite">Use capital letters and spaces. No code? Just keep playing Survival!</p>
+  </div>
+  <div id="creativeGateUnlocked" style="display:none">
+   <p class="gateSuccess">✨ Creative access unlocked for this play session!</p>
+   <div class="gateTools">
+    <button id="gateOpenItems" type="button">🎨 Creative Inventory</button>
+    <button id="gateToggleMode" type="button">🕊️ Turn Creative Mode ON</button>
+    <button id="gateOpenCommands" type="button">⌨️ Creative Commands</button>
+    <button id="gateLockAgain" type="button">🔒 Lock Creative Again</button>
+   </div>
+  </div>
+ </div>
+</div>
 <div id="adminPanel"><b>⌨️ DINOCRAFT COMMAND CONSOLE</b><p>/help · /creative · /survival · /fly · /god · /give any_item 64 · /give all · /items · /spawn rex</p><input id="adminInput" placeholder="Type /help" autocomplete="off"/><button id="adminRun">Run Command</button> <button id="adminClose">Close</button></div>
 <div id="creativePanel"><div class="creativeTop"><div><b style="font-size:21px;color:#ffdf88">🎨 CREATIVE INVENTORY 3.0</b><div style="color:#a9c8e2;font-size:12px">All DinoCraft items · choose a hotbar slot or switch to Backpack below</div></div><button id="creativeClose">✕ Close (I / Esc)</button></div><input id="creativeSearch" placeholder="🔎 Search weapons, armour, Ender Pearls, Totems..." autocomplete="off"/><div id="creativeCategories"></div><button id="creativeDestination" type="button">🎒 Send to Backpack: OFF</button><div class="creativeStatus"><span id="creativeCount">0 items</span><span id="creativeSelection">Selected hotbar slot: 1</span></div><div id="creativeGrid"></div><div id="creativeHotbar"></div></div><div id="creativeHUD"></div>
 <div id="loading"><div class="spin"></div><div>GENERATING WORLD…</div></div>
@@ -275,8 +341,15 @@ canvas{display:block;outline:none}
   <div id="heldName"></div>
 </div>
 <div id="mobileControls" aria-label="Mobile game controls">
-<div id="touchMenu"><button class="touchButton" id="touchInventory">🎒 Bag</button><button class="touchButton" id="touchCreative">🎨 Items</button><button class="touchButton" id="touchShop">🪙 Shop</button><button class="touchButton" id="touchMap">🗺️ Map</button><button class="touchButton" id="touchHelp">❔ Help</button></div>
-<div id="touchHint">Left joystick: move · Right side: look around</div>
+<button class="touchButton" id="touchMenuToggle" type="button" aria-expanded="false" aria-controls="touchMenu">☰ MENU</button>
+<div id="touchMenu" aria-label="Game menu">
+ <button class="touchButton" id="touchInventory" type="button">🎒 Inventory</button>
+ <button class="touchButton" id="touchCreative" type="button">🔐 Creative Access</button>
+ <button class="touchButton" id="touchShop" type="button">🪙 DinoCoin Shop</button>
+ <button class="touchButton" id="touchMap" type="button">🗺️ Change World</button>
+ <button class="touchButton" id="touchHelp" type="button">❔ Help & Commands</button>
+</div>
+
 <div id="touchLook" aria-label="Swipe to look"></div>
 <div id="touchJoystick" aria-label="Movement joystick"><div id="touchKnob"></div></div>
 <div id="touchActions">
@@ -335,7 +408,7 @@ canvas{display:block;outline:none}
   <h1>DINOCRAFT</h1>
   <p>3.0 · THE NEW BUG FIX · SIX WORLDS</p>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
-  <div class="sub">Six Worlds · Three Cities · Shared Quests & DinoCoins · 6 Weapon Types · Weapon Rewards · Smart AI<br>Dinosaurs · Tyrant Rex Boss · Creative Flight · Admin Commands · PvP</div>
+  <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
@@ -4921,14 +4994,106 @@ renderer.domElement.addEventListener('click', lockGameMouse);
 /* ===== INPUT ===== */
 const mouseDown = {left:false, right:false};
 let adminOpen=false, creativeOpen=false, flying=false, godMode=false, creativeSpeed=1;
+let creativeUnlocked=false,creativePendingAction=null;
+const CREATIVE_CODE_SHA256='ceb22a5f926d61e564924a233869735fd3e171fd5cc7cc56ab82d2ca9c22efb5';
+function creativeAccessDenied(){
+ if(hardcore){showToast('☠️ Hardcore mode cannot use Creative access.','☠️');return true;}
+ return false;
+}
+function updateCreativeGateView(){
+ const locked=document.getElementById('creativeGateLocked');
+ const unlocked=document.getElementById('creativeGateUnlocked');
+ locked.style.display=creativeUnlocked?'none':'block';
+ unlocked.style.display=creativeUnlocked?'block':'none';
+ document.getElementById('gateToggleMode').textContent=player.creative?'🌲 Return to Survival':'🕊️ Turn Creative Mode ON';
+ document.documentElement.classList.toggle('creativeAuthorized',creativeUnlocked&&!hardcore);
+}
+function closeCreativeGate(){
+ creativePendingAction=null;
+ document.getElementById('creativeGate').style.display='none';
+ document.getElementById('creativeGateInput').value='';
+ document.getElementById('creativeGateInput').type='password';
+ document.getElementById('creativeGateReveal').textContent='Show';
+ renderer.domElement.focus();
+}
+function openCreativeGate(afterUnlock=null){
+ if(creativeAccessDenied())return;
+ if(creativeUnlocked&&typeof afterUnlock==='function'){afterUnlock();return;}
+ creativePendingAction=afterUnlock;
+ updateCreativeGateView();
+ document.getElementById('creativeGateFeedback').textContent='Use capital letters and spaces. No code? Just keep playing Survival!';
+ document.getElementById('creativeGateFeedback').classList.remove('error');
+ document.getElementById('creativeGate').style.display='flex';
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(document.pointerLockElement)document.exitPointerLock();
+ if(!creativeUnlocked)document.getElementById('creativeGateInput').focus();
+}
+function lockCreativeAccess(){
+ creativeUnlocked=false;creativePendingAction=null;
+ if(creativeOpen)toggleCreativePanel(false);
+ if(adminOpen)toggleAdmin(false);
+ player.creative=false;flying=false;godMode=false;creativeSpeed=1;
+ player.vel.set(0,0,0);player.fallStartY=null;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ creativeStatus();updateCreativeGateView();closeCreativeGate();
+ showToast('🔒 Creative locked. Normal play is still available.','🔒');
+}
+document.getElementById('creativeGateForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(creativeAccessDenied())return;
+ const field=document.getElementById('creativeGateInput');
+ const button=document.getElementById('creativeGateUnlock');
+ button.disabled=true;button.textContent='Checking...';
+ try{
+  const data=new TextEncoder().encode(field.value.trim());
+  const digest=await crypto.subtle.digest('SHA-256',data);
+  const hex=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('');
+  if(hex===CREATIVE_CODE_SHA256){
+   creativeUnlocked=true;field.value='';
+   updateCreativeGateView();
+   showToast('✨ Creative access unlocked!','🔓');
+   const action=creativePendingAction;creativePendingAction=null;
+   if(typeof action==='function'){closeCreativeGate();action();}
+  }else{
+   const message=document.getElementById('creativeGateFeedback');
+   message.classList.add('error');message.textContent='Incorrect code. Check your CAPITAL letters and spaces.';
+   field.select();field.focus();
+  }
+ }catch(err){
+  const message=document.getElementById('creativeGateFeedback');
+  message.classList.add('error');message.textContent='Could not check the code. Please use the secure game link (https).';
+ }finally{
+  button.disabled=false;button.textContent='🔓 UNLOCK CREATIVE';
+ }
+});
+document.getElementById('creativeGateReveal').onclick=()=>{
+ const field=document.getElementById('creativeGateInput');
+ field.type=field.type==='password'?'text':'password';
+ document.getElementById('creativeGateReveal').textContent=field.type==='password'?'Show':'Hide';
+ field.focus();
+};
+document.getElementById('creativeGateClose').onclick=closeCreativeGate;
+document.getElementById('gateOpenItems').onclick=()=>{closeCreativeGate();toggleCreativePanel(true);};
+document.getElementById('gateToggleMode').onclick=()=>{
+ closeCreativeGate();setCreativeMode(!player.creative);
+ showToast(player.creative?'Creative Mode ON':'Survival Mode ON','🎨');
+};
+document.getElementById('gateOpenCommands').onclick=()=>{closeCreativeGate();toggleAdmin(true);};
+document.getElementById('gateLockAgain').onclick=lockCreativeAccess;
+window.addEventListener('keydown',e=>{
+ if(document.getElementById('creativeGate').style.display==='flex'&&e.key==='Escape'){
+  e.preventDefault();e.stopImmediatePropagation();closeCreativeGate();
+ }
+},true);
+
 let elytraEquipped=false, elytraGliding=false, rocketBoost=0;
-function toggleAdmin(open){if(open && creativeOpen)toggleCreativePanel(false);adminOpen=open;keys={};mouseDown.left=mouseDown.right=false;document.getElementById('adminPanel').style.display=open?'block':'none';if(open){if(document.pointerLockElement)document.exitPointerLock();document.getElementById('adminInput').focus();}else renderer.domElement.focus();}
+function toggleAdmin(open){if(open&&!creativeUnlocked){openCreativeGate(()=>toggleAdmin(true));return;}if(open&&creativeAccessDenied())return;if(open && creativeOpen)toggleCreativePanel(false);adminOpen=open;keys={};mouseDown.left=mouseDown.right=false;document.getElementById('adminPanel').style.display=open?'block':'none';if(open){if(document.pointerLockElement)document.exitPointerLock();document.getElementById('adminInput').focus();}else renderer.domElement.focus();}
 function creativeStatus(){
  const hud=document.getElementById('creativeHUD');hud.style.display=(elytraEquipped||flying||godMode||player.creative)?'block':'none';
  hud.textContent=(elytraEquipped?'🪽 ELYTRA: Space deploy / Space unequip midair  ':'')+(player.creative?'🎨 CREATIVE  ':'')+(flying?'🕊️ FLY ON (Space up / Shift down)  ':'')+(godMode?'❤️ GOD ON  ':'')+'· I: Items · /: Commands';
  updateHUD();
 }
-function setCreativeMode(on){player.creative=on;if(on){flying=true;godMode=true;}else{flying=false;godMode=false;}player.vel.set(0,0,0);player.fallStartY=null;creativeStatus();}
+function setCreativeMode(on){if(on&&!creativeUnlocked){openCreativeGate(()=>setCreativeMode(true));return;}if(on&&creativeAccessDenied())return;player.creative=on;if(on){flying=true;godMode=true;}else{flying=false;godMode=false;}player.vel.set(0,0,0);player.fallStartY=null;creativeStatus();}
 function giveExactItem(id,count){
  id=(id||'').toLowerCase().replace(/^minecraft:/,'').replace(/[ -]+/g,'_');
  if(!ITEMS[id])return 0;
@@ -4944,8 +5109,9 @@ function giveExactItem(id,count){
 function adminCommand(raw){
  const a=raw.trim().replace(/^\//,'').toLowerCase().split(/\s+/),cmd=a[0];
  if(!cmd)return;
- if(cmd==='hardcore'){if(hardcore||hardcoreDead){showToast('Hardcore already active or ended','☠️');return;}hardcore=true;try{localStorage.setItem('dinocraft_hardcore_active','true');}catch(e){}player.creative=false;flying=false;godMode=false;showToast('☠️ HARDCORE: one life, no cheats. Good luck!','☠️');return;}
- if(hardcore&&['creative','gamemode','fly','flight','god','godmode','invincible','infinitehealth','give','spawn','clear','items','inventory','catalog','heal','speed'].includes(cmd)){showToast('☠️ Cheats disabled in Hardcore Mode','☠️');return;}
+ if(cmd==='hardcore'){if(hardcore||hardcoreDead){showToast('Hardcore already active or ended','☠️');return;}hardcore=true;try{localStorage.setItem('dinocraft_hardcore_active','true');}catch(e){}creativeUnlocked=false;player.creative=false;flying=false;godMode=false;creativeSpeed=1;updateCreativeGateView();showToast('☠️ HARDCORE: one life, no cheats. Good luck!','☠️');return;}
+ if(hardcore&&['creative','gamemode','fly','flight','god','godmode','invincible','infinitehealth','give','spawn','clear','items','inventory','catalog','heal','speed','elytra'].includes(cmd)){showToast('☠️ Cheats disabled in Hardcore Mode','☠️');return;}
+ if(!creativeUnlocked&&['creative','gamemode','fly','flight','god','godmode','invincible','infinitehealth','give','spawn','clear','items','inventory','catalog','heal','speed','elytra'].includes(cmd)){openCreativeGate(()=>adminCommand(raw));return;}
  if(cmd==='help'){toggleAdmin(false);showCommandHelp();return;}
  if(cmd==='shop'||cmd==='market'||cmd==='missions'||cmd==='quests'){toggleAdmin(false);toggleMarket(true);return;}
  if(cmd==='world'||cmd==='travel'||cmd==='goto'){
@@ -5081,6 +5247,8 @@ function populateCreativeItems(){
  renderCreativeHotbar();
 }
 function toggleCreativePanel(open){
+ if(open&&!creativeUnlocked){openCreativeGate(()=>toggleCreativePanel(true));return;}
+ if(open&&creativeAccessDenied())return;
  if(open && adminOpen)toggleAdmin(false);
  creativeOpen=open;document.getElementById('creativePanel').style.display=open?'flex':'none';
  keys={};mouseDown.left=mouseDown.right=false;
@@ -5223,6 +5391,7 @@ window.addEventListener('keydown', e => {
   if(document.getElementById('cityMarket').style.display==='flex'){if(k==='t'||k==='escape'){e.preventDefault();toggleMarket(false);}return;}
   if(k==='t' && !e.repeat){e.preventDefault();toggleMarket();return;}
   if(k==='/' || k==='enter'){e.preventDefault();toggleAdmin(true);return;}
+  if(k==='c'&&!e.repeat){e.preventDefault();openCreativeGate();return;}
   if(document.getElementById('invOverlay').style.display === 'flex'){
     if(k === 'escape' || k === 'e') toggleInventory();
     return;
@@ -5243,14 +5412,13 @@ window.addEventListener('keydown', e => {
   if(e.key === 'Shift') keys['shift'] = true;
   if(k >= '1' && k <= '9'){ hotbar = parseInt(k)-1; updateHotbarUI(); }
   if(k === 'v' && !e.repeat){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'ON · Press Space while falling':'OFF'),'🪽');}
-  if(k === 'g'&&hardcore){showToast('Hardcore: Creative disabled','☠️');return;}
-  if(k === 'g'){setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');}
+  if(k==='g'&&!e.repeat){e.preventDefault();openCreativeGate(()=>{setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');});return;}
   if(k === 'f'){
     if(player.hunger < 20){ player.hunger = Math.min(20, player.hunger+6); updateHUD(); playSound('place'); }
     else showToast('Not hungry', '❌');
   }
   if(k === 'e') toggleInventory();
-  if(k === 'i'){e.preventDefault();if(hardcore){showToast('Creative items unavailable in Hardcore','☠️');return;}toggleCreativePanel(true);return;}
+  if(k === 'i'){e.preventDefault();toggleCreativePanel(true);return;}
   if(k === 'tab' && !e.repeat && worldMode === 'pvp'){
     e.preventDefault(); statsVisible=!statsVisible;
     document.getElementById('battleStats').style.display=statsVisible?'block':'none';
@@ -5347,8 +5515,20 @@ const mobileControls=document.getElementById('mobileControls');
 const touchJoy=document.getElementById('touchJoystick'),touchKnob=document.getElementById('touchKnob'),touchLook=document.getElementById('touchLook');
 let joystickPointer=null,lookPointer=null,lookX=0,lookY=0;
 const mobileHeld={};
+let touchMenuExpanded=false;
+function setTouchMenuExpanded(open){
+ touchMenuExpanded=!!open;
+ document.getElementById('touchMenu').classList.toggle('open',touchMenuExpanded);
+ document.getElementById('touchMenuToggle').setAttribute('aria-expanded',String(touchMenuExpanded));
+ if(open)mobileClearMovement();
+}
+document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
+ e.preventDefault();e.stopPropagation();
+ if(!mobileReady())return;
+ setTouchMenuExpanded(!touchMenuExpanded);
+});
 function mobileReady(){return worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
-function mobileMenuOpen(){return creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
+function mobileMenuOpen(){return touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
 function mobileSyncShift(){
  keys.shift=flying?mobileDownOn:(mobileSprintOn||mobileDownOn);
@@ -5380,7 +5560,7 @@ touchLook.addEventListener('pointermove',e=>{
  player.pitch=Math.max(-Math.PI/2+.01,Math.min(Math.PI/2-.01,player.pitch));lookX=e.clientX;lookY=e.clientY;
 });
 for(const t of ['pointerup','pointercancel','lostpointercapture'])touchLook.addEventListener(t,e=>{if(e.pointerId===lookPointer)lookPointer=null;});
-function touchAction(id,fn){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!mobileReady())return;initAudio();fn();});}
+function touchAction(id,fn){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!mobileReady())return;initAudio();if(touchMenuExpanded)setTouchMenuExpanded(false);fn();});}
 function touchHold(id,key){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!mobileReady()||mobileMenuOpen())return;b.setPointerCapture(e.pointerId);keys[key]=true;b.classList.add('pressed');});
  for(const t of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(t,e=>{keys[key]=false;b.classList.remove('pressed');});
 }
@@ -5403,9 +5583,10 @@ touchAction('touchSprint',()=>{
 });
 touchAction('touchFly',()=>{
  if(mobileMenuOpen())return;
- if(hardcore){showToast('Hardcore: no Creative flight','☠️');return;}
- flying=!flying;player.vel.set(0,0,0);mobileSyncShift();creativeStatus();
- showToast(flying?'Flight enabled':'Flight disabled','🪽');
+ openCreativeGate(()=>{
+  flying=!flying;player.vel.set(0,0,0);mobileSyncShift();creativeStatus();
+  showToast(flying?'Flight enabled':'Flight disabled','🪽');
+ });
 });
 touchAction('touchInventory',()=>{
  mobileClearMovement();
@@ -5416,12 +5597,10 @@ touchAction('touchInventory',()=>{
 });
 touchAction('touchCreative',()=>{
  mobileClearMovement();
- if(hardcore){showToast('Creative items disabled in Hardcore','☠️');return;}
- const open=!creativeOpen;
  if(document.getElementById('invOverlay').style.display==='flex')toggleInventory();
  if(document.getElementById('cityMarket').style.display==='flex')toggleMarket(false);
  if(document.getElementById('quickMapOverlay').style.display==='flex')toggleQuickMap(false);
- toggleCreativePanel(open);
+ openCreativeGate();
 });
 touchAction('touchShop',()=>{
  mobileClearMovement();
@@ -5530,7 +5709,7 @@ function animate(){
     return;
   }
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
-  const modalOpen = document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';
+  const modalOpen = document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   updateSky(dt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
