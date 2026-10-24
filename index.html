@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.0 — The New Bug Fix</title>
+<title>DinoCraft 3.1 — Player Names Preview</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -269,6 +269,29 @@ canvas{display:block;outline:none}
  .touchDevice #touchMenuToggle{top:calc(env(safe-area-inset-top) + 4px)}
  #creativeGateCard{max-height:94dvh}
 }
+
+/* DinoCraft 3.1 username selection — responsive phone and desktop UI */
+#playerNameDialog{position:fixed;inset:0;z-index:260;display:none;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);background:#061022eb;color:white;font:14px system-ui}
+.playerNameCard{width:min(440px,100%);max-height:90dvh;overflow:auto;padding:22px;border:2px solid #8fd6ff;border-radius:18px;background:linear-gradient(155deg,#203b59,#131b2c 70%);box-shadow:0 16px 65px #000d}
+.playerNameHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:22px}
+.playerNameHeading h2{font-size:clamp(20px,5vw,27px);color:#f5d88f;line-height:1.2;margin-bottom:7px}
+.playerNameHeading p{font-size:13px;color:#b5d2e8;line-height:1.5}
+#playerNameDialog button{min-height:43px;border:1px solid #6facd1;border-radius:10px;padding:10px 14px;background:#244968;color:#fff;font-weight:750;cursor:pointer;touch-action:manipulation}
+#playerNameCancel{flex-shrink:0}
+#playerNameForm{display:flex;flex-direction:column;gap:12px}
+#playerNameForm label{font-size:11px;font-weight:850;letter-spacing:1px;color:#f1d999}
+#playerNameInput{width:100%;border:2px solid #83afd1;border-radius:10px;padding:13px;background:#0d1c32;color:#fff;font:700 19px system-ui;user-select:text;-webkit-user-select:text}
+#playerNameInput:focus{outline:2px solid #a3eeff}
+#playerNameError{font-size:12px;color:#b0c8da;line-height:1.5}
+#playerNameError.error{color:#ff9b9b}
+#playerNameSave{background:#287f64!important;border-color:#89e5bf!important}
+#playerNameGuest{width:100%;margin-top:12px}
+.playerNameNote{font-size:12px;line-height:1.55;color:#a9bbd0;margin-top:18px}
+#titlePlayerName,#worldPlayerName{background:#1e405eea;color:#d9f6ff;border:1px solid #8fd5fa;border-radius:999px;min-height:39px;padding:9px 17px;cursor:pointer;font:700 13px system-ui;position:relative;z-index:4;touch-action:manipulation}
+#titlePlayerName{margin-bottom:14px}
+#worldPlayerName{margin-bottom:14px}
+.touchDevice #playerNameBadge{display:none}
+@media(max-width:600px){.playerNameCard{padding:16px}#titlePlayerName,#worldPlayerName{font-size:12px;min-height:36px;padding:7px 12px}}
 </style>
 </head>
 <body>
@@ -295,6 +318,19 @@ canvas{display:block;outline:none}
   </div>
  </div>
 </div>
+<div id="playerNameDialog" role="dialog" aria-modal="true" aria-labelledby="playerNameTitle" style="display:none">
+ <div class="playerNameCard">
+  <div class="playerNameHeading"><div><h2 id="playerNameTitle">👤 CHOOSE YOUR USERNAME</h2><p>Pick any name you like. No dinosaur theme required!</p></div><button id="playerNameCancel" type="button" aria-label="Close name menu">✕</button></div>
+  <form id="playerNameForm" autocomplete="off">
+   <label for="playerNameInput">YOUR PLAYER NAME</label>
+   <input id="playerNameInput" maxlength="24" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="e.g. PixelBuilder" required/>
+   <p id="playerNameError" role="status" aria-live="polite">3–20 characters · letters, numbers, spaces, _ . -</p>
+   <button id="playerNameSave" type="submit">✅ SAVE USERNAME</button>
+  </form>
+  <button id="playerNameGuest" type="button">Continue as Guest</button>
+  <p class="playerNameNote">Your name is saved in this browser only. Multiplayer accounts and online leaderboards are not available yet.</p>
+ </div>
+</div>
 <div id="adminPanel"><b>⌨️ DINOCRAFT COMMAND CONSOLE</b><p>/help · /creative · /survival · /fly · /god · /give any_item 64 · /give all · /items · /spawn rex</p><input id="adminInput" placeholder="Type /help" autocomplete="off"/><button id="adminRun">Run Command</button> <button id="adminClose">Close</button></div>
 <div id="creativePanel"><div class="creativeTop"><div><b style="font-size:21px;color:#ffdf88">🎨 CREATIVE INVENTORY 3.0</b><div style="color:#a9c8e2;font-size:12px">All DinoCraft items · choose a hotbar slot or switch to Backpack below</div></div><button id="creativeClose">✕ Close (I / Esc)</button></div><input id="creativeSearch" placeholder="🔎 Search weapons, armour, Ender Pearls, Totems..." autocomplete="off"/><div id="creativeCategories"></div><button id="creativeDestination" type="button">🎒 Send to Backpack: OFF</button><div class="creativeStatus"><span id="creativeCount">0 items</span><span id="creativeSelection">Selected hotbar slot: 1</span></div><div id="creativeGrid"></div><div id="creativeHotbar"></div></div><div id="creativeHUD"></div>
 <div id="loading"><div class="spin"></div><div>GENERATING WORLD…</div></div>
@@ -314,6 +350,7 @@ canvas{display:block;outline:none}
   <div id="info">
     <span class="tag">🏆 <b id="score">0</b> · <span id="rank">🌱 Beginner</span></span>
     <span class="tag" id="clock">☀️ Day 1</span>
+    <span class="tag" id="playerNameBadge">👤 Guest</span>
     <span class="tag" id="mode">⚔️ Survival</span>
   </div>
   <div id="weather">☀️ Clear</div>
@@ -348,6 +385,7 @@ canvas{display:block;outline:none}
  <button class="touchButton" id="touchShop" type="button">🪙 DinoCoin Shop</button>
  <button class="touchButton" id="touchMap" type="button">🗺️ Change World</button>
  <button class="touchButton" id="touchHelp" type="button">❔ Help & Commands</button>
+ <button class="touchButton" id="touchProfile" type="button">👤 Change Username</button>
 </div>
 
 <div id="touchLook" aria-label="Swipe to look"></div>
@@ -369,6 +407,7 @@ canvas{display:block;outline:none}
 <div id="worldSelect">
   <h1>SELECT WORLD</h1>
   <div class="sub">CHOOSE YOUR ADVENTURE</div>
+  <button id="worldPlayerName" type="button">👤 Guest · Change username</button>
   <div class="worldGrid">
     <div class="worldCard survival" data-mode="survival"><div class="wcIcon">🌲</div><div class="wcName">SURVIVAL</div><div class="wcDesc">REVOLUTION REFORGED: ancient ruins, camps, towers, caves, rare loot, dinosaurs and building.</div></div>
     <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Battle for coins and unlock epic weapons!</div></div>
@@ -406,7 +445,8 @@ canvas{display:block;outline:none}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.0 · THE NEW BUG FIX · SIX WORLDS</p>
+  <p>3.1 · PLAYER NAMES PREVIEW · SIX WORLDS</p>
+  <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
 </div>
@@ -5378,6 +5418,7 @@ window.addEventListener('keydown', e => {
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
+  if(document.getElementById('playerNameDialog').style.display==='flex')return;
   if(e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)){
     if(k==='escape' && creativeOpen){e.preventDefault();toggleCreativePanel(false);}
     return;
@@ -5391,6 +5432,7 @@ window.addEventListener('keydown', e => {
   if(document.getElementById('cityMarket').style.display==='flex'){if(k==='t'||k==='escape'){e.preventDefault();toggleMarket(false);}return;}
   if(k==='t' && !e.repeat){e.preventDefault();toggleMarket();return;}
   if(k==='/' || k==='enter'){e.preventDefault();toggleAdmin(true);return;}
+  if(k==='u'&&!e.repeat){e.preventDefault();openPlayerNameDialog();return;}
   if(k==='c'&&!e.repeat){e.preventDefault();openCreativeGate();return;}
   if(document.getElementById('invOverlay').style.display === 'flex'){
     if(k === 'escape' || k === 'e') toggleInventory();
@@ -5474,12 +5516,18 @@ document.addEventListener('mouseup', e => {
   if(e.button === 2){ mouseDown.right = false; placeCooldown = 0; }
 });
 document.addEventListener('contextmenu', e => e.preventDefault());
-document.getElementById('title').addEventListener('click', () => {
-  initAudio();
-  startAmbient();
-  document.getElementById('title').style.display = 'none';
-  document.getElementById('worldSelect').style.display = 'flex';
+function continueFromTitle(){
+ document.getElementById('title').style.display='none';
+ document.getElementById('worldSelect').style.display='flex';
+}
+document.getElementById('title').addEventListener('click',e=>{
+ if(e.target.closest('#titlePlayerName'))return;
+ initAudio();startAmbient();
+ if(!playerUsername)openPlayerNameDialog(continueFromTitle);
+ else continueFromTitle();
 });
+document.getElementById('titlePlayerName').addEventListener('click',e=>{e.stopPropagation();openPlayerNameDialog();});
+document.getElementById('worldPlayerName').addEventListener('click',()=>openPlayerNameDialog());
 function lockGameMouseEarly(){
   if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))return;
   try {
@@ -5528,7 +5576,7 @@ document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
  setTouchMenuExpanded(!touchMenuExpanded);
 });
 function mobileReady(){return worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
-function mobileMenuOpen(){return touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
+function mobileMenuOpen(){return document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
 function mobileSyncShift(){
  keys.shift=flying?mobileDownOn:(mobileSprintOn||mobileDownOn);
@@ -5619,6 +5667,7 @@ touchAction('touchMap',()=>{
  toggleQuickMap(open);
 });
 touchAction('touchHelp',()=>{mobileClearMovement();showCommandHelp();});
+touchAction('touchProfile',()=>{mobileClearMovement();openPlayerNameDialog();});
 document.getElementById('hotbar').addEventListener('pointerdown',e=>{
  if(!touchCapable||!mobileReady())return;
  const slot=e.target.closest('.slot');if(!slot)return;
@@ -5709,7 +5758,7 @@ function animate(){
     return;
   }
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
-  const modalOpen = document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
+  const modalOpen = document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   updateSky(dt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();} }
@@ -5813,6 +5862,80 @@ function isMobInFront(){
   }
   return false;
 }
+
+
+/* DinoCraft 3.1: Local player names, preview for future multiplayer. */
+const DINO_USERNAME_KEY='dinocraft_player_username_v1';
+let playerUsername=null,playerNameContinuation=null;
+const USERNAME_BLOCKED=['fuck','fucker','fucking','shit','bitch','cunt','nigger','nigga','faggot','nazi','porn','pussy','dick','penis','vagina'];
+const USERNAME_RESERVED=['admin','administrator','moderator','mod','owner','server','system','staff','official','developer','support'];
+function checkPlayerUsername(raw){
+ const name=String(raw||'').normalize('NFKC').trim().replace(/\s+/g,' ');
+ if([...name].length<3||[...name].length>20)return {ok:false,message:'Use 3 to 20 characters.'};
+ if(!/^[\p{L}\p{N}_.\- ]+$/u.test(name))return {ok:false,message:'Use letters, numbers, spaces, underscore, dot or hyphen only.'};
+ if(!/[\p{L}\p{N}]/u.test(name))return {ok:false,message:'Include at least one letter or number.'};
+ const basic=name.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const folded=basic.replace(/[0@]/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/7/g,'t');
+ const tokens=folded.split(/[^a-z]+/).filter(Boolean);
+ const compact=folded.replace(/[^a-z]/g,'');
+ if(USERNAME_RESERVED.includes(compact)||tokens.some(t=>USERNAME_RESERVED.includes(t)))return {ok:false,message:'That name looks like a game staff account. Try another.'};
+ if(USERNAME_BLOCKED.some(b=>tokens.includes(b)||compact===b))return {ok:false,message:'That username is inappropriate. Try another name.'};
+ return {ok:true,name};
+}
+function renderPlayerName(){
+ const name=playerUsername||'Guest';
+ document.getElementById('titlePlayerName').textContent='👤 '+name+' · '+(playerUsername?'Change username':'Choose a username');
+ document.getElementById('worldPlayerName').textContent='👤 '+name+' · Change username';
+ document.getElementById('playerNameBadge').textContent='👤 '+name;
+ document.getElementById('playerNameBadge').title='Press U to change your username';
+}
+function openPlayerNameDialog(onContinue=null){
+ playerNameContinuation=onContinue;
+ document.getElementById('playerNameInput').value=playerUsername||'';
+ const message=document.getElementById('playerNameError');
+ message.textContent='3–20 characters · letters, numbers, spaces, _ . -';message.classList.remove('error');
+ document.getElementById('playerNameDialog').style.display='flex';
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(document.pointerLockElement)document.exitPointerLock();
+ document.getElementById('playerNameInput').focus();
+}
+function finishPlayerNameDialog(){
+ document.getElementById('playerNameDialog').style.display='none';
+ const next=playerNameContinuation;playerNameContinuation=null;
+ if(typeof next==='function')next();
+ else renderer.domElement.focus();
+}
+function storePlayerName(name){
+ playerUsername=name;
+ try{if(name)localStorage.setItem(DINO_USERNAME_KEY,name);else localStorage.removeItem(DINO_USERNAME_KEY);}
+ catch(e){console.warn('Username storage is unavailable',e);}
+ renderPlayerName();
+}
+document.getElementById('playerNameForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const result=checkPlayerUsername(document.getElementById('playerNameInput').value);
+ if(!result.ok){
+  const error=document.getElementById('playerNameError');error.textContent=result.message;
+  error.classList.add('error');document.getElementById('playerNameInput').focus();return;
+ }
+ storePlayerName(result.name);finishPlayerNameDialog();
+ showToast('Welcome, '+result.name+'!','👤');
+});
+document.getElementById('playerNameGuest').onclick=()=>{storePlayerName(null);finishPlayerNameDialog();};
+document.getElementById('playerNameCancel').onclick=finishPlayerNameDialog;
+document.getElementById('playerNameDialog').addEventListener('pointerdown',e=>{
+ if(e.target.id==='playerNameDialog')finishPlayerNameDialog();
+});
+window.addEventListener('keydown',e=>{
+ if(document.getElementById('playerNameDialog').style.display==='flex'&&e.key==='Escape'){
+  e.preventDefault();e.stopImmediatePropagation();finishPlayerNameDialog();
+ }
+},true);
+try{
+ const saved=localStorage.getItem(DINO_USERNAME_KEY);
+ if(saved){const result=checkPlayerUsername(saved);if(result.ok)playerUsername=result.name;}
+}catch(e){}
+renderPlayerName();
 
 /* ===== BOOT ===== */
 setTimeout(() => {
