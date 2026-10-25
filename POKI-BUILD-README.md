@@ -1,30 +1,31 @@
-# DinoCraft 3.4 — Improved Poki Inspector Build
+# DinoCraft — Poki Inspector QA Build 3.7
 
-**Status: TEST BUILD, NOT APPROVED BY POKI.**
+**Status: Build prepared; Inspector tests and Poki review have NOT been completed.**
 
-Playable preview: https://chloesoldit-ops.github.io/DINO-CRAFT/poki/
-Regular friends game (unchanged): https://chloesoldit-ops.github.io/DINO-CRAFT/
+- **Preview:** https://chloesoldit-ops.github.io/DINO-CRAFT/poki/
+- **Inspector:** https://inspector.poki.dev/
+- **Upload file:** `DinoCraft-Poki-Test-Build.zip` in this repository root, with `index.html` at ZIP root.
+- **Regular game:** https://chloesoldit-ops.github.io/DINO-CRAFT/ (separate friends edition, no Poki SDK)
+- **Source folder:** `poki/`
 
-Download: DinoCraft-Poki-Test-Build.zip in this repository root.
-ZIP contents: `index.html`, `three.min.js`, `THREE-LICENSE.txt`. The ZIP root starts with `index.html` (not another directory).
-Poki Inspector: https://inspector.poki.dev/
-Documentation: https://developers.poki.com/guide/sdk-html5
+## Implemented for Inspector QA
 
-Implemented in this Poki test version:
-- Official Poki SDK with loading, gameplayStart/gameplayStop and commercialBreak on resume from the Pause menu.
-- Local Three.js r155 plus the upstream MIT license (the Poki SDK is the only approved remote script).
-- Original Sporeburst and Void Moth models replacing recognizable borrowed creatures, plus Magma Depths and Void Realm.
-- Creative/admin tools hidden and command-based cheat access blocked for public play. The friends edition still has the testing code.
-- Fast entry: choosing a username is optional; clear mobile/desktop How to Play instructions replace cheat command help.
-- Ads stop play input and audio; browser-hidden gameplay is not counted. No adblock gate.
-- Private-browsing safe starter inventory, local-world saves, graphics presets, mobile touch and keyboard/mouse controls.
+1. **commercialBreak():** triggered when resuming a paused game. Not guaranteed to display an ad each time; Poki decides.
+2. **rewardedBreak():** optional, labelled +150 DinoCoins in Pause. Reward only if SDK resolves `true`. Never needed for normal play.
+3. **Audio safety:** game audio muted and WebAudio suspended during the break, with restoration afterward.
+4. **Input safety:** keyboard including Space, game buttons and gameplay simulation disabled during ads.
+5. **Pointer lock:** released explicitly before both commercial and rewarded ads.
+6. **SDK events:** gameLoadingFinished once; gameplayStart / gameplayStop only on gameplay state transitions.
+7. **Controls:** choose Automatic, Mobile / Touch or Computer / Mouse in Settings or on title screen.
+8. **Local dependency:** Three.js r155 packaged in the build, MIT license included. Poki SDK is its sole external script.
+9. **Original content:** Sporeburst and Void Moth replace distinctive borrowed foes; rebranded worlds.
+10. **Incognito:** guarded first-time starter-kit storage. The app stays playable without functioning local storage.
 
-Next steps **before any public release**:
-1. Upload the ZIP to Poki Inspector (or drag in the extracted build folder).
-2. Inspect event order; test ads, sound muting/unmuting, keyboard, touch, and tablet controls.
-3. Test 640x360, 836x470, and 1031x580 plus actual devices and Incognito.
-4. Capture actual gameplay static AND animated thumbnail assets in Poki's specified dimensions.
-5. Confirm originality, licensing, performance, loading and gameplay quality with Poki QA.
-6. A parent/guardian should handle any developer account, agreement or payouts as appropriate.
+## Tests still required before submitting a release
 
-**Important:** This package is not proof of passing Poki Inspector, and no Poki submission has been made. No money was spent.
+- Open the ZIP in Poki Inspector and **manually** verify event order, commercial/rewarded ads, audio, Space/keyboard, pointer lock and all five ad QA questions.
+- Test on a real phone/tablet and desktop, narrow viewports, incognito and with an ad blocker.
+- Create and validate gameplay thumbnails and get Poki's copyright/quality review.
+- Games can be rejected even if code checks pass. This build is **not** an approved or published Poki listing.
+
+Do not mistake static and mocked SDK tests for a real Inspector run.

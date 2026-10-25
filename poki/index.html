@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.5 — Original Adventure · Poki Test</title>
+<title>DinoCraft 3.7 — Poki QA Test</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -347,6 +347,13 @@ html:not(.playing) #fpsDisplay{display:none!important}
 .touchDevice.playing #mobileControls{display:block}
 html.playing:not(.touchDevice) #desktopPause{display:block}
 .touchDevice #desktopPause{display:none!important}
+
+/* Poki: optional rewards are never required for normal gameplay. */
+#pokiRewardButton{width:100%;margin-bottom:8px;background:#5c397a!important;border-color:#c79bea!important}
+#pokiRewardButton[hidden],#pokiRewardMessage[hidden]{display:none!important}
+#pokiRewardButton:disabled{opacity:.55;cursor:not-allowed}
+#pokiRewardMessage{font-size:11px;color:#d0dff5;line-height:1.5;margin:0 0 12px}
+#pauseOverlay.poki-ad-active{pointer-events:none}
 </style>
 </head>
 <body>
@@ -379,6 +386,8 @@ html.playing:not(.touchDevice) #desktopPause{display:block}
  <div class="pauseCard">
   <div class="pauseHeading"><div><h2 id="pauseTitle">⏸️ GAME PAUSED</h2><p>Make DinoCraft feel better on your device.</p></div><button type="button" id="pauseX" aria-label="Close settings">✕</button></div>
   <div class="pauseMainButtons"><button id="pausePlay" type="button">▶ RESUME</button><button id="pauseSave" type="button">💾 SAVE NOW</button></div>
+  <button id="pokiRewardButton" type="button" hidden disabled>🎁 WATCH A VIDEO FOR 150 DINOCOINS (OPTIONAL)</button>
+  <p id="pokiRewardMessage" role="status" aria-live="polite" hidden>Coins are only awarded after completing the video.</p>
   <div class="pauseSettings">
    <h3>⚙️ GAME SETTINGS</h3>
    <label class="pauseRow" for="controlModeSelect"><span>Controls Mode<small>Choose touch or keyboard & mouse</small></span><select id="controlModeSelect"><option value="auto">🤖 Automatic</option><option value="touch">📱 Mobile / Touch</option><option value="desktop">💻 Computer / Mouse</option></select></label>
@@ -5569,6 +5578,7 @@ function updateCombatItems(dt){
 
 let placeCooldown = 0;
 window.addEventListener('keydown', e => {
+  if(pokiAdPlaying){if(e.target===document.body||e.target===renderer.domElement)e.preventDefault();return;}
   initAudio();
   startAmbient();
   const k = e.key.toLowerCase();
@@ -5641,6 +5651,7 @@ window.addEventListener('keydown', e => {
   if(k === 'escape' && document.pointerLockElement) document.exitPointerLock();
 });
 window.addEventListener('keyup', e => {
+  if(pokiAdPlaying)return;
   const k = e.key.toLowerCase();
   keys[k] = false;
   if(e.key === 'Shift') keys['shift'] = false;
@@ -6031,14 +6042,10 @@ function finishDinoPause(){
 }
 function closeDinoPause(){
  if(pokiAdPlaying)return;
- if(!pokiSDKAvailable){finishDinoPause();return;}
- pokiAdPlaying=true;keys={};mouseDown.left=mouseDown.right=false;
- const oldMute=muted;muted=true;
- try{
-  Promise.resolve(PokiSDK.commercialBreak()).catch(()=>{}).then(()=>{
-   muted=oldMute;pokiAdPlaying=false;finishDinoPause();
-  });
- }catch(e){muted=oldMute;pokiAdPlaying=false;finishDinoPause();}
+ if(!pokiSDKAvailable||typeof PokiSDK.commercialBreak!=='function'){
+  finishDinoPause();return;
+ }
+ pokiRunAdBreak('commercial').then(()=>finishDinoPause());
 }
 function openDinoPause(){
  if(!worldReady||player.dead||document.getElementById('worldSelect').style.display==='flex')return;
@@ -6048,15 +6055,18 @@ function openDinoPause(){
  refreshDinoSettings();
  showDinoPersonalRecords();
  document.getElementById('pauseOverlay').style.display='flex';
+ pokiTrackGameplay();
  if(document.pointerLockElement)document.exitPointerLock();
 }
 document.getElementById('desktopPause').onclick=openDinoPause;
 document.getElementById('pausePlay').onclick=closeDinoPause;
 document.getElementById('pauseX').onclick=closeDinoPause;
 document.getElementById('pauseSave').onclick=()=>{
+ if(pokiAdPlaying)return;
  saveOnSuspend();showToast('Save requested for this browser','💾');
 };
 document.getElementById('pauseWorlds').onclick=()=>{
+ if(pokiAdPlaying)return;
  saveOnSuspend();finishDinoPause();
  document.getElementById('worldSelect').style.display='flex';
  document.documentElement.classList.remove('playing');
@@ -6297,13 +6307,21 @@ try{
 renderPlayerName();
 
 
-/* Poki SDK: only in dedicated Poki build. One start or stop per state transition. */
+/* Poki SDK QA integration — only in dedicated Poki build, not friends game. */
 let pokiSDKAvailable=false,pokiInitSettled=false,pokiLoadingComplete=false;
 let pokiLoadingReported=false,pokiGameplayActive=false,pokiAdPlaying=false;
 function pokiReportLoaded(){
  if(!pokiInitSettled||!pokiLoadingComplete||pokiLoadingReported)return;
  pokiLoadingReported=true;
  if(pokiSDKAvailable)try{PokiSDK.gameLoadingFinished();}catch(e){}
+}
+function pokiSetGameplay(playing){
+ if(playing===pokiGameplayActive)return;
+ pokiGameplayActive=playing;
+ if(pokiSDKAvailable){
+  try{if(playing)PokiSDK.gameplayStart();else PokiSDK.gameplayStop();}
+  catch(e){console.warn('Poki gameplay event failed',e);}
+ }
 }
 function pokiTrackGameplay(){
  if(!pokiInitSettled||!pokiLoadingReported||pokiAdPlaying)return;
@@ -6319,16 +6337,65 @@ function pokiTrackGameplay(){
  document.getElementById('prettyJournal')?.style.display!=='flex'&&
  document.getElementById('commandHelpOverlay')?.style.display!=='flex'&&
  !touchMenuExpanded&&!creativeOpen&&!adminOpen;
- if(playing===pokiGameplayActive)return;
- pokiGameplayActive=playing;
- if(pokiSDKAvailable)try{if(playing)PokiSDK.gameplayStart();else PokiSDK.gameplayStop();}catch(e){}
+ pokiSetGameplay(playing);
 }
+/* During any ad, stop gameplay, release mouse, suspend WebAudio and block buttons. */
+async function pokiRunAdBreak(kind){
+ if(pokiAdPlaying||!pokiSDKAvailable)return false;
+ const rewarded=kind==='rewarded',method=rewarded?'rewardedBreak':'commercialBreak';
+ if(typeof PokiSDK[method]!=='function')return false;
+ pokiAdPlaying=true;
+ pokiSetGameplay(false);
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ try{if(document.pointerLockElement)document.exitPointerLock();}catch(e){}
+ const panel=document.getElementById('pauseOverlay');
+ panel.classList.add('poki-ad-active');
+ const previousMute=muted,soundWasRunning=!!(audioCtx&&audioCtx.state==='running');
+ muted=true;
+ try{if(audioCtx&&audioCtx.state==='running')await audioCtx.suspend();}
+ catch(e){console.warn('Web Audio suspend unavailable',e);}
+ let completed=false;
+ try{
+  const result=await Promise.resolve(PokiSDK[method](()=>{
+   muted=true;
+   try{
+    if(audioCtx&&audioCtx.state==='running')Promise.resolve(audioCtx.suspend()).catch(()=>{});
+   }catch(e){}
+  }));
+  completed=rewarded&&result===true;
+ }catch(e){console.warn('Poki ad unavailable',e);}
+ finally{
+  muted=previousMute;
+  if(soundWasRunning&&audioCtx&&audioCtx.state==='suspended'){
+   try{Promise.resolve(audioCtx.resume()).catch(e=>console.warn('Audio resume unavailable',e));}
+   catch(e){console.warn('Audio resume unavailable',e);}
+  }
+  pokiAdPlaying=false;panel.classList.remove('poki-ad-active');
+  keys={};mouseDown.left=mouseDown.right=false;
+  if(typeof mobileClearMovement==='function')mobileClearMovement();
+ }
+ return completed;
+}
+document.getElementById('pokiRewardButton').onclick=async()=>{
+ if(pokiAdPlaying||!pokiSDKAvailable)return;
+ const button=document.getElementById('pokiRewardButton');
+ button.disabled=true;
+ const completed=await pokiRunAdBreak('rewarded');
+ if(completed){earnCoins(150,'Optional rewarded video');showToast('🎁 +150 DinoCoins!','🪙');}
+ else showToast('No completed video; no coins awarded.','🎁');
+ button.disabled=!pokiSDKAvailable;
+};
 function pokiInit(){
  if(typeof PokiSDK==='undefined'||typeof PokiSDK.init!=='function'){
   pokiInitSettled=true;pokiReportLoaded();return;
  }
  try{Promise.resolve(PokiSDK.init()).then(()=>{
   pokiSDKAvailable=true;pokiInitSettled=true;pokiReportLoaded();
+  const reward=document.getElementById('pokiRewardButton');
+  reward.hidden=typeof PokiSDK.rewardedBreak!=='function';
+  reward.disabled=reward.hidden;
+  document.getElementById('pokiRewardMessage').hidden=reward.hidden;
  }).catch(()=>{pokiInitSettled=true;pokiReportLoaded();});}
  catch(e){pokiInitSettled=true;pokiReportLoaded();}
 }
