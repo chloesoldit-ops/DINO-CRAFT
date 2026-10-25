@@ -1,9 +1,22 @@
 <!DOCTYPE html>
+<!--
+ DINOCRAFT 3.6 — ANTI-COPY EDITION
+ Original DinoCraft game elements © 2026 DinoCraft Project. All rights reserved.
+ No permission is granted to clone, reupload, sell, or falsely claim the original
+ DinoCraft code, text, designs, or gameplay artwork.
+ Third-party code (including Three.js) retains its own licenses; see COPYRIGHT.md
+ and THREE-LICENSE.txt. Browser source is inspectable: this is not DRM.
+ OFFICIAL LINK: https://chloesoldit-ops.github.io/DINO-CRAFT/
+-->
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.5 — Original Adventure</title>
+<title>DinoCraft 3.6 — Anti-Copy Edition</title>
+<meta name="author" content="DinoCraft Project">
+<meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
+<meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
+<link rel="canonical" href="https://chloesoldit-ops.github.io/DINO-CRAFT/">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -348,9 +361,49 @@ html:not(.playing) #fpsDisplay{display:none!important}
 html.playing:not(.touchDevice) #desktopPause{display:block}
 .touchDevice.playing #mobileControls{display:block}
 .touchDevice #desktopPause{display:none!important}
+
+/* DinoCraft 3.6 — unobtrusive source provenance and mobile-safe player controls */
+#dcTitleControls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;max-width:min(95vw,470px);margin:2px auto 12px;position:relative;z-index:4}
+#dcTitleControls label{font:800 11px system-ui;letter-spacing:.4px;color:#bce7fc}
+#dcTitleControlMode{max-width:min(92vw,275px);min-height:39px;background:#16344f;color:#ecf9ff;border:1px solid #80c6ed;border-radius:10px;padding:8px 10px;font:700 12px system-ui;cursor:pointer;touch-action:manipulation;user-select:auto;-webkit-user-select:auto}
+.dcRulesButton{background:#142d43c9;color:#d8e6f0;border:1px solid #4e8099;border-radius:999px;padding:8px 12px;font:700 11px system-ui;min-height:36px;cursor:pointer;touch-action:manipulation;position:relative;z-index:5}
+.dcRulesButton:hover{border-color:#8ecfed;background:#205071}
+#dcTitleOwnership{margin:9px auto 0}
+#dcWorldOwnership{margin:0 auto 12px}
+.dcTitleRights{font:500 10px system-ui;color:#87a3b6;margin-top:5px;position:relative;z-index:4;max-width:95vw;line-height:1.5}
+#dcBuildStamp{display:none;pointer-events:none;position:fixed;top:calc(env(safe-area-inset-top) + 52px);right:calc(env(safe-area-inset-right) + 10px);z-index:10;padding:5px 8px;background:#07182bc1;border:1px solid #54758880;border-radius:7px;color:#b2c8d8;font:700 10px system-ui;letter-spacing:.5px;max-width:45vw;text-align:right;text-shadow:0 1px 2px #000}
+html.playing #dcBuildStamp{display:block}
+#dcUnofficialNotice{position:fixed;right:calc(env(safe-area-inset-right) + 10px);top:calc(env(safe-area-inset-top) + 235px);z-index:72;width:min(280px,55vw);padding:10px;background:#2b1720ee;color:#ffe0cf;border:1px solid #e4a16f;border-radius:12px;box-shadow:0 10px 30px #0009;display:flex;flex-direction:column;gap:6px;font:11px system-ui;line-height:1.4}
+#dcUnofficialNotice strong{font-size:11px}
+#dcUnofficialNotice a{color:#ffdf9c;font-weight:800;letter-spacing:.2px}
+#dcOwnershipOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:285;padding:calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 10px);background:#060b19ee;overscroll-behavior:contain;color:#fff;font:14px system-ui}
+#dcOwnershipCard{width:min(510px,100%);max-height:94dvh;overflow:auto;border:2px solid #80d1f1;border-radius:19px;background:linear-gradient(140deg,#1d3a54,#131e30 80%);padding:clamp(14px,3.5vw,24px);box-shadow:0 20px 80px #000c}
+.dcOwnerHeading{display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:17px}
+.dcOwnerHeading h2{font-size:clamp(19px,5vw,25px);line-height:1.24;color:#ffde9b}
+.dcOwnerHeading p{font-size:12px;line-height:1.5;margin-top:5px;color:#b5c8df}
+#dcOwnershipOverlay button{min-height:43px;background:#234c6b;border:1px solid #7ac7e9;color:#fff;border-radius:10px;padding:10px 12px;font:800 12px system-ui;cursor:pointer;touch-action:manipulation}
+#dcOwnershipClose{flex-shrink:0}
+.dcRightsLead{line-height:1.65;color:#c8eeff;margin-bottom:12px}
+.dcRightsRules{background:#0a1c32;border-radius:12px;border:1px solid #335979;padding:12px}
+.dcRightsRules p{line-height:1.6;margin-bottom:10px}
+.dcRightsRules p:last-child{margin-bottom:0}
+#dcOwnershipCard label{display:block;font-size:11px;color:#ffdf9b;font-weight:900;letter-spacing:.7px;margin-top:16px;margin-bottom:8px}
+#dcOfficialUrl{display:block;width:100%;font:12px ui-monospace,monospace;background:#0b182a;border:1px solid #5b87a5;border-radius:8px;padding:12px 9px;color:#e4f6ff;user-select:text;-webkit-user-select:text}
+.dcOwnerActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+.dcRightsFoot{margin-top:14px;color:#a9bcd3;font-size:11px;line-height:1.65}
+#dcPauseOwnership{width:100%;margin-top:9px}
+@media(max-width:600px){#title{overflow-y:auto;justify-content:safe center;gap:4px;padding:16px 10px}.dcTitleRights{font-size:9px}#titlePlayerName{margin-bottom:6px}#title .sub{margin-top:12px}#dcTitleOwnership{margin-top:3px}#dcBuildStamp{top:calc(env(safe-area-inset-top) + 53px);font-size:9px}}
+@media(max-width:420px){.dcOwnerActions{grid-template-columns:1fr}.dcRightsRules{padding:9px}}
+@media(max-height:490px){#title{justify-content:flex-start;overflow-y:auto}#dcBuildStamp{top:calc(env(safe-area-inset-top) + 44px)}#dcUnofficialNotice{top:calc(env(safe-area-inset-top) + 100px)}}
 </style>
 </head>
 <body>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.6 · © 2026</div>
+<div id="dcUnofficialNotice" style="display:none" role="status">
+ <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
+ <span>For the official version, use the verified game link.</span>
+ <a href="https://chloesoldit-ops.github.io/DINO-CRAFT/" target="_blank" rel="noopener noreferrer">OPEN OFFICIAL GAME</a>
+</div>
 <div id="runtimeError" style="display:none;position:fixed;top:8px;left:8px;right:8px;z-index:1000;background:#480b16;border:1px solid #ff6f81;color:white;font:13px monospace;padding:12px;border-radius:9px;max-height:38vh;overflow:auto"></div>
 <div id="creativeGate" role="dialog" aria-modal="true" aria-labelledby="creativeGateTitle" style="display:none">
  <div id="creativeGateCard">
@@ -401,9 +454,31 @@ html.playing:not(.touchDevice) #desktopPause{display:block}
   </div>
   <div class="pauseBottom">
    <button id="pauseWorlds" type="button">🌍 CHOOSE ANOTHER WORLD</button>
+   <button id="dcPauseOwnership" type="button">🛡️ COPYRIGHT & OFFICIAL GAME</button>
    <p>PC: WASD move · Mouse look · Mouse wheel/1–9 items · Space jump · Shift sprint · E bag · I Creative access · ESC pause</p>
    <p>Phone/tablet: Joystick move · Swipe to look · Hold ⚔️ to mine/attack · Hold 🧱 to build · ☰ MENU to pause.</p>
   </div>
+ </div>
+</div>
+<div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
+ <div id="dcOwnershipCard">
+  <div class="dcOwnerHeading">
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Anti-Copy Edition 3.6 · © 2026 DinoCraft Project</p></div>
+   <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
+  </div>
+  <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
+  <div class="dcRightsRules">
+   <p><strong>✅ You can:</strong> Play for free, share the official link, and make gameplay videos.</p>
+   <p><strong>🚫 You cannot:</strong> Reupload, clone, sell, rebrand, or claim the original DinoCraft code or game artwork as your own without permission.</p>
+   <p><strong>📜 Third-party code:</strong> Components such as Three.js keep their own open-source licenses. These rules apply only to original DinoCraft material.</p>
+  </div>
+  <label for="dcOfficialUrl">OFFICIAL DINOCRAFT GAME LINK</label>
+  <input id="dcOfficialUrl" type="text" readonly value="https://chloesoldit-ops.github.io/DINO-CRAFT/" />
+  <div class="dcOwnerActions">
+   <button id="dcCopyOfficial" type="button">📋 COPY LINK</button>
+   <button id="dcOfficialOpen" type="button">🌐 OPEN OFFICIAL GAME</button>
+  </div>
+  <p class="dcRightsFoot">Website code can be inspected. These notices discourage copying, but they cannot make a browser game impossible to copy.</p>
  </div>
 </div>
 <div id="playerNameDialog" role="dialog" aria-modal="true" aria-labelledby="playerNameTitle" style="display:none">
@@ -497,6 +572,7 @@ html.playing:not(.touchDevice) #desktopPause{display:block}
   <h1>SELECT WORLD</h1>
   <div class="sub">CHOOSE YOUR ADVENTURE</div>
   <button id="worldPlayerName" type="button">👤 Guest · Change username</button>
+  <button id="dcWorldOwnership" class="dcRulesButton" type="button">🛡️ Official DinoCraft · Rules</button>
   <div class="worldGrid">
     <div class="worldCard survival" data-mode="survival"><div class="wcIcon">🌲</div><div class="wcName">SURVIVAL</div><div class="wcDesc">REVOLUTION REFORGED: ancient ruins, camps, towers, caves, rare loot, dinosaurs and building.</div></div>
     <div class="worldCard pvp" data-mode="pvp"><div class="wcIcon">⚔️</div><div class="wcName">PVP ARENA</div><div class="wcDesc">Battle for coins and unlock epic weapons!</div></div>
@@ -534,10 +610,20 @@ html.playing:not(.touchDevice) #desktopPause{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.5 · ORIGINAL ADVENTURE · SIX WORLDS</p>
+  <p>3.6 · ANTI-COPY EDITION · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
+  <div id="dcTitleControls">
+   <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
+   <select id="dcTitleControlMode" aria-label="Choose desktop or mobile controls">
+    <option value="auto">🤖 Detect automatically</option>
+    <option value="touch">📱 Mobile / Touch</option>
+    <option value="desktop">💻 Computer / Keyboard & Mouse</option>
+   </select>
+  </div>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
-  <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
+  <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile + PC<br>🔐 Creative access requires a code · Press I or C to unlock</div>
+  <button id="dcTitleOwnership" class="dcRulesButton" type="button">🛡️ Official Game · Copyright Rules</button>
+  <div class="dcTitleRights">© 2026 DinoCraft Project · Original work — All rights reserved</div>
 </div>
 
 <script>window.addEventListener('error',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+e.message+' (line '+e.lineno+')';}});window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('runtimeError');if(b){b.style.display='block';b.textContent='DinoCraft error: '+String(e.reason);}});</script>
@@ -5123,7 +5209,11 @@ function lockGameMouse(){
 function updateMouseHint(){
   document.getElementById('mouseHint').style.display = !document.documentElement.classList.contains('touchDevice') && worldReady &&
     document.pointerLockElement !== renderer.domElement &&
-    document.getElementById('invOverlay').style.display !== 'flex' && !player.dead ? 'block' : 'none';
+    document.getElementById('invOverlay').style.display !== 'flex' &&
+    document.getElementById('pauseOverlay').style.display!=='flex' &&
+    document.getElementById('dcOwnershipOverlay').style.display!=='flex' &&
+    document.getElementById('worldSelect').style.display!=='flex' &&
+    !player.dead ? 'block' : 'none';
   mouseDown.left = mouseDown.right = false;
 }
 document.addEventListener('pointerlockchange', updateMouseHint);
@@ -5179,6 +5269,7 @@ function gameplayInputAllowed(){
  document.getElementById('invOverlay').style.display!=='flex'&&
  document.getElementById('cityMarket').style.display!=='flex'&&
  document.getElementById('quickMapOverlay').style.display!=='flex'&&
+ document.getElementById('dcOwnershipOverlay').style.display!=='flex'&&
  document.getElementById('prettyJournal')?.style.display!=='flex'&&
  document.getElementById('commandHelpOverlay')?.style.display!=='flex'&&
  !creativeOpen&&!adminOpen&&!touchMenuExpanded;
@@ -5681,13 +5772,18 @@ document.addEventListener('mouseup', e => {
   if(e.button === 0) mouseDown.left = false;
   if(e.button === 2){ mouseDown.right = false; placeCooldown = 0; }
 });
-document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('contextmenu',e=>{
+ if(e.target===renderer.domElement||e.target.closest?.('#mobileControls,#hotbar'))
+  e.preventDefault();
+});
+renderer.domElement.draggable=false;
+renderer.domElement.addEventListener('dragstart',e=>e.preventDefault());
 function continueFromTitle(){
  document.getElementById('title').style.display='none';
  document.getElementById('worldSelect').style.display='flex';
 }
 document.getElementById('title').addEventListener('click',e=>{
- if(e.target.closest('#titlePlayerName'))return;
+ if(e.target.closest('#titlePlayerName,#dcTitleControls,#dcTitleOwnership'))return;
  initAudio();startAmbient();
  if(!playerUsername)openPlayerNameDialog(continueFromTitle);
  else continueFromTitle();
@@ -5750,7 +5846,7 @@ document.getElementById('touchMenuToggle').addEventListener('pointerdown',e=>{
  setTouchMenuExpanded(!touchMenuExpanded);
 });
 function mobileReady(){return touchCapable&&worldReady&&!player.dead&&document.getElementById('title').style.display==='none'&&document.getElementById('worldSelect').style.display!=='flex';}
-function mobileMenuOpen(){return document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
+function mobileMenuOpen(){return document.getElementById('dcOwnershipOverlay').style.display==='flex'||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||touchMenuExpanded||document.getElementById('creativeGate').style.display==='flex'||creativeOpen||adminOpen||document.getElementById('invOverlay').style.display==='flex'||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex';}
 let mobileSprintOn=false,mobileDownOn=false;
 let mobileAttackHeld=false,mobilePlaceHeld=false;
 const touchActionPointers={attack:null,place:null};
@@ -6102,7 +6198,7 @@ function animate(){
     return;
   }
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
-  const modalOpen = document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
+  const modalOpen = document.getElementById('dcOwnershipOverlay').style.display==='flex'||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
   const simDt=simPaused?0:dt;
@@ -6283,6 +6379,84 @@ try{
  if(saved){const result=checkPlayerUsername(saved);if(result.ok)playerUsername=result.name;}
 }catch(e){}
 renderPlayerName();
+
+
+/* ===== DINOCRAFT 3.6 OWNER MARKINGS (NOT DRM) ===== */
+const DC_OFFICIAL_URL='https://chloesoldit-ops.github.io/DINO-CRAFT/';
+function dinoHostingStatus(){
+ const host=location.hostname.toLowerCase();
+ const path=location.pathname;
+ if(host==='chloesoldit-ops.github.io'&&/^\/DINO-CRAFT(?:\/|$)/i.test(path))return 'official';
+ if(!host||host==='localhost'||host==='127.0.0.1'||host==='[::1]'||
+   host==='inspector.poki.dev'||host==='poki.com'||host.endsWith('.poki.com')||
+   host.endsWith('.poki.dev')||host==='itch.io'||host.endsWith('.itch.io'))return 'preview';
+ return 'unverified';
+}
+function openDinoCopyright(){
+ keys={};mouseDown.left=mouseDown.right=false;
+ if(typeof mobileClearMovement==='function')mobileClearMovement();
+ document.getElementById('dcOwnershipOverlay').style.display='flex';
+ if(document.pointerLockElement)document.exitPointerLock();
+ if(typeof updateMouseHint==='function')updateMouseHint();
+ document.getElementById('dcOwnershipClose').focus();
+}
+function closeDinoCopyright(){
+ document.getElementById('dcOwnershipOverlay').style.display='none';
+ if(typeof updateMouseHint==='function')updateMouseHint();
+ if(document.getElementById('pauseOverlay').style.display==='flex')
+  document.getElementById('dcPauseOwnership').focus();
+ else if(document.getElementById('title').style.display!=='none')
+  document.getElementById('dcTitleOwnership').focus();
+ else renderer.domElement.focus();
+}
+document.getElementById('dcTitleOwnership').addEventListener('click',e=>{e.stopPropagation();openDinoCopyright();});
+document.getElementById('dcWorldOwnership').addEventListener('click',openDinoCopyright);
+document.getElementById('dcPauseOwnership').addEventListener('click',openDinoCopyright);
+document.getElementById('dcOwnershipClose').addEventListener('click',closeDinoCopyright);
+document.getElementById('dcOwnershipOverlay').addEventListener('pointerdown',e=>{
+ if(e.target.id==='dcOwnershipOverlay')closeDinoCopyright();
+});
+window.addEventListener('keydown',e=>{
+ if(document.getElementById('dcOwnershipOverlay').style.display!=='flex')return;
+ if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeDinoCopyright();}
+ else if(e.key===' '||e.key.startsWith('Arrow')){e.stopImmediatePropagation();}
+},true);
+document.getElementById('dcCopyOfficial').addEventListener('click',async()=>{
+ const field=document.getElementById('dcOfficialUrl');
+ try{
+  if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+  await navigator.clipboard.writeText(DC_OFFICIAL_URL);
+  showToast('Official DinoCraft link copied!','📋');
+ }catch(e){
+  field.focus();field.select();
+  showToast('Select the official link above to copy it.','🔗');
+ }
+});
+document.getElementById('dcOfficialOpen').addEventListener('click',()=>{
+ const win=window.open(DC_OFFICIAL_URL,'_blank','noopener,noreferrer');
+ if(!win)showToast('Use the official URL shown above.','🌐');
+});
+const dcHostStatus=dinoHostingStatus();
+if(dcHostStatus==='unverified'){
+ const notice=document.getElementById('dcUnofficialNotice');
+ notice.style.display='flex';
+}
+const dcTitleControl=document.getElementById('dcTitleControlMode');
+dcTitleControl.value=dinoSettings.controls;
+dcTitleControl.addEventListener('change',e=>{
+ const wanted=e.target.value;
+ if(!['auto','touch','desktop'].includes(wanted))return;
+ dinoSettings.controls=wanted;
+ applyDinoControlMode();
+ refreshDinoSettings();
+ saveDinoSettings();
+ if(wanted==='desktop'&&isTouchForGraphics)showToast('Computer controls need a keyboard and mouse.','⌨️');
+ else showToast(wanted==='touch'?'Mobile controls selected':wanted==='desktop'?'Computer controls selected':'Automatic controls selected','🎮');
+});
+/* Keep both control selectors synchronized (pre-game and in-game). */
+document.getElementById('controlModeSelect').addEventListener('change',()=>{
+ dcTitleControl.value=dinoSettings.controls;
+});
 
 /* ===== BOOT ===== */
 setTimeout(() => {
