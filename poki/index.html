@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.4 — Poki Prep</title>
+<title>DinoCraft 3.5 — Original Adventure · Poki Test</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,sans-serif;color:#fff}
@@ -391,7 +391,7 @@ html.playing:not(.touchDevice) #desktopPause{display:block}
   <div class="pauseRecords">
    <h3>🏅 YOUR RECORDS <small>(THIS DEVICE ONLY)</small></h3>
    <div class="pauseStatsGrid">
-    <div>🦖 <strong id="recordKills">0</strong><span>Dinosaurs defeated</span></div>
+    <div>🦖 <strong id="recordKills">0</strong><span>Enemies defeated</span></div>
     <div>⛏️ <strong id="recordMined">0</strong><span>Blocks mined</span></div>
     <div>🧱 <strong id="recordPlaced">0</strong><span>Blocks built</span></div>
     <div>⏱️ <strong id="recordPlaytime">0m</strong><span>Time played</span></div>
@@ -450,7 +450,7 @@ html.playing:not(.touchDevice) #desktopPause{display:block}
   <div id="weaponQuest"><div class="wqTitle">⭐ NEXT LEVEL WEAPON</div><div class="wqTask" id="wqTask">Gain XP to unlock weapons</div><div class="wqProgress"><span id="wqKills">0</span> / <span id="wqNeed">3</span></div><div class="wqBar"><div class="wqFill" id="wqFill" style="width:0%"></div></div></div>
   <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP</div><div style="opacity:.72">J / Click attack · Q dash · I creative items · Tab stats</div></div>
 <div id="bossBar"><div class="name"></div><div class="track"><div class="fill"></div></div></div>
-  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump / Elytra toggle in air · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> inventory · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> map · <b>N</b> mute · <b>P</b> save PvP</div>
+  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump / Skywings toggle in air · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> inventory · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> map · <b>N</b> mute · <b>P</b> save PvP</div>
   <div id="hud">
     <div id="bars">
       <div class="bar"><i id="hpFill" style="width:100%"></i><span id="hpTxt">❤️ 20/20</span></div>
@@ -533,7 +533,7 @@ html.playing:not(.touchDevice) #desktopPause{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.4 · POKI PREP · SIX WORLDS</p>
+  <p>3.5 · ORIGINAL ADVENTURE · POKI TEST · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile Controls<br>🔐 Creative access requires a code · Press I or C to unlock</div>
@@ -853,16 +853,16 @@ const ITEMS = {
   netherite_mace:{n:'Darksteel Mace',ic:'💥',type:'mace',tier:5,dmg:26,atkSpeed:1.6},
   bow:{n:'Bow',ic:'🏹',type:'bow',tier:3,dmg:9,ranged:true},
   arrow:{n:'Arrow',ic:'➳',type:'ammo'},
-  golden_apple:{n:'Golden Apple',ic:'🍎',type:'consumable'},
-  enchanted_golden_apple:{n:'Enchanted Golden Apple',ic:'🌟',type:'consumable'},
+  golden_apple:{n:'Glowfruit',ic:'🍎',type:'consumable'},
+  enchanted_golden_apple:{n:'Starlight Fruit',ic:'🌟',type:'consumable'},
   healing_potion:{n:'Healing Potion',ic:'🧪',type:'consumable'},
   speed_potion:{n:'Potion of Swiftness',ic:'⚡',type:'consumable'},
   strength_potion:{n:'Potion of Strength',ic:'💪',type:'consumable'},
   regeneration_potion:{n:'Potion of Regeneration',ic:'💗',type:'consumable'},
-  elytra:{n:'Elytra Wings',ic:'🪽',type:'equipment'},
+  elytra:{n:'Skywings Wings',ic:'🪽',type:'equipment'},
   firework_rocket:{n:'Firework Rocket',ic:'🚀',type:'consumable'},
-  wind_charge:{n:'Wind Charge',ic:'🌪️',type:'throwable'},
-  tnt_minecart:{n:'TNT Minecart',ic:'🧨',type:'explosive'},
+  wind_charge:{n:'Gale Orb',ic:'🌪️',type:'throwable'},
+  tnt_minecart:{n:'Blast Cart',ic:'🧨',type:'explosive'},
   delete_wand:{n:'Creative Delete Wand',ic:'🪄',type:'tool',dmg:9999,atkSpeed:0.35},
   shield:{n:'Shield',ic:'🛡️',type:'shield',tier:2},
   grass_block:{n:'Grass',ic:'🟩',type:'block',block:B.GRASS},
@@ -883,9 +883,9 @@ const ITEMS = {
   bone:{n:'Bone',ic:'🦴',type:'mat'},
   string:{n:'String',ic:'🕸️',type:'mat'},
   lapis:{n:'Lapis Lazuli',ic:'🔷',type:'mat'},
-  enchanting_table:{n:'Enchanting Table',ic:'✨',type:'utility'},
+  enchanting_table:{n:'Rune Forge',ic:'✨',type:'utility'},
   emerald:{n:'Emerald',ic:'🟢',type:'mat'},
-  totem_of_undying:{n:'Totem of Undying',ic:'🗿',type:'totem'},
+  totem_of_undying:{n:'Rebirth Charm',ic:'🗿',type:'totem'},
   ender_pearl:{n:'Warp Pearl',ic:'🟣',type:'throwable'},
   splash_healing:{n:'Splash Healing Potion',ic:'💗',type:'potion'},
   splash_strength:{n:'Splash Strength Potion',ic:'💜',type:'potion'},
@@ -3526,7 +3526,7 @@ function updatePlayer(dt){
     return;
   }
   player.vel.x*=creativeSpeed;player.vel.z*=creativeSpeed;
-  // Elytra activation and removal use a single Space keydown, handled below.
+  // Skywings activation and removal use a single Space keydown, handled below.
   // Holding Space never immediately re-equips the wings after removal.
   if(player.onGround || player.inWater || keys['shift']) elytraGliding=false;
   if(elytraGliding){
@@ -5289,7 +5289,7 @@ function creativeStatus(){
 }
 function setCreativeMode(on){if(on&&!creativeUnlocked){openCreativeGate(()=>setCreativeMode(true));return;}if(on&&creativeAccessDenied())return;player.creative=on;if(on){flying=true;godMode=true;}else{flying=false;godMode=false;}player.vel.set(0,0,0);player.fallStartY=null;creativeStatus();}
 function giveExactItem(id,count){
- id=(id||'').toLowerCase().replace(/^minecraft:/,'').replace(/[ -]+/g,'_');
+ id=(id||'').toLowerCase().replace(/^dinocraft:/,'').replace(/[ -]+/g,'_');
  if(!ITEMS[id])return 0;
  let given=0;
  while(given<count){
@@ -5320,7 +5320,7 @@ function adminCommand(raw){
  if(cmd==='journal'||cmd==='prettyquests'){toggleAdmin(false);togglePrettyJournal(true);return;}
  if(cmd==='revolution'){showToast('Survival: enchanted skies, floating islands, prettier forests, more flowers and upgraded loot!','🌍');return;}
  if(cmd==='difficulty'){const v=a[1];if(!['easy','normal','hard','apex'].includes(v)){showToast('Use /difficulty easy, normal, hard, or apex','❌');return;}arenaDifficulty=v;dinoArenaTimer=6;showToast('Dinosaur difficulty: '+v.toUpperCase()+'!','🦖');return;}
- if(cmd==='elytra'){elytraEquipped=a[1]==='off'?false:a[1]==='on'?true:!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'equipped! Jump off a ledge and press Space.':'unequipped.'),'🪽');return;}
+ if(cmd==='elytra'){elytraEquipped=a[1]==='off'?false:a[1]==='on'?true:!elytraEquipped;elytraGliding=false;showToast('Skywings '+(elytraEquipped?'equipped! Jump off a ledge and press Space.':'unequipped.'),'🪽');return;}
  if(cmd==='creative'||cmd==='survival'||cmd==='gamemode'){
    const mode=cmd==='gamemode'?(a[1]||'creative'):cmd;
    if(!['creative','survival','1','0','c','s'].includes(mode)){showToast('Use /gamemode creative or survival','❌');return;}
@@ -5359,7 +5359,7 @@ function adminCommand(raw){
      showToast('Starter collection: '+n+' items. /items shows ALL items','🎁');return;
    }
    const count=Math.min(576,Math.max(1,Number.parseInt(a[off+1],10)||1));
-   const resolved=id.replace(/^minecraft:/,'').replace(/[ -]+/g,'_');
+   const resolved=id.replace(/^dinocraft:/,'').replace(/[ -]+/g,'_');
    if(!ITEMS[resolved]){showToast('Unknown item '+id+' · use /items to browse','❌');return;}
    const given=giveExactItem(resolved,count);
    showToast(given?'Gave '+given+' '+ITEMS[resolved].n+(given<count?' (inventory full)':''):'Inventory full · use /clear or /items','🎁');return;
@@ -5479,7 +5479,7 @@ function throwMagicProjectile(kind){
  const mesh=new THREE.Mesh(new THREE.OctahedronGeometry(kind==='wind'?.36:.27,0),new THREE.MeshBasicMaterial({color:kind==='wind'?0x9eecff:kind==='pearl'?0xaa55ff:kind==='splash_healing'?0xff87b6:0x976bff}));
  mesh.position.copy(camera.position).addScaledVector(direction,1.1);scene.add(mesh);
  magicProjectiles.push({mesh,velocity:direction.multiplyScalar(.42),kind,life:3.8});
- showToast(kind==='wind'?'🌪️ Wind Charge thrown!':kind==='pearl'?'🟣 Warp Pearl thrown!':'🧪 Splash potion thrown!','✨');
+ showToast(kind==='wind'?'🌪️ Gale Orb thrown!':kind==='pearl'?'🟣 Warp Pearl thrown!':'🧪 Splash potion thrown!','✨');
 }
 function updateMagicProjectiles(dt){
  for(let i=magicProjectiles.length-1;i>=0;i--){const p=magicProjectiles[i];p.life-=dt;
@@ -5510,7 +5510,7 @@ function useCombatItem(){
  const slot=inventory[hotbar];if(!slot||!ITEMS[slot.id])return false;
  if(slot.id==='ender_pearl'){throwMagicProjectile('pearl');if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();return true;}
  if(slot.id==='splash_healing'||slot.id==='splash_strength'){throwMagicProjectile(slot.id);if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();return true;}
- if(slot.id==='elytra'){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'equipped. Jump, then press Space to glide!':'removed.'),'🪽');return true;}
+ if(slot.id==='elytra'){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Skywings '+(elytraEquipped?'equipped. Jump, then press Space to glide!':'removed.'),'🪽');return true;}
  if(slot.id==='enchanted_golden_apple'){
    player.hp=player.maxHp;player.maxGoldenHp=Math.max(player.maxGoldenHp,16);player.goldenHp=Math.min(player.maxGoldenHp,player.goldenHp+16);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,12);updateHUD();showToast('🌟 Enchanted Apple: full heal, +16 gold HP, resistance!','🌟');
  }else if(slot.id==='speed_potion'){
@@ -5522,14 +5522,14 @@ function useCombatItem(){
  }else if(slot.id==='healing_potion'){
    player.hp=Math.min(player.maxHp,player.hp+16);updateHUD();showToast('🧪 Healing Potion: +16 HP!','🧪');
  }else if(slot.id==='firework_rocket'){
-   if(!elytraEquipped || !elytraGliding){showToast('Equip Elytra and glide before using a rocket!','🚀');return true;}
+   if(!elytraEquipped || !elytraGliding){showToast('Equip Skywings and glide before using a rocket!','🚀');return true;}
    rocketBoost=3.5;player.vel.y=Math.max(player.vel.y,.1);showToast('🚀 FIREWORK BOOST!','🚀');
  }else if(slot.id==='golden_apple'){
-   player.hp=Math.min(player.maxHp,player.hp+12);player.goldenHp=Math.min(player.maxGoldenHp,player.goldenHp+8);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,4);updateHUD();showToast('🍎 Golden Apple: +8 golden health, healing, 4s resistance!','🍎');
+   player.hp=Math.min(player.maxHp,player.hp+12);player.goldenHp=Math.min(player.maxGoldenHp,player.goldenHp+8);player.hunger=20;player.thirst=20;dashProtection=Math.max(dashProtection,4);updateHUD();showToast('🍎 Glowfruit: +8 golden health, healing, 4s resistance!','🍎');
  }else if(slot.id==='enchanting_table'){
    toggleAdmin(true);setTimeout(()=>{const input=document.getElementById('adminInput');if(input&&!input.value)input.value='/enchant ';},20);showToast('Type /enchant sharpness 5, /enchant lifesteal 3, or /enchant list','✨');return true;
  }else if(slot.id==='wind_charge'){
-   if(chargeCooldown>0){showToast('Wind Charge recharging','⏳');return true;}
+   if(chargeCooldown>0){showToast('Gale Orb recharging','⏳');return true;}
    throwMagicProjectile('wind');
    chargeCooldown=.35;
    if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();return true;
@@ -5539,13 +5539,13 @@ function useCombatItem(){
    player.vel.x-=dir.x*.34;player.vel.z-=dir.z*.34;player.vel.y+=.22;
    for(const bot of fighterBots)if(!bot.dead && bot.pos.distanceTo(player.pos)<7){damageBot(bot,9,null,true,false);bot.vel?.add?.(dir.clone().multiplyScalar(.55));}
    for(const mob of mobs)if(!mob.dead && mob.pos.distanceTo(player.pos)<7){mob.hp-=9;mob.vel.x+=dir.x*.35;mob.vel.z+=dir.z*.35;}
-   spawnHitSparks(player.pos.x,player.pos.y+1,player.pos.z,0xaeefff,22);showToast('🌪️ Wind Charge!','🌪️');
+   spawnHitSparks(player.pos.x,player.pos.y+1,player.pos.z,0xaeefff,22);showToast('🌪️ Gale Orb!','🌪️');
  }else if(slot.id==='tnt_minecart'){
    const g=new THREE.Group();const mat=new THREE.MeshLambertMaterial({color:0xe43d31});const cartmat=new THREE.MeshLambertMaterial({color:0x555960});
    const body=new THREE.Mesh(new THREE.BoxGeometry(1.0,.55,.8),cartmat);g.add(body);
    const tnt=new THREE.Mesh(new THREE.BoxGeometry(.75,.65,.6),mat);tnt.position.y=.5;g.add(tnt);
    const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));
-   g.position.set(player.pos.x+dir.x*2,player.pos.y+.6,player.pos.z+dir.z*2);scene.add(g);tntCarts.push({mesh:g,dir,time:3});showToast('🧨 TNT Minecart primed! 3 seconds','🧨');
+   g.position.set(player.pos.x+dir.x*2,player.pos.y+.6,player.pos.z+dir.z*2);scene.add(g);tntCarts.push({mesh:g,dir,time:3});showToast('🧨 Blast Cart primed! 3 seconds','🧨');
  }else return false;
  if(!player.creative){slot.count--;if(slot.count<=0)inventory[hotbar]=null;}updateHotbarUI();updateHUD();return true;
 }
@@ -5604,9 +5604,9 @@ window.addEventListener('keydown', e => {
   if(k===' ' && !e.repeat && !flying && !player.onGround && elytraEquipped){
     if(elytraGliding){
       elytraGliding=false;elytraEquipped=false;rocketBoost=0;
-      showToast('🪽 Elytra UNEQUIPPED! Falling — land carefully.','🪽');
+      showToast('🪽 Skywings UNEQUIPPED! Falling — land carefully.','🪽');
     }else if(player.vel.y<0){
-      elytraGliding=true;showToast('🪽 Elytra opened! Press Space again to unequip.','🪽');
+      elytraGliding=true;showToast('🪽 Skywings opened! Press Space again to unequip.','🪽');
     }
     keys[' ']=false;e.preventDefault();return;
   }
@@ -5614,10 +5614,10 @@ window.addEventListener('keydown', e => {
   if(k === ' ' || ['arrowup','arrowdown','arrowleft','arrowright'].includes(k)) { if(k === ' ') keys[' '] = true; e.preventDefault(); }
   if(e.key === 'Shift') keys['shift'] = true;
   if(k >= '1' && k <= '9'){ hotbar = parseInt(k)-1; updateHotbarUI(); }
-  if(k === 'v' && !e.repeat){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Elytra '+(elytraEquipped?'ON · Press Space while falling':'OFF'),'🪽');}
+  if(k === 'v' && !e.repeat){elytraEquipped=!elytraEquipped;elytraGliding=false;showToast('Skywings '+(elytraEquipped?'ON · Press Space while falling':'OFF'),'🪽');}
   if(k==='g'&&!e.repeat){e.preventDefault();openCreativeGate(()=>{setCreativeMode(!player.creative);showToast(player.creative?'Creative ON (fly + god)':'Survival ON','🎨');});return;}
   if(k==='f'&&!e.repeat){
-    showToast('Select a Golden Apple in your hotbar and use it to eat.','🍎');
+    showToast('Select a Glowfruit in your hotbar and use it to eat.','🍎');
     return;
   }
   if(k==='e'&&!e.repeat){toggleInventory();return;}
