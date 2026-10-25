@@ -396,6 +396,44 @@ html.playing #dcBuildStamp{display:block}
 @media(max-width:420px){.dcOwnerActions{grid-template-columns:1fr}.dcRightsRules{padding:9px}}
 @media(max-height:490px){#title{justify-content:flex-start;overflow-y:auto}#dcBuildStamp{top:calc(env(safe-area-inset-top) + 44px)}#dcUnofficialNotice{top:calc(env(safe-area-inset-top) + 100px)}}
 </style>
+<!-- Poki test branch: SDK loaded only for Poki / Inspector, not on ordinary GitHub Pages. -->
+<script>
+(function(){
+  const h=location.hostname;
+  const enabled=h==='inspector.poki.dev'||h==='poki.com'||h.endsWith('.poki.com')||h.endsWith('.poki.dev')||new URLSearchParams(location.search).has('poki_test');
+  const p={enabled,ready:false,loaded:false,playing:false,advertising:false,previouslyPlayable:false,ctx:null};
+  window.DinoPoki=p;
+  p.tick=function(playable,audioContext){
+    if(!p.enabled)return false;
+    if(p.advertising)return true;
+    if(!p.ready)return false;
+    if(!p.loaded){p.loaded=true;try{PokiSDK.gameLoadingFinished()}catch(e){console.warn(e)}}
+    if(!playable){if(p.playing){p.playing=false;PokiSDK.gameplayStop()}p.previouslyPlayable=false;return false}
+    if(!p.playing){
+      if(p.previouslyPlayable===false&&p.startedOnce){
+        p.advertising=true;
+        p.ctx=audioContext&&audioContext.state==='running'?audioContext:null;
+        if(p.ctx)p.ctx.suspend().catch(()=>{});
+        Promise.resolve().then(()=>PokiSDK.commercialBreak()).catch(e=>console.warn('Poki ad skipped',e)).then(()=>{
+          if(p.ctx)p.ctx.resume().catch(()=>{});
+          p.ctx=null;p.advertising=false;
+          if(p.ready){PokiSDK.gameplayStart();p.playing=true}
+        });
+        return true;
+      }
+      PokiSDK.gameplayStart();p.playing=true;p.startedOnce=true;
+    }
+    p.previouslyPlayable=true;
+    return false;
+  };
+  if(!enabled)return;
+  const src=document.createElement('script');src.src='https://game-cdn.poki.com/scripts/v2/poki-sdk.js';
+  src.onload=()=>{Promise.resolve(PokiSDK.init()).catch(e=>console.warn('Poki SDK init',e)).then(()=>{p.ready=true})};
+  src.onerror=()=>{console.warn('Poki SDK unavailable; DinoCraft remains playable')};
+  document.head.appendChild(src);
+  window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)&&!(e.target instanceof HTMLInputElement))e.preventDefault()},{passive:false});
+})();
+</script>
 </head>
 <body>
 <div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.6 · © 2026</div>
@@ -6200,12 +6238,14 @@ function animate(){
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
   const modalOpen = document.getElementById('dcOwnershipOverlay').style.display==='flex'||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
-  const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
+  const uiPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
+  const adPaused=window.DinoPoki && window.DinoPoki.tick(worldReady&&!uiPaused,typeof audioCtx!=='undefined'?audioCtx:null);
+  const simPaused=uiPaused||adPaused;
   const simDt=simPaused?0:dt;
   if(worldReady&&simDt>0)dinoUnsavedSeconds+=simDt;
   updateSky(simDt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();snapshotDinoRecords();} }
-  if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
+  if(!simPaused){
     updatePlayer(dt);
     updatePrettyWorld(dt);
     updateNetherExploration(dt);
@@ -6226,13 +6266,13 @@ function animate(){
     updateBotTargetHUD();
     if(worldMode === 'pvp' && Math.floor(now*2) !== Math.floor((now-dt)*2)) updateScoreboard();
   }
-  if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){ updateCombatAbilities(dt); updateCombatItems(dt);  }
+  if(!simPaused){ updateCombatAbilities(dt); updateCombatItems(dt);  }
   updateParticles(simDt);
   updatePopups(simDt);
   if(pendingLevelRewards.length) deliverPendingRewards();
   updateAmbientAudio(lastNightF, simDt);
 
-  if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
+  if(!simPaused){
     if((mouseDown.left||mobileAttackHeld) && worldReady && player.atkCD <= 0) {const sl=inventory[hotbar];if(!sl||!['consumable','throwable','explosive'].includes(ITEMS[sl.id]?.type))tryAttack();}
     if(mouseDown.right||mobilePlaceHeld){
       const slot = inventory[hotbar];
