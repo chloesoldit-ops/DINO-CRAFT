@@ -403,11 +403,11 @@ html.playing #dcBuildStamp{display:block}
   const enabled=h==='inspector.poki.dev'||h==='poki.com'||h.endsWith('.poki.com')||h.endsWith('.poki.dev')||new URLSearchParams(location.search).has('poki_test');
   const p={enabled,ready:false,loaded:false,playing:false,advertising:false,previouslyPlayable:false,ctx:null};
   window.DinoPoki=p;
-  p.tick=function(playable,audioContext){
+  p.tick=function(playable,finishedLoading,audioContext){
     if(!p.enabled)return false;
     if(p.advertising)return true;
     if(!p.ready)return false;
-    if(!p.loaded){p.loaded=true;try{PokiSDK.gameLoadingFinished()}catch(e){console.warn(e)}}
+    if(!p.loaded){if(!finishedLoading)return false;p.loaded=true;try{PokiSDK.gameLoadingFinished()}catch(e){console.warn(e)}}
     if(!playable){if(p.playing){p.playing=false;PokiSDK.gameplayStop()}p.previouslyPlayable=false;return false}
     if(!p.playing){
       if(p.previouslyPlayable===false&&p.startedOnce){
@@ -6239,7 +6239,7 @@ function animate(){
   const modalOpen = document.getElementById('dcOwnershipOverlay').style.display==='flex'||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   const uiPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
-  const adPaused=window.DinoPoki && window.DinoPoki.tick(worldReady&&!uiPaused,typeof audioCtx!=='undefined'?audioCtx:null);
+  const adPaused=window.DinoPoki && window.DinoPoki.tick(worldReady&&!uiPaused,worldReady,typeof audioCtx!=='undefined'?audioCtx:null);
   const simPaused=uiPaused||adPaused;
   const simDt=simPaused?0:dt;
   if(worldReady&&simDt>0)dinoUnsavedSeconds+=simDt;
