@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.9 — The Lost Paradise</title>
+<title>DinoCraft 4.0 — Paradise Reborn</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -405,7 +405,7 @@ html.playing #dcBuildStamp{display:block}
 #title p{color:#d9ffef!important;position:relative;z-index:2}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.9 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.0 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -470,7 +470,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>The Lost Paradise 3.9 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Paradise Reborn 4.0 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -617,7 +617,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.9 · THE LOST PARADISE · SIX WORLDS</p>
+  <p>4.0 · PARADISE REBORN · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -1209,6 +1209,15 @@ function generateSurvivalWorld(){
     if(h <= SEA_LEVEL) surface = B.SAND;
     else if(biome === 'beach') surface = B.SAND;
     else if(biome === 'mountain' && h > SEA_LEVEL+20) surface = B.STONE;
+    // DinoCraft 4.0: colorful geographically varied surface materials.
+    if(h>SEA_LEVEL+2&&h<SEA_LEVEL+35){
+      const zone=sn(x+1370,z-620,24);
+      if(zone>.70){surface=27;} // Cherry canopy ground
+      else if(zone>.57)surface=30; // Bright tropical grass
+      else if(zone<.23)surface=38; // Mossy mystical stone
+      else if(zone<.36)surface=50; // Flower-covered meadow
+      else if(zone>.45&&zone<.51&&h>SEA_LEVEL+10)surface=23; // Sky marble highlands
+    }
     for(let y=0;y<=h;y++){
       let t;
       if(y === h) t = surface;
@@ -1233,6 +1242,7 @@ function generateSurvivalWorld(){
   addSkyIslands();
   scatterDecorations();
   buildRevolutionLandmarks();
+  buildLostParadise40();
 }
 // THE NEW REVOLUTION: discoverable landmarks with real mineable blocks.
 function buildRevolutionLandmarks(){
@@ -1280,6 +1290,54 @@ function buildRevolutionLandmarks(){
       setRaw(x+1,y+1,z,B.PLANKS);
     } else {
       setRaw(x,y+h+2,z,B.DIAMOND_ORE);
+    }
+  }
+}
+
+
+/* 4.0 ADVENTURE: natural crystal grottos, garden villages, colorful pathways. */
+function buildLostParadise40(){
+  const areas=[
+    {x:26,z:30,style:'cherry'}, {x:54,z:49,style:'tropical'},
+    {x:24,z:52,style:'crystal'}, {x:54,z:25,style:'meadow'}
+  ];
+  const safe=(x,y,z,t)=>{if(x>1&&x<WORLD_SIZE-2&&z>1&&z<WORLD_SIZE-2&&y>1&&y<WORLD_HEIGHT-3)setRaw(x,y,z,t)};
+  for(const a of areas){
+    const base=Math.max(SEA_LEVEL+2,terrainH(a.x,a.z)+2);
+    const baseBlock=a.style==='cherry'?21:a.style==='tropical'?30:a.style==='crystal'?35:36;
+    const wallBlock=a.style==='cherry'?32:a.style==='tropical'?33:a.style==='crystal'?34:31;
+    // Large colorful raised garden courtyard with an accessible center.
+    for(let dx=-6;dx<=6;dx++)for(let dz=-6;dz<=6;dz++){
+      let border=Math.abs(dx)===6||Math.abs(dz)===6;
+      for(let below=-3;below<0;below++)safe(a.x+dx,base+below,a.z+dz,B.COBBLE);
+      safe(a.x+dx,base,a.z+dz,border?wallBlock:baseBlock);
+      if(!border&&Math.abs(dx)%3===0&&Math.abs(dz)%3===0) safe(a.x+dx,base+1,a.z+dz,50);
+    }
+    // Four distinctive open-air cottages with roofs and windows.
+    for(const [ox,oz] of [[-4,-4],[3,-4],[-4,3],[3,3]]){
+      const cx=a.x+ox,cz=a.z+oz;
+      for(let yy=1;yy<=4;yy++)for(let xx=-1;xx<=1;xx++)for(let zz=-1;zz<=1;zz++){
+        const edge=Math.abs(xx)===1||Math.abs(zz)===1;
+        if(edge && !(xx===0&&zz===-1&&yy<=2))safe(cx+xx,base+yy,cz+zz, yy===3?wallBlock:baseBlock);
+        else if(!edge)safe(cx+xx,base+yy,cz+zz,B.AIR);
+      }
+      for(let xx=-2;xx<=2;xx++)for(let zz=-2;zz<=2;zz++)safe(cx+xx,base+5,cz+zz,a.style==='cherry'?46:a.style==='tropical'?47:48);
+    }
+    // A little crystal garden centerpiece.
+    safe(a.x,base+1,a.z,35);
+    safe(a.x,base+2,a.z,39);
+    safe(a.x,base+3,a.z,40);
+    for(let p=-5;p<=5;p++){safe(a.x+p,base+1,a.z,37);safe(a.x,base+1,a.z+p,37);}
+  }
+  // Discoverable crystal caverns with reinforced geode walls and mineable jewels.
+  for(const [cx,cy,cz] of [[18,10,40],[60,11,57],[41,8,22],[44,12,62]]){
+    for(let dx=-5;dx<=5;dx++)for(let dy=-4;dy<=4;dy++)for(let dz=-5;dz<=5;dz++){
+      const d=(dx*dx/25)+(dy*dy/16)+(dz*dz/25);
+      if(d<.71)safe(cx+dx,cy+dy,cz+dz,B.AIR);
+      else if(d<=1.15&&d>.86)safe(cx+dx,cy+dy,cz+dz,[39,40,41,42,43,44][Math.abs(dx*7+dy*13+dz*3)%6]);
+    }
+    for(const [dx,dz] of [[-3,0],[3,0],[0,-3],[0,3]]){
+      safe(cx+dx,cy-2,cz+dz,39);safe(cx+dx,cy-1,cz+dz,40);safe(cx+dx,cy,cz+dz,41);
     }
   }
 }
