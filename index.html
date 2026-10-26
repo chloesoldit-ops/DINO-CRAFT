@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.7 — Enchanted Lands</title>
+<title>DinoCraft 3.8 — Sky High</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -405,7 +405,7 @@ html.playing #dcBuildStamp{display:block}
 #title p{color:#d9ffef!important;position:relative;z-index:2}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.7 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.8 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -470,7 +470,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Enchanted Lands 3.7 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Sky High 3.8 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -617,7 +617,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.7 · ENCHANTED LANDS · SIX WORLDS</p>
+  <p>3.8 · SKY HIGH · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -639,7 +639,7 @@ html.playing #dcBuildStamp{display:block}
 (function(){
 'use strict';
 
-const WORLD_SIZE = 80, WORLD_HEIGHT = 56, SEA_LEVEL = 18;
+const WORLD_SIZE = 80, WORLD_HEIGHT = 128, SEA_LEVEL = 18;
 const GRAVITY = 0.017, JUMP_VEL = 0.30;
 const WALK_SPEED = 0.13, SPRINT_MULT = 1.55, SWIM_SPEED = 0.06;
 const PLAYER_HEIGHT = 1.75, PLAYER_RADIUS = 0.30, PLAYER_EYE = 1.62;
@@ -1027,14 +1027,14 @@ function saveSurvivalWorld(){
    const parts=[];let i=0;
    while(i<world.length){const t=world[i];let count=1;while(count<255&&i+count<world.length&&world[i+count]===t)count++;parts.push(String.fromCharCode(count,t));i+=count;}
    const blocks=btoa(parts.join(''));
-   localStorage.setItem(SURVIVAL_WORLD_SAVE,JSON.stringify({version:3,blocks,position:[player.pos.x,player.pos.y,player.pos.z]}));
+   localStorage.setItem(SURVIVAL_WORLD_SAVE,JSON.stringify({version:4,blocks,position:[player.pos.x,player.pos.y,player.pos.z]}));
  }catch(e){/* Local storage full, private mode or sandbox restriction. */}
 }
 function loadSurvivalWorld(){
- try{const d=JSON.parse(localStorage.getItem(SURVIVAL_WORLD_SAVE)||'null');if(!d||d.version!==3||typeof d.blocks!=='string')return null;
- const data=atob(d.blocks);const decoded=new Uint8Array(world.length);let j=0;
+ try{const d=JSON.parse(localStorage.getItem(SURVIVAL_WORLD_SAVE)||'null');if(!d||(d.version!==3&&d.version!==4)||typeof d.blocks!=='string')return null;
+ const data=atob(d.blocks);const oldHeight=56;const expected=d.version===3?WORLD_SIZE*oldHeight*WORLD_SIZE:world.length;const decoded=new Uint8Array(expected);let j=0;
  for(let i=0;i<data.length;i+=2){const count=data.charCodeAt(i),t=data.charCodeAt(i+1);if(!count||!Number.isFinite(t)||j+count>decoded.length||(t!==B.AIR&&!BLOCKS[t]))return null;decoded.fill(t,j,j+count);j+=count;}
- if(j!==decoded.length)return null;world.set(decoded);return Array.isArray(d.position)&&d.position.length===3?d.position:null;
+ if(j!==decoded.length)return null;if(d.version===3){for(let y=0;y<oldHeight;y++){const slice=WORLD_SIZE*WORLD_SIZE;world.set(decoded.subarray(y*slice,(y+1)*slice),y*slice);}}else world.set(decoded);return Array.isArray(d.position)&&d.position.length===3?d.position:null;
  }catch(e){return null;}
 }
 function saveAdventure(){if(worldMode==='pvp')return;try{localStorage.setItem(ADVENTURE_SAVE,JSON.stringify({items:inventory.slice(0,36),hotbar,armour,version:3}));}catch(e){}saveSurvivalWorld();}
