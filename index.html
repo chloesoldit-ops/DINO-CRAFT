@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.6 — Anti-Copy Edition</title>
+<title>DinoCraft 3.7 — Enchanted Lands</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -396,7 +396,14 @@ html.playing #dcBuildStamp{display:block}
 @media(max-width:420px){.dcOwnerActions{grid-template-columns:1fr}.dcRightsRules{padding:9px}}
 @media(max-height:490px){#title{justify-content:flex-start;overflow-y:auto}#dcBuildStamp{top:calc(env(safe-area-inset-top) + 44px)}#dcUnofficialNotice{top:calc(env(safe-area-inset-top) + 100px)}}
 </style>
-</head>
+<style id="d37-style">
+#title{background:radial-gradient(ellipse at center,#23685c 0%,#214a72 50%,#14183f 100%)!important}
+#title:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 78% 20%,#ffe08e8a,transparent 23%),radial-gradient(circle at 18% 70%,#90ffc27a,transparent 30%),radial-gradient(circle at 78% 78%,#f7a7ff52,transparent 29%);animation:d37sky 12s ease-in-out infinite alternate}
+@keyframes d37sky{to{filter:hue-rotate(18deg) brightness(1.2)}}
+#title h1{background:linear-gradient(120deg,#fff7a3,#a2ffbc 35%,#7ddbf9 65%,#edaaff)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;filter:drop-shadow(0 7px 15px #072b37) drop-shadow(0 0 20px #a0ffb966)}
+#title .cta{border:2px solid #e0ffb8!important;border-radius:16px!important;box-shadow:0 6px 24px #66efb265!important}
+#title p{color:#d9ffef!important;position:relative;z-index:2}
+</style></head>
 <body>
 <div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.6 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
@@ -610,7 +617,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.6 · ANTI-COPY EDITION · SIX WORLDS</p>
+  <p>3.7 · ENCHANTED LANDS · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -6481,5 +6488,6 @@ setTimeout(() => {
 
 })();
 </script>
+<script src="./enchanted-3.7.js"></script>
 </body>
 </html>
