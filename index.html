@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 3.8 — Sky High</title>
+<title>DinoCraft 3.9 — The Lost Paradise</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -405,7 +405,7 @@ html.playing #dcBuildStamp{display:block}
 #title p{color:#d9ffef!important;position:relative;z-index:2}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.8 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 3.9 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -470,7 +470,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Sky High 3.8 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>The Lost Paradise 3.9 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -617,7 +617,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>3.8 · SKY HIGH · SIX WORLDS</p>
+  <p>3.9 · THE LOST PARADISE · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -920,6 +920,16 @@ defB(B.ARENA_WALL,'Arena Wall',{hp:9999,tex:TX.arenaWall});
 defB(B.RED_BLOCK,'Red Team',{hp:9999,tex:TX.redTeamBlock,emissive:0.15});
 defB(B.BLUE_BLOCK,'Blue Team',{hp:9999,tex:TX.blueTeamBlock,emissive:0.15});
 
+
+/* 3.9 Lost Paradise: 30 genuine placeable decorative block definitions */
+const DINO39_PALETTE=[["Cherry Planks",15310014],["Rose Marble",15578316],["Sky Marble",9555944],["Mint Marble",8836273],["Lavender Marble",11968728],["Golden Marble",15453571],["Cherry Leaves",15771592],["Sunset Leaves",15969658],["Crystal Leaves",9757932],["Tropical Leaves",4438923],["White Brick",14214622],["Rose Brick",14452891],["Blue Brick",7642059],["Moss Brick",6990215],["Ancient Brick",8301992],["Rainbow Tile",11964127],["Pearl Tile",15656404],["Ocean Tile",7066847],["Ruby Crystal",15296907],["Sapphire Crystal",6138348],["Emerald Crystal",6083746],["Amethyst Crystal",11434206],["Sunstone",16174951],["Moonstone",11584762],["Dark Oak",7230056],["Pink Roof",14515611],["Teal Roof",4954795],["Gold Roof",12427357],["Garden Soil",9331804],["Flower Turf",7191417]];
+const DINO39_IDS=[];
+for(let n=0;n<DINO39_PALETTE.length;n++){
+ const [name,color]=DINO39_PALETTE[n],id=21+n;
+ const tex=makeTex((ctx,size)=>{const r=(color>>16)&255,g=(color>>8)&255,b=color&255;ctx.fillStyle='rgb('+r+','+g+','+b+')';ctx.fillRect(0,0,size,size);for(let j=0;j<140;j++){const shade=(Math.random()-.5)*38;ctx.fillStyle='rgba('+(shade>0?'255,255,255':'0,0,0')+','+(Math.abs(shade)/250).toFixed(3)+')';const xx=Math.random()*size,yy=Math.random()*size;ctx.fillRect(xx,yy,2+Math.random()*6,2+Math.random()*6)}for(let j=0;j<4;j++){ctx.fillStyle='rgba(255,255,255,.09)';ctx.fillRect(0,j*16,size,1)}});
+ defB(id,name,{hp:1.8,tex,glow:name.includes('Crystal')||name.includes('Sunstone')||name.includes('Moonstone'),emissive:.18});DINO39_IDS.push(id);
+}
+
 /* ===== ITEMS — expanded weapon set ===== */
 const ITEMS = {
   wood_pickaxe:{n:'Wood Pickaxe',ic:'⛏️',type:'pickaxe',tier:1,dmg:3,mineDmg:0.7},
@@ -1051,6 +1061,9 @@ function useTotem(){const i=inventory.findIndex(x=>x&&x.id==='totem_of_undying')
 const SELL_PRICES={wood:3,stone:2,iron:12,gold:18,diamond:75,emerald:90,lapis:16,bone:3,string:3,wood_block:3,stone_block:2,cobble_block:2,planks_block:3,dirt_block:1,grass_block:2,sand_block:2,obsidian_block:25};
 const SHOP_ITEMS={totem_of_undying:550,ender_pearl:85,splash_healing:110,splash_strength:140,leather_helmet:40,leather_chestplate:70,leather_leggings:55,leather_boots:40,iron_helmet:120,iron_chestplate:210,iron_leggings:175,iron_boots:115,diamond_helmet:380,diamond_chestplate:750,diamond_leggings:600,diamond_boots:350,healing_potion:45,golden_apple:85,enchanted_golden_apple:350,speed_potion:75,strength_potion:85,regeneration_potion:90,arrow:4,bow:110,shield:65,iron_sword:120,diamond_sword:400,diamond_spear:410,netherite_mace:950,elytra:900,firework_rocket:28,tnt_minecart:100,wind_charge:38,lapis:22,enchanting_table:240};
 for(const [id,def] of Object.entries(ITEMS)){if(id==='dragonfang_mace'||id==='delete_wand'||id==='totem_of_undying')continue;if(SHOP_ITEMS[id]===undefined){SHOP_ITEMS[id]=def.type==='block'?16:def.type==='mat'?22:def.type==='armor'?200:def.type==='potion'?90:def.type==='mace'?650:def.type==='sword'?280:def.type==='equipment'?650:135;}}
+/* New colorful building materials are available as standard block items. */
+for(let i=0;i<DINO39_PALETTE.length;i++){const name=DINO39_PALETTE[i][0],id=DINO39_IDS[i],key='d39_'+i;ITEMS[key]={n:name,ic:['🌸','💠','🧱','✨','🌿'][i%5],type:'block',block:id};}
+
 const inventory = [
   {id:'stone_sword',count:1},
   {id:'shield',count:1},
