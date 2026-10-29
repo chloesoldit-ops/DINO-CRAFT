@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.0 — Paradise Reborn</title>
+<title>DinoCraft 4.1 — Builders Update</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -405,7 +405,7 @@ html.playing #dcBuildStamp{display:block}
 #title p{color:#d9ffef!important;position:relative;z-index:2}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.0 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.1 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -470,7 +470,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Paradise Reborn 4.0 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Builders Update 4.1 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -617,7 +617,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.0 · PARADISE REBORN · SIX WORLDS</p>
+  <p>4.1 · BUILDERS UPDATE · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -1062,7 +1062,7 @@ const SELL_PRICES={wood:3,stone:2,iron:12,gold:18,diamond:75,emerald:90,lapis:16
 const SHOP_ITEMS={totem_of_undying:550,ender_pearl:85,splash_healing:110,splash_strength:140,leather_helmet:40,leather_chestplate:70,leather_leggings:55,leather_boots:40,iron_helmet:120,iron_chestplate:210,iron_leggings:175,iron_boots:115,diamond_helmet:380,diamond_chestplate:750,diamond_leggings:600,diamond_boots:350,healing_potion:45,golden_apple:85,enchanted_golden_apple:350,speed_potion:75,strength_potion:85,regeneration_potion:90,arrow:4,bow:110,shield:65,iron_sword:120,diamond_sword:400,diamond_spear:410,netherite_mace:950,elytra:900,firework_rocket:28,tnt_minecart:100,wind_charge:38,lapis:22,enchanting_table:240};
 for(const [id,def] of Object.entries(ITEMS)){if(id==='dragonfang_mace'||id==='delete_wand'||id==='totem_of_undying')continue;if(SHOP_ITEMS[id]===undefined){SHOP_ITEMS[id]=def.type==='block'?16:def.type==='mat'?22:def.type==='armor'?200:def.type==='potion'?90:def.type==='mace'?650:def.type==='sword'?280:def.type==='equipment'?650:135;}}
 /* New colorful building materials are available as standard block items. */
-for(let i=0;i<DINO39_PALETTE.length;i++){const name=DINO39_PALETTE[i][0],id=DINO39_IDS[i],key='d39_'+i;ITEMS[key]={n:name,ic:['🌸','💠','🧱','✨','🌿'][i%5],type:'block',block:id};}
+for(let i=0;i<DINO39_PALETTE.length;i++){const name=DINO39_PALETTE[i][0],id=DINO39_IDS[i],key='d39_'+i;ITEMS[key]={n:name,ic:['🌸','💠','🧱','✨','🌿'][i%5],type:'block',block:id};SHOP_ITEMS[key]=name.includes('Crystal')?45:name.includes('Marble')?25:14;}
 
 const inventory = [
   {id:'stone_sword',count:1},
