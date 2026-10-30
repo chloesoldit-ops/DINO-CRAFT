@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.2 — Paradise Blocks</title>
+<title>DinoCraft 4.3 — Weapons Update</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -408,9 +408,9 @@ html.playing #dcBuildStamp{display:block}
 #d42-slot:hover,#d42-slot:focus-visible{background:linear-gradient(110deg,#307f78,#7b55ae);outline:2px solid #e4fff4}
 .d42-slot-help{font:11px system-ui;color:#d5f8ef;position:relative;z-index:3;max-width:290px;line-height:1.5;margin:0 auto 8px}
 @media(max-width:520px){#d42-slot{font-size:12px;padding:8px 11px}.d42-slot-help{font-size:10px}}
-</style></head>
+</style><style id="dc43Weapons">#spearSkillHUD{position:fixed;right:14px;bottom:94px;z-index:20;padding:9px 12px;border:1px solid #5feac4;border-radius:11px;background:#132b3ded;color:#e1fcff;font:700 12px system-ui;pointer-events:none;box-shadow:0 3px 15px #0009}#spearSkillHUD span{margin-left:12px}.touchDevice #spearSkillHUD{right:8px;bottom:calc(env(safe-area-inset-bottom) + 63px);font-size:10px;padding:5px 8px}#touchLunge{background:#174953!important;border-color:#76ffeb!important}</style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.2 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.3 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -475,7 +475,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Paradise Blocks 4.2 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Weapons Update 4.3 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -536,9 +536,10 @@ html.playing #dcBuildStamp{display:block}
   <div id="botTarget"><div class="name"></div><div class="weapon"></div><div class="hptrack"><div class="hpfill" style="width:100%"></div></div></div>
   <div id="killStreak"><div class="streakNum">0</div><div class="streakText">KILL STREAK</div></div>
   <div id="weaponQuest"><div class="wqTitle">⭐ NEXT LEVEL WEAPON</div><div class="wqTask" id="wqTask">Gain XP to unlock weapons</div><div class="wqProgress"><span id="wqKills">0</span> / <span id="wqNeed">3</span></div><div class="wqBar"><div class="wqFill" id="wqFill" style="width:0%"></div></div></div>
-  <div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP</div><div style="opacity:.72">J / Click attack · Q dash · I creative items · Tab stats</div></div>
+  <div id="spearSkillHUD" style="display:none">🔱 <b>R · LUNGE</b> <span id="spearLungeStatus">READY</span></div>
+<div id="combatAbilityHUD" style="display:none"><b>⚔️ COMBAT SKILLS</b><div id="dashStatus">Q — Dash: READY</div><div id="comboStatus">Combo: 0</div><div id="eliteStatus">💀 Elite enemies give bonus XP</div><div style="opacity:.72">J / Click attack · Q dash · R spear lunge · I creative items · Tab stats</div></div>
 <div id="bossBar"><div class="name"></div><div class="track"><div class="fill"></div></div></div>
-  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump / Skywings toggle in air · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> inventory · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> map · <b>N</b> mute · <b>P</b> save PvP</div>
+  <div id="help"><b>CLICK / HOLD</b> attack even without mouse lock · <b>J</b> attack<br><b>WASD</b> move · <b>TAB</b> stats · <b>J</b> attack · <b>SPACE</b> jump / Skywings toggle in air · <b>SHIFT</b> sprint<br><b>LMB</b> attack / mine · <b>J</b> attack · <b>RMB</b> place / block<br><b>/</b> commands · <b>Q</b> dash · <b>R</b> spear lunge · <b>I</b> creative items · <b>1-9</b> hotbar · <b>E</b> inventory · <b>G</b> creative+fly<br><b>X</b> drop item · <b>F</b> eat · <b>H</b> hide · <b>M</b> map · <b>N</b> mute · <b>P</b> save PvP</div>
   <div id="hud">
     <div id="bars">
       <div class="bar"><i id="hpFill" style="width:100%"></i><span id="hpTxt">❤️ 20/20</span></div>
@@ -568,7 +569,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="touchJoystick" aria-label="Movement joystick"><div id="touchKnob"></div></div>
 <div id="touchActions">
 <button class="touchButton" id="touchAttack">⚔️</button><button class="touchButton" id="touchPlace">🧱</button><button class="touchButton" id="touchJump">⬆️</button>
-<button class="touchButton" id="touchSprint">🏃</button><button class="touchButton" id="touchDown">⬇️</button><button class="touchButton" id="touchFly">🪽</button>
+<button class="touchButton" id="touchSprint">🏃</button><button class="touchButton" id="touchLunge" title="Spear Lunge (R)">🔱</button><button class="touchButton" id="touchDown">⬇️</button><button class="touchButton" id="touchFly">🪽</button>
 </div></div>
 <div id="respawnOverlay"><div class="big">YOU DIED</div><div class="sub" id="respawnBy">Killed by ???</div><div class="timer" id="respawnTimer">5</div></div>
 <div id="invOverlay">
@@ -622,7 +623,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.2 · PARADISE BLOCKS · SIX WORLDS</p>
+  <p>4.3 · WEAPONS UPDATE · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -944,23 +945,23 @@ const ITEMS = {
   iron_pickaxe:{n:'Iron Pickaxe',ic:'⛏️',type:'pickaxe',tier:3,dmg:5,mineDmg:1.8},
   diamond_pickaxe:{n:'Diamond Pickaxe',ic:'💎',type:'pickaxe',tier:4,dmg:6,mineDmg:2.5},
   netherite_pickaxe:{n:'Darksteel Pickaxe',ic:'🔱',type:'pickaxe',tier:5,dmg:7,mineDmg:3.5},
-  wood_sword:{n:'Wood Sword',ic:'🗡️',type:'sword',tier:1,dmg:5,atkSpeed:0.35},
-  stone_sword:{n:'Stone Sword',ic:'🗡️',type:'sword',tier:2,dmg:6,atkSpeed:0.34},
-  iron_sword:{n:'Iron Sword',ic:'⚔️',type:'sword',tier:3,dmg:8,atkSpeed:0.33},
-  diamond_sword:{n:'Diamond Sword',ic:'⚔️',type:'sword',tier:4,dmg:11,atkSpeed:0.32},
-  netherite_sword:{n:'Darksteel Sword',ic:'🗡️',type:'sword',tier:5,dmg:14,atkSpeed:0.31},
-  iron_axe:{n:'Iron Axe',ic:'🪓',type:'axe',tier:3,dmg:30,atkSpeed:4.2,knockback:3.2},
-  diamond_axe:{n:'Diamond Axe',ic:'🪓',type:'axe',tier:4,dmg:44,atkSpeed:4.6,knockback:3.6},
-  iron_spear:{n:'Iron Spear',ic:'🔱',type:'spear',tier:3,dmg:5,reach:6.0,atkSpeed:0.95},
-  diamond_spear:{n:'Diamond Spear',ic:'🔱',type:'spear',tier:4,dmg:7,reach:6.4,atkSpeed:0.85},
-  stone_dagger:{n:'Stone Dagger',ic:'🔪',type:'dagger',tier:2,dmg:4,atkSpeed:0.6},
-  iron_dagger:{n:'Iron Dagger',ic:'🔪',type:'dagger',tier:3,dmg:5,atkSpeed:0.55},
-  diamond_dagger:{n:'Diamond Dagger',ic:'🔪',type:'dagger',tier:4,dmg:6,atkSpeed:0.5},
-  iron_hammer:{n:'Iron Hammer',ic:'🔨',type:'hammer',tier:3,dmg:12,aoe:2.5,atkSpeed:1.4},
-  diamond_hammer:{n:'Diamond Hammer',ic:'🔨',type:'hammer',tier:4,dmg:16,aoe:3.0,atkSpeed:1.5},
-  iron_mace:{n:'Iron Mace',ic:'🔨',type:'mace',tier:3,dmg:13,atkSpeed:1.05},
-  diamond_mace:{n:'Diamond Mace',ic:'💠',type:'mace',tier:4,dmg:19,atkSpeed:1.3},
-  netherite_mace:{n:'Darksteel Mace',ic:'💥',type:'mace',tier:5,dmg:26,atkSpeed:1.6},
+  wood_sword:{n:'Wood Sword',ic:'🗡️',type:'sword',tier:1,dmg:5,atkSpeed:0.54},
+  stone_sword:{n:'Stone Sword',ic:'🗡️',type:'sword',tier:2,dmg:6,atkSpeed:0.52},
+  iron_sword:{n:'Iron Sword',ic:'⚔️',type:'sword',tier:3,dmg:8,atkSpeed:0.49},
+  diamond_sword:{n:'Diamond Sword',ic:'⚔️',type:'sword',tier:4,dmg:11,atkSpeed:0.47},
+  netherite_sword:{n:'Darksteel Sword',ic:'🗡️',type:'sword',tier:5,dmg:13,atkSpeed:0.45},
+  iron_axe:{n:'Iron Axe',ic:'🪓',type:'axe',tier:3,dmg:20,atkSpeed:1.2,knockback:3.2},
+  diamond_axe:{n:'Diamond Axe',ic:'🪓',type:'axe',tier:4,dmg:27,atkSpeed:1.35,knockback:3.6},
+  iron_spear:{n:'Iron Spear',ic:'🔱',type:'spear',tier:3,dmg:8,reach:6.0,atkSpeed:0.72},
+  diamond_spear:{n:'Diamond Spear',ic:'🔱',type:'spear',tier:4,dmg:11,reach:6.4,atkSpeed:0.68},
+  stone_dagger:{n:'Stone Dagger',ic:'🔪',type:'dagger',tier:2,dmg:4,atkSpeed:0.31},
+  iron_dagger:{n:'Iron Dagger',ic:'🔪',type:'dagger',tier:3,dmg:5,atkSpeed:0.29},
+  diamond_dagger:{n:'Diamond Dagger',ic:'🔪',type:'dagger',tier:4,dmg:6,atkSpeed:0.28},
+  iron_hammer:{n:'Iron Hammer',ic:'🔨',type:'hammer',tier:3,dmg:12,aoe:2.5,atkSpeed:0.96},
+  diamond_hammer:{n:'Diamond Hammer',ic:'🔨',type:'hammer',tier:4,dmg:16,aoe:3.0,atkSpeed:1.1},
+  iron_mace:{n:'Iron Mace',ic:'🔨',type:'mace',tier:3,dmg:13,atkSpeed:1.25},
+  diamond_mace:{n:'Diamond Mace',ic:'💠',type:'mace',tier:4,dmg:18,atkSpeed:1.4},
+  netherite_mace:{n:'Darksteel Mace',ic:'💥',type:'mace',tier:5,dmg:23,atkSpeed:1.6},
   bow:{n:'Bow',ic:'🏹',type:'bow',tier:3,dmg:9,ranged:true},
   arrow:{n:'Arrow',ic:'➳',type:'ammo'},
   golden_apple:{n:'Glowfruit',ic:'🍎',type:'consumable'},
@@ -1011,7 +1012,12 @@ const ITEMS = {
   diamond_chestplate:{n:'Diamond Chestplate',ic:'💎',type:'armor',part:'chestplate',armor:7},
   diamond_leggings:{n:'Diamond Leggings',ic:'💎',type:'armor',part:'leggings',armor:5},
   diamond_boots:{n:'Diamond Boots',ic:'💎',type:'armor',part:'boots',armor:3},
-  dragonfang_mace:{n:'Dragonfang Mace',ic:'🐉',type:'mace',tier:6,dmg:38,atkSpeed:0.85}
+  dragonfang_mace:{n:'Dragonfang Mace',ic:'🐉',type:'mace',tier:6,dmg:27,atkSpeed:1.42},
+  iron_halberd:{n:'Iron Halberd',ic:'🔱',type:'spear',tier:3,dmg:10,reach:5.8,atkSpeed:.83,lungeRange:4.3},
+  prism_rapier:{n:'Prism Rapier',ic:'✨',type:'sword',tier:4,dmg:10,reach:4.6,atkSpeed:.36,precision:true},
+  obsidian_cleaver:{n:'Obsidian Cleaver',ic:'🪓',type:'axe',tier:4,dmg:30,reach:3.45,atkSpeed:1.50,knockback:4},
+  storm_hammer:{n:'Storm Hammer',ic:'⚡',type:'hammer',tier:5,dmg:22,aoe:3.3,atkSpeed:1.30},
+  twin_daggers:{n:'Twin Daggers',ic:'🗡️',type:'dagger',tier:3,dmg:5,atkSpeed:.22}
 };
 
 /* The economy is independent of each world. Coins and purchased items are stored locally. */
@@ -1073,6 +1079,7 @@ function useTotem(){const i=inventory.findIndex(x=>x&&x.id==='totem_of_undying')
 const SELL_PRICES={wood:3,stone:2,iron:12,gold:18,diamond:75,emerald:90,lapis:16,bone:3,string:3,wood_block:3,stone_block:2,cobble_block:2,planks_block:3,dirt_block:1,grass_block:2,sand_block:2,obsidian_block:25};
 const SHOP_ITEMS={totem_of_undying:550,ender_pearl:85,splash_healing:110,splash_strength:140,leather_helmet:40,leather_chestplate:70,leather_leggings:55,leather_boots:40,iron_helmet:120,iron_chestplate:210,iron_leggings:175,iron_boots:115,diamond_helmet:380,diamond_chestplate:750,diamond_leggings:600,diamond_boots:350,healing_potion:45,golden_apple:85,enchanted_golden_apple:350,speed_potion:75,strength_potion:85,regeneration_potion:90,arrow:4,bow:110,shield:65,iron_sword:120,diamond_sword:400,diamond_spear:410,netherite_mace:950,elytra:900,firework_rocket:28,tnt_minecart:100,wind_charge:38,lapis:22,enchanting_table:240};
 for(const [id,def] of Object.entries(ITEMS)){if(id==='dragonfang_mace'||id==='delete_wand'||id==='totem_of_undying')continue;if(SHOP_ITEMS[id]===undefined){SHOP_ITEMS[id]=def.type==='block'?16:def.type==='mat'?22:def.type==='armor'?200:def.type==='potion'?90:def.type==='mace'?650:def.type==='sword'?280:def.type==='equipment'?650:135;}}
+Object.assign(SHOP_ITEMS,{iron_halberd:320,prism_rapier:650,obsidian_cleaver:690,storm_hammer:990,twin_daggers:290});
 /* New colorful building materials are available as standard block items. */
 for(let i=0;i<DINO39_PALETTE.length;i++){const name=DINO39_PALETTE[i][0],id=DINO39_IDS[i],key='d39_'+i;ITEMS[key]={n:name,ic:['🌸','💠','🧱','✨','🌿'][i%5],type:'block',block:id};SHOP_ITEMS[key]=name.includes('Crystal')?45:name.includes('Marble')?25:14;}
 
@@ -1356,7 +1363,7 @@ function buildLostParadise40(){
 }
 
 
-/* ===== DINOCRAFT 4.2: PLACEABLE WORLD DECORATIONS =====
+/* ===== DINOCRAFT 4.3: PLACEABLE WORLD DECORATIONS =====
    All 30 catalog materials (IDs 21–50) appear physically in the new Survival
    map and can be mined back into items. No decorative 3D-only impostors. */
 function seedDecorativeWorld42(){
@@ -2602,11 +2609,13 @@ function makeWeaponMesh(weaponId){
   else if(weaponId.indexOf('diamond') > -1) tierName = 'diamond';
   else if(weaponId.indexOf('netherite') > -1) tierName = 'netherite';
   else if(weaponId.indexOf('wood') > -1) tierName = 'wood';
-  const headMat = new THREE.MeshLambertMaterial({color: tierColors[tierName]});
+  const weapon43Colors={iron_halberd:0xcbdce8,prism_rapier:0x8ff6ec,obsidian_cleaver:0x643a83,storm_hammer:0xffd957,twin_daggers:0x98ecff};
+  const special=weapon43Colors[weaponId];
+  const headMat = new THREE.MeshLambertMaterial({color:special||tierColors[tierName],emissive:special||0x000000,emissiveIntensity:special?.15:0});
   const handleMat = new THREE.MeshLambertMaterial({color:0x7a5a2a});
 
   const def = BOT_WEAPONS.find(w => w.id === weaponId);
-  const wtype = def ? def.type : 'sword';
+  const wtype = ITEMS[weaponId]?.type || (def ? def.type : 'sword');
 
   if(wtype === 'sword'){
     const handle = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.35, 0.05), handleMat);
@@ -2653,6 +2662,10 @@ function makeWeaponMesh(weaponId){
     const string = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.75, 0.02), new THREE.MeshBasicMaterial({color:0xeeeecc}));
     string.rotation.z = -0.15;
     g.add(string);
+  }
+  if(weapon43Colors[weaponId]){
+    const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.09),headMat);gem.position.set(0,weaponId==='twin_daggers'?.25:.5,.11);g.add(gem);
+    if(weaponId==='twin_daggers'){const b=new THREE.Mesh(new THREE.BoxGeometry(.055,.34,.025),headMat);b.position.set(.16,.18,0);g.add(b);}
   }
   g.rotation.x = -0.3;
   return g;
@@ -3301,10 +3314,15 @@ const WEAPON_MILESTONES = [
   {level:7, weapon:'diamond_axe', name:'Diamond Axe'},
   {level:8, weapon:'diamond_spear', name:'Diamond Spear'},
   {level:9, weapon:'diamond_dagger', name:'Diamond Dagger'},
+  {level:10, weapon:'twin_daggers', name:'Twin Daggers'},
   {level:10, weapon:'netherite_sword', name:'Darksteel Sword'},
   {level:12, weapon:'diamond_hammer', name:'Diamond Hammer'},
   {level:11, weapon:'iron_mace', name:'Iron Mace'},
+  {level:12, weapon:'iron_halberd', name:'Iron Halberd'},
   {level:13, weapon:'diamond_mace', name:'Diamond Mace'},
+  {level:15, weapon:'prism_rapier', name:'Prism Rapier'},
+  {level:16, weapon:'obsidian_cleaver', name:'Obsidian Cleaver'},
+  {level:18, weapon:'storm_hammer', name:'Storm Hammer'},
   {level:14, weapon:'netherite_pickaxe', name:'Darksteel Pickaxe'},
   {level:17, weapon:'netherite_mace', name:'Darksteel Mace'}
 ];
@@ -4112,6 +4130,14 @@ function combatDash(){
 }
 function updateCombatAbilities(dt){
   if(dashCooldown>0) dashCooldown=Math.max(0,dashCooldown-dt);
+  if(spearLungeCooldown>0)spearLungeCooldown=Math.max(0,spearLungeCooldown-dt);
+  const skill=document.getElementById('spearSkillHUD'),w=ITEMS[inventory[hotbar]?.id];
+  skill.style.display=worldReady&&w?.type==='spear'&&!player.dead?'block':'none';
+  if(w?.type==='spear'){
+    const status=document.getElementById('spearLungeStatus');
+    status.textContent=spearLungeCooldown>0?spearLungeCooldown.toFixed(1)+'s':'READY';
+    status.style.color=spearLungeCooldown>0?'#ffc08a':'#8affba';
+  }
   if(dashProtection>0) dashProtection=Math.max(0,dashProtection-dt);
   if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0)combatCombo=0;}
   const hud=document.getElementById('combatAbilityHUD');
@@ -4122,6 +4148,53 @@ function updateCombatAbilities(dt){
   d.className=dashCooldown<=0?'ready':'cooling';
   document.getElementById('comboStatus').textContent='⚡ Hit combo: '+combatCombo+(comboTimer>0?' · '+comboTimer.toFixed(1)+'s':'');
 }
+
+/* 4.3 Spear lunge: forward collision-tested attack, 2 targets max. */
+let spearLungeCooldown=0;
+function weaponLunge(){
+  if(!gameplayInputAllowed()||worldMode==='pretty'||player.dead||flying)return;
+  const slot=inventory[hotbar],weapon=slot&&ITEMS[slot.id];
+  if(!weapon||weapon.type!=='spear'){showToast('Equip a spear or halberd to lunge!','🔱');return;}
+  if(spearLungeCooldown>0){showToast('Lunge ready in '+spearLungeCooldown.toFixed(1)+'s','⏳');return;}
+  if(!player.onGround||player.inWater||player.blocking){showToast('Lunge requires solid ground!','🔱');return;}
+  spearLungeCooldown=weapon.tier>=4?5.8:6.4;
+  player.atkCD=Math.max(player.atkCD,.65);
+  const dx=-Math.sin(player.yaw),dz=-Math.cos(player.yaw);
+  const range=weapon.lungeRange||4,steps=Math.ceil(range/.22),distance=range/steps;
+  let hits=0,moved=0;
+  const seen=new Set();
+  for(let step=0;step<steps;step++){
+    const x=player.pos.x+dx*distance,z=player.pos.z+dz*distance;
+    if(x<.5||z<.5||x>WORLD_SIZE-.5||z>WORLD_SIZE-.5)break;
+    if(playerCollides(x,player.pos.y,z))break;
+    player.pos.x=x;player.pos.z=z;moved+=distance;
+    if(hits>=2)continue;
+    for(const b of fighterBots){
+      if(hits>=2)break;
+      if(b.dead||!b.mesh.visible||seen.has(b))continue;
+      if(Math.abs(b.pos.y-player.pos.y)>2||Math.hypot(b.pos.x-x,b.pos.z-z)>1.30)continue;
+      seen.add(b);if(b.invulnT>0)continue;
+      damageBot(b,Math.round(weapon.dmg*1.45+3),null,true,false);
+      b.vel.x+=dx*.22;b.vel.z+=dz*.22;hits++;
+      spawnHitSparks(b.pos.x,b.pos.y+1.3,b.pos.z,0x6feaff,10);
+    }
+    for(const m of mobs){
+      if(hits>=2)break;
+      if(m.dead||seen.has(m))continue;
+      if(Math.abs(m.pos.y-player.pos.y)>Math.max(2,m.def.size)||Math.hypot(m.pos.x-x,m.pos.z-z)>Math.max(1.2,m.def.size*.52))continue;
+      seen.add(m);m.hp-=Math.round(weapon.dmg*1.45+3);m.hit=.35;
+      m.vel.x+=dx*.19;m.vel.z+=dz*.19;hits++;
+      spawnHitSparks(m.pos.x,m.pos.y+m.def.size*.7,m.pos.z,0x6feaff,10);
+    }
+  }
+  player.vel.x=dx*.10;player.vel.z=dz*.10;
+  player.shake=Math.min(10,player.shake+3);
+  spawnHitSparks(player.pos.x,player.pos.y+1,player.pos.z,0x63e6ff,9);
+  playSound(hits?'crit':'shoot');
+  showToast('🔱 LUNGE '+(hits?'· '+hits+' hit'+(hits===1?'':'s'):'· '+moved.toFixed(1)+'m')+'!','🔱');
+}
+document.getElementById('touchLunge').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();weaponLunge();});
+
 function tryAttack(){
   if(player.atkCD > 0 || player.dead) return;
   const item = inventory[hotbar];
@@ -4133,10 +4206,10 @@ function tryAttack(){
   const dir = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
   const weaponInfo=item && ITEMS[item.id];
   const heldEnch=item?.id==='dragonfang_mace'?{sharpness:5,lifesteal:3,wind:5,reach:3}:((item&&item.ench)||null);
-  let weaponReach = weaponInfo && weaponInfo.type === 'spear' ? (weaponInfo.reach||6) :
+  let weaponReach = weaponInfo && weaponInfo.type === 'spear' ? (weaponInfo.reach||5.2) :
     weaponInfo && weaponInfo.type === 'dagger' ? 2.75 :
     weaponInfo && weaponInfo.type === 'hammer' ? 3.45 :
-    weaponInfo && weaponInfo.type === 'mace' ? 6.2 : 3.9;
+    weaponInfo && weaponInfo.type === 'mace' ? 4.1 : (weaponInfo?.reach||3.9);
   if(heldEnch&&heldEnch.reach) weaponReach += heldEnch.reach*0.75;
   let hitTarget = null, hitDist = worldMode === 'pvp' ? weaponReach : Math.min(REACH, weaponReach), hitType = null;
 
@@ -4148,7 +4221,7 @@ function tryAttack(){
     const t = to.dot(dir);
     if(t < 0 || t > hitDist) continue;
     const closest = dir.clone().multiplyScalar(t);
-    if(to.distanceTo(closest) < (weaponInfo && weaponInfo.type==='mace' ? 2.65 : 1.55)){ hitDist = t; hitTarget = bot; hitType = 'bot'; }
+    if(to.distanceTo(closest) < (weaponInfo && weaponInfo.type==='mace' ? 1.85 : 1.50)){ hitDist = t; hitTarget = bot; hitType = 'bot'; }
   }
   // Then mobs
   for(const m of mobs){
@@ -4158,7 +4231,7 @@ function tryAttack(){
     const t = to.dot(dir);
     if(t < 0 || t > hitDist) continue;
     const closest = dir.clone().multiplyScalar(t);
-    if(to.distanceTo(closest) < Math.max(weaponInfo && weaponInfo.type==='mace' ? 2.4 : 1.3,m.def.size * (weaponInfo && weaponInfo.type==='mace' ? 1.85 : 1.3))){ hitDist = t; hitTarget = m; hitType = 'mob'; }
+    if(to.distanceTo(closest) < Math.max(weaponInfo && weaponInfo.type==='mace' ? 1.70 : 1.25,m.def.size * (weaponInfo && weaponInfo.type==='mace' ? 1.45 : 1.25))){ hitDist = t; hitTarget = m; hitType = 'mob'; }
   }
 
   if(hitTarget){
@@ -4171,6 +4244,7 @@ function tryAttack(){
       showToast('🪄 Deleted target — loot dropped!','🪄');
     }
     if(heldEnch&&heldEnch.sharpness) dmg += heldEnch.sharpness*2;
+    if(weaponInfo?.precision&&hitDist>2.7)dmg+=2;
     if(strengthPotionTimer>0) dmg=Math.round(dmg*1.65);
     const sprinting = keys['shift'] && (Math.abs(player.vel.x) + Math.abs(player.vel.z)) > 0.08;
     if(sprinting) dmg = Math.floor(dmg * 1.25);
@@ -4179,7 +4253,7 @@ function tryAttack(){
     // PvP update 1.6: spear charge rewards horizontal speed, including dash boosts.
     if(weaponInfo && weaponInfo.type==='spear'){
       const chargeSpeed=Math.hypot(player.vel.x,player.vel.z);
-      const spearBonus=Math.min(32,Math.max(0,Math.floor((chargeSpeed-0.08)*76)));
+      const spearBonus=Math.min(6,Math.max(0,Math.floor((chargeSpeed-0.08)*17)));
       if(spearBonus>0){
         dmg+=spearBonus;
         if(spearBonus>=4)showToast('⚡ SPEAR CHARGE! +'+spearBonus+' damage','⚡');
@@ -4189,7 +4263,7 @@ function tryAttack(){
     if(weaponInfo && weaponInfo.type==='mace' && !player.onGround && player.vel.y < 0.045){
       const fallHeight=player.fallStartY===null?0:Math.max(0,player.fallStartY-player.pos.y);
       // More useful from medium drops, with a huge payoff for genuine high-altitude hits.
-      const smashBonus=Math.min(160,Math.floor(Math.max(0,fallHeight-0.15)*5.5));
+      const smashBonus=Math.min(worldMode==='pvp'?36:50,Math.floor(Math.max(0,fallHeight-0.15)*5.5));
       if(smashBonus>0){
         dmg+=smashBonus;
         showToast('💥 MACE SMASH! +'+smashBonus+' damage','💥');
@@ -4203,18 +4277,36 @@ function tryAttack(){
       if(combatCombo===5 || combatCombo===10) showToast('⚡ '+combatCombo+' HIT COMBO!', '⚡');
       if(heldEnch&&heldEnch.wind){const kbv=new THREE.Vector3().subVectors(hitTarget.pos,origin).normalize();hitTarget.vel?.add?.(kbv.multiplyScalar(0.10*heldEnch.wind+0.08));}
       damageBot(hitTarget, dmg, null, true, crit || sprinting);
+      if(weaponInfo?.type==='axe'&&hitTarget.vel){
+        const push=new THREE.Vector3().subVectors(hitTarget.pos,player.pos).setY(0).normalize().multiplyScalar(Math.min(.28,.09+(weaponInfo.knockback||2)*.045));
+        hitTarget.vel.add(push);
+      }
       if(heldEnch&&heldEnch.lifesteal){player.hp=Math.min(player.maxHp,player.hp+heldEnch.lifesteal*0.7);updateHUD();}
     } else {
       hitTarget.hp -= dmg;
       hitTarget.hit = 0.35;
       const kb = new THREE.Vector3().subVectors(hitTarget.pos, origin).normalize();
       const windKB=(heldEnch&&heldEnch.wind?heldEnch.wind*0.06:0);
-      hitTarget.vel.x += kb.x * (0.16+windKB);
-      hitTarget.vel.z += kb.z * (0.16+windKB);
+      const axeKB=weaponInfo?.type==='axe'?.07:0;
+      hitTarget.vel.x += kb.x * (0.16+windKB+axeKB);
+      hitTarget.vel.z += kb.z * (0.16+windKB+axeKB);
       spawnHitSparks(hitTarget.pos.x, hitTarget.pos.y + hitTarget.def.size*0.7, hitTarget.pos.z, crit ? 0xffdd44 : 0xff8844, crit ? 14 : 10);
       playSound(crit ? 'crit' : 'hit');
       showDamagePopup(hitTarget.pos, dmg, crit);
       if(heldEnch&&heldEnch.lifesteal){player.hp=Math.min(player.maxHp,player.hp+heldEnch.lifesteal*0.7);updateHUD();}
+    }
+    if(weaponInfo?.type==='hammer'){
+      const radius=weaponInfo.aoe||2.5,center=hitTarget.pos,splash=Math.max(2,Math.round(dmg*.38));
+      let extra=0;
+      for(const b of fighterBots){
+        if(b===hitTarget||b.dead||extra>=3||b.invulnT>0)continue;
+        if(Math.hypot(b.pos.x-center.x,b.pos.z-center.z)<=radius&&Math.abs(b.pos.y-center.y)<2.3){damageBot(b,splash,null,true,false);extra++;}
+      }
+      for(const m of mobs){
+        if(m===hitTarget||m.dead||extra>=3)continue;
+        if(Math.hypot(m.pos.x-center.x,m.pos.z-center.z)<=radius&&Math.abs(m.pos.y-center.y)<2.3){m.hp-=splash;m.hit=.35;spawnHitSparks(m.pos.x,m.pos.y+1,m.pos.z,0xffc76d,5);extra++;}
+      }
+      if(extra)showToast('💥 SHOCKWAVE hit '+extra+' extra targets!','💥');
     }
     const hc = document.getElementById('hitconfirm');
     hc.style.opacity = '1';
@@ -5258,6 +5350,7 @@ function setupWorld(mode){
   player.thirst = 20;
   player.dead = false;
   player.vel.set(0,0,0);
+  spearLungeCooldown=0;
   player.invuln = 2.0;
   player.blocking = false;
   player.fallStartY = null;
@@ -5897,6 +5990,7 @@ window.addEventListener('keydown', e => {
   }
   if(k === 'p' && !e.repeat && worldMode === 'pvp'){ savePvPProgress(); showToast('💾 PvP progress saved!', '💾'); }
   if(k === 'q' && !e.repeat) combatDash();
+  if(k === 'r' && !e.repeat){e.preventDefault();weaponLunge();}
   
   if(k === 'x' && !e.repeat && worldReady){const it=inventory[hotbar];if(it){spawnDroppedItem(it.id,player.pos.x,player.pos.y+1,player.pos.z,false);if(!player.creative){it.count--;if(it.count<=0)inventory[hotbar]=null;}lastHotbar=-1;updateHotbarUI();showToast('Dropped '+ITEMS[it.id].n,'📦');}return;}
   if(k === 'j' && !e.repeat && worldReady && !player.dead){if(!useCombatItem())tryAttack();}
