@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.1 — Builders Update</title>
+<title>DinoCraft 4.2 — Paradise Blocks</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -403,9 +403,14 @@ html.playing #dcBuildStamp{display:block}
 #title h1{background:linear-gradient(120deg,#fff7a3,#a2ffbc 35%,#7ddbf9 65%,#edaaff)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;filter:drop-shadow(0 7px 15px #072b37) drop-shadow(0 0 20px #a0ffb966)}
 #title .cta{border:2px solid #e0ffb8!important;border-radius:16px!important;box-shadow:0 6px 24px #66efb265!important}
 #title p{color:#d9ffef!important;position:relative;z-index:2}
+</style><style id="d42-styles">
+#d42-slot{position:relative;z-index:4;margin:5px auto 11px;padding:10px 18px;background:linear-gradient(110deg,#245d69,#513a79);border:1px solid #a5ffe1;border-radius:999px;color:#f4fffc;font:700 13px system-ui;box-shadow:0 6px 22px #0006;cursor:pointer;max-width:92vw}
+#d42-slot:hover,#d42-slot:focus-visible{background:linear-gradient(110deg,#307f78,#7b55ae);outline:2px solid #e4fff4}
+.d42-slot-help{font:11px system-ui;color:#d5f8ef;position:relative;z-index:3;max-width:290px;line-height:1.5;margin:0 auto 8px}
+@media(max-width:520px){#d42-slot{font-size:12px;padding:8px 11px}.d42-slot-help{font-size:10px}}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.1 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.2 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -470,7 +475,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Builders Update 4.1 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Paradise Blocks 4.2 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -617,7 +622,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.1 · BUILDERS UPDATE · SIX WORLDS</p>
+  <p>4.2 · PARADISE BLOCKS · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -627,6 +632,8 @@ html.playing #dcBuildStamp{display:block}
     <option value="desktop">💻 Computer / Keyboard & Mouse</option>
    </select>
   </div>
+  <button id="d42-slot" type="button" aria-label="Change Survival world save slot">🌍 Survival Save: <span id="d42-slot-label">Original World</span> · Switch</button>
+  <div class="d42-slot-help">Original world stays safe. Choose Paradise for a new 4.2 landscape.</div>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile + PC<br>🔐 Creative access requires a code · Press I or C to unlock</div>
   <button id="dcTitleOwnership" class="dcRulesButton" type="button">🛡️ Official Game · Copyright Rules</button>
@@ -1028,27 +1035,32 @@ const REV_MISSIONS=[
  {id:'champion',name:'⚔️ Arena Champion',key:'arena',target:5,reward:350,detail:'Defeat five Arena opponents'}
 ];
 const ADVENTURE_SAVE='dinocraft_revolution_inventory_v3';
+const DINO42_SLOT_SETTING='dinocraft_survival_slot_v42';
+const DINO42_PARADISE_SLOT=(()=>{try{return localStorage.getItem(DINO42_SLOT_SETTING)==='paradise'}catch(e){return false}})();
+const d42InventoryKey=()=>DINO42_PARADISE_SLOT?ADVENTURE_SAVE+'_paradise42':ADVENTURE_SAVE;
+
 let adventureLoaded=false;
 function sanitizeInventory(data){if(!Array.isArray(data))return null;return Array.from({length:36},(_,i)=>{const s=data[i];if(!s||!ITEMS[s.id]||!Number.isInteger(s.count)||s.count<=0)return null;const item={...makeItem(s.id),count:Math.min(64,s.count)};if(s.ench&&typeof s.ench==='object')item.ench={...s.ench};return item;});}
 const SURVIVAL_WORLD_SAVE='dinocraft_revolution_survival_world_v3';
+const d42WorldKey=()=>DINO42_PARADISE_SLOT?SURVIVAL_WORLD_SAVE+'_paradise42':SURVIVAL_WORLD_SAVE;
 function saveSurvivalWorld(){
  if(worldMode!=='survival')return;
  try{
    const parts=[];let i=0;
    while(i<world.length){const t=world[i];let count=1;while(count<255&&i+count<world.length&&world[i+count]===t)count++;parts.push(String.fromCharCode(count,t));i+=count;}
    const blocks=btoa(parts.join(''));
-   localStorage.setItem(SURVIVAL_WORLD_SAVE,JSON.stringify({version:4,blocks,position:[player.pos.x,player.pos.y,player.pos.z]}));
+   localStorage.setItem(d42WorldKey(),JSON.stringify({version:4,blocks,position:[player.pos.x,player.pos.y,player.pos.z]}));
  }catch(e){/* Local storage full, private mode or sandbox restriction. */}
 }
 function loadSurvivalWorld(){
- try{const d=JSON.parse(localStorage.getItem(SURVIVAL_WORLD_SAVE)||'null');if(!d||(d.version!==3&&d.version!==4)||typeof d.blocks!=='string')return null;
+ try{const d=JSON.parse(localStorage.getItem(d42WorldKey())||'null');if(!d||(d.version!==3&&d.version!==4)||typeof d.blocks!=='string')return null;
  const data=atob(d.blocks);const oldHeight=56;const expected=d.version===3?WORLD_SIZE*oldHeight*WORLD_SIZE:world.length;const decoded=new Uint8Array(expected);let j=0;
  for(let i=0;i<data.length;i+=2){const count=data.charCodeAt(i),t=data.charCodeAt(i+1);if(!count||!Number.isFinite(t)||j+count>decoded.length||(t!==B.AIR&&!BLOCKS[t]))return null;decoded.fill(t,j,j+count);j+=count;}
  if(j!==decoded.length)return null;if(d.version===3){for(let y=0;y<oldHeight;y++){const slice=WORLD_SIZE*WORLD_SIZE;world.set(decoded.subarray(y*slice,(y+1)*slice),y*slice);}}else world.set(decoded);return Array.isArray(d.position)&&d.position.length===3?d.position:null;
  }catch(e){return null;}
 }
-function saveAdventure(){if(worldMode==='pvp')return;try{localStorage.setItem(ADVENTURE_SAVE,JSON.stringify({items:inventory.slice(0,36),hotbar,armour,version:3}));}catch(e){}saveSurvivalWorld();}
-function loadAdventure(){try{const saved=JSON.parse(localStorage.getItem(ADVENTURE_SAVE)||'null');const items=sanitizeInventory(saved?.items);if(!items)return false;inventory.length=36;for(let i=0;i<36;i++)inventory[i]=items[i];hotbar=Math.max(0,Math.min(8,Number(saved.hotbar)||0));for(const part of Object.keys(armour))armour[part]=(saved.armour&&ITEMS[saved.armour[part]]?.part===part)?saved.armour[part]:null;return true;}catch(e){return false;}}
+function saveAdventure(){if(worldMode==='pvp')return;try{localStorage.setItem(d42InventoryKey(),JSON.stringify({items:inventory.slice(0,36),hotbar,armour,version:3}));}catch(e){}saveSurvivalWorld();}
+function loadAdventure(){try{const saved=JSON.parse(localStorage.getItem(d42InventoryKey())||'null');const items=sanitizeInventory(saved?.items);if(!items)return false;inventory.length=36;for(let i=0;i<36;i++)inventory[i]=items[i];hotbar=Math.max(0,Math.min(8,Number(saved.hotbar)||0));for(const part of Object.keys(armour))armour[part]=(saved.armour&&ITEMS[saved.armour[part]]?.part===part)?saved.armour[part]:null;return true;}catch(e){return false;}}
 function resetInventory(){inventory.length=36;for(let i=0;i<36;i++)inventory[i]=null;hotbar=0;}
 
 const armour={helmet:null,chestplate:null,leggings:null,boots:null};
@@ -1212,9 +1224,9 @@ function generateSurvivalWorld(){
     // DinoCraft 4.0: colorful geographically varied surface materials.
     if(h>SEA_LEVEL+2&&h<SEA_LEVEL+35){
       const zone=sn(x+1370,z-620,24);
-      if(zone>.70){surface=27;} // Cherry canopy ground
-      else if(zone>.57)surface=30; // Bright tropical grass
-      else if(zone<.23)surface=38; // Mossy mystical stone
+      if(zone>.70){surface=50;} // Cherry-blossom meadow ground
+      else if(zone>.57)surface=50; // Bright tropical grass
+      else if(zone<.23)surface=34; // Mossy mystical stone
       else if(zone<.36)surface=50; // Flower-covered meadow
       else if(zone>.45&&zone<.51&&h>SEA_LEVEL+10)surface=23; // Sky marble highlands
     }
@@ -1243,6 +1255,7 @@ function generateSurvivalWorld(){
   scatterDecorations();
   buildRevolutionLandmarks();
   buildLostParadise40();
+  seedDecorativeWorld42();
 }
 // THE NEW REVOLUTION: discoverable landmarks with real mineable blocks.
 function buildRevolutionLandmarks(){
@@ -1340,6 +1353,92 @@ function buildLostParadise40(){
       safe(cx+dx,cy-2,cz+dz,39);safe(cx+dx,cy-1,cz+dz,40);safe(cx+dx,cy,cz+dz,41);
     }
   }
+}
+
+
+/* ===== DINOCRAFT 4.2: PLACEABLE WORLD DECORATIONS =====
+   All 30 catalog materials (IDs 21–50) appear physically in the new Survival
+   map and can be mined back into items. No decorative 3D-only impostors. */
+function seedDecorativeWorld42(){
+ const safe=(x,y,z,id)=>{if(x>1&&z>1&&x<WORLD_SIZE-2&&z<WORLD_SIZE-2&&y>1&&y<WORLD_HEIGHT-4)setRaw(x,y,z,id)};
+ const surface=(x,z)=>{
+   if(x<3||z<3||x>=WORLD_SIZE-3||z>=WORLD_SIZE-3)return -1;
+   for(let y=Math.min(SEA_LEVEL+34,WORLD_HEIGHT-12);y>=SEA_LEVEL-3;y--){
+     const block=getBlock(x,y,z),above=getBlock(x,y+1,z);
+     if((block===B.GRASS||block===B.DIRT||block===B.SAND||block===B.STONE||
+        block===23||block===27||block===30||block===34||block===38||block===50) && above===B.AIR)return y;
+   }
+   return -1;
+ };
+ const galleries=[[9,9],[70,9],[9,70],[70,70],[40,9]];
+ for(let group=0;group<galleries.length;group++){
+   const [gx,gz]=galleries[group];
+   const base=Math.min(WORLD_HEIGHT-12,Math.max(SEA_LEVEL+4,terrainH(gx,gz)+3));
+   // Five compact material gardens, each showcasing six different mineable blocks.
+   for(let dx=-3;dx<=3;dx++)for(let dz=-3;dz<=3;dz++){
+     const x=gx+dx,z=gz+dz;
+     if(x<=1||z<=1||x>=WORLD_SIZE-2||z>=WORLD_SIZE-2)continue;
+     const floor=(Math.abs(dx)===3||Math.abs(dz)===3)?31:group%2?36:37;
+     for(let y=Math.max(2,base-3);y<base;y++)safe(x,y,z,3);
+     safe(x,base,z,floor);
+     if((Math.abs(dx)===3||Math.abs(dz)===3)&&((dx+dz+20)%4===0))safe(x,base+1,z,34);
+   }
+   for(let j=0;j<6;j++){
+     const x=gx+(j%3-1)*2,z=gz+(Math.floor(j/3)*2-1),id=21+group*6+j;
+     safe(x,base+1,z,id);
+     if(j===2||j===5){safe(x,base+2,z,id)}
+   }
+   // Visible corner lanterns + a glowing focal crystal.
+   for(const [dx,dz] of [[-3,-3],[3,-3],[-3,3],[3,3]]){
+     safe(gx+dx,base+1,gz+dz,25);
+     safe(gx+dx,base+2,gz+dz,43);
+   }
+ }
+ // Mineable cherry, golden, crystal and tropical trees with natural-looking crowns.
+ const groves=[
+   {x:28,z:12,leaf:27},{x:53,z:65,leaf:28},
+   {x:12,z:50,leaf:29},{x:65,z:42,leaf:30},
+   {x:32,z:65,leaf:27},{x:58,z:12,leaf:29}
+ ];
+ for(let g=0;g<groves.length;g++){
+   const a=groves[g];
+   for(let i=0;i<9;i++){
+     const angle=i*2.399963+g*.73,rad=3+Math.sqrt(i)*3.2;
+     const x=Math.round(a.x+Math.cos(angle)*rad),z=Math.round(a.z+Math.sin(angle)*rad);
+     const ground=surface(x,z);
+     if(ground<SEA_LEVEL+1||ground>=WORLD_HEIGHT-12)continue;
+     const h=4+(i%3);
+     // Leave existing player's future building space and older structures alone.
+     if(getBlock(x,ground+3,z)!==B.AIR||getBlock(x,ground+h,z)!==B.AIR)continue;
+     for(let dy=1;dy<=h;dy++)safe(x,ground+dy,z,dy===1?24:5);
+     for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=h-1;dy<=h+2;dy++){
+       if(Math.abs(dx)+Math.abs(dz)+Math.abs(dy-h)>4)continue;
+       const xx=x+dx,yy=ground+dy,zz=z+dz;
+       if(xx<2||zz<2||xx>=WORLD_SIZE-2||zz>=WORLD_SIZE-2)continue;
+       if(getBlock(xx,yy,zz)===B.AIR)safe(xx,yy,zz,a.leaf);
+     }
+     for(const [dx,dz] of [[-3,0],[3,0],[0,-3],[0,3]]){
+       const xx=x+dx,zz=z+dz,yy=surface(xx,zz);
+       if(yy>=SEA_LEVEL+1&&getBlock(xx,yy+1,zz)===B.AIR)safe(xx,yy,zz,50);
+     }
+   }
+ }
+ // Tiny ornamental garden paths, each on the real terrain and fully mineable.
+ for(let n=0;n<82;n++){
+   const angle=n*.41,r=8+Math.sqrt(n)*2.55,x=Math.round(40+Math.cos(angle)*r),z=Math.round(40+Math.sin(angle)*r);
+   const y=surface(x,z);if(y<SEA_LEVEL+1)continue;
+   const id=[36,37,38,31,34,45][n%6];
+   safe(x,y,z,id);
+   if(n%9===0&&getBlock(x,y+1,z)===B.AIR)safe(x,y+1,z,43);
+ }
+ // In the rock, hidden crystal veins remain useful mining discoveries.
+ for(const [cx,cy,cz] of [[31,7,21],[50,9,57],[12,8,34],[67,6,54]]){
+   for(let i=0;i<19;i++){
+     const x=cx+((i*7)%7)-3,y=cy+((i*5)%5)-2,z=cz+((i*11)%7)-3;
+     if(x<2||z<2||x>=WORLD_SIZE-2||z>=WORLD_SIZE-2)continue;
+     if(getBlock(x,y,z)===B.STONE)safe(x,y,z,39+(i%6));
+   }
+ }
 }
 
 function carveCaves(count){
@@ -3943,6 +4042,7 @@ function tryMine(){
     else if(oldType === B.DIAMOND_ORE) dropId = 'diamond';
     else if(oldType === B.GRASS || oldType === B.DIRT || oldType === B.SAND) dropId = 'stone';
     else if(oldType === B.PLANKS || oldType === B.LEAVES) dropId = 'wood';
+    else if(oldType>=21&&oldType<=50) dropId='d39_'+(oldType-21);
     if(dropId) spawnDroppedItem(dropId, bx+0.5, by+0.5, bz+0.5);
     if(worldMode==='end'&&dragonCrystals.some(c=>c.x===bx&&c.y===by&&c.z===bz)){earnCoins(100,'Void Beacon destroyed');showToast('💎 VOID BEACON DESTROYED!','💥');}
     if(oldType === B.IRON_ORE) spawnXPOrb(bx+0.5, by+0.5, bz+0.5, 2);
@@ -3954,6 +4054,7 @@ function tryMine(){
   } else blockDamageMap.set(key, newDamage);
 }
 function getBlockColor(type){
+  if(type>=21&&type<=50)return DINO39_PALETTE[type-21][1];
   const map = {
     [B.GRASS]:0x6ac83a, [B.DIRT]:0x9a7a4a, [B.STONE]:0x8a8a90,
     [B.COBBLE]:0x7a7a80, [B.WOOD]:0x8a5a2a, [B.PLANKS]:0xb98a52,
@@ -5861,11 +5962,26 @@ function continueFromTitle(){
  document.getElementById('worldSelect').style.display='flex';
 }
 document.getElementById('title').addEventListener('click',e=>{
- if(e.target.closest('#titlePlayerName,#dcTitleControls,#dcTitleOwnership'))return;
+ if(e.target.closest('#titlePlayerName,#dcTitleControls,#dcTitleOwnership,#d42-slot'))return;
  initAudio();startAmbient();
  if(!playerUsername)openPlayerNameDialog(continueFromTitle);
  else continueFromTitle();
 });
+
+/* Select between the previous Survival save and a fresh Paradise 4.2 save.
+   Switching does not delete or rewrite the other save. */
+const d42SlotBtn=document.getElementById('d42-slot');
+document.getElementById('d42-slot-label').textContent=DINO42_PARADISE_SLOT?'Paradise 4.2':'Original World';
+d42SlotBtn.addEventListener('click',e=>{
+ e.preventDefault();e.stopPropagation();
+ try{
+  localStorage.setItem(DINO42_SLOT_SETTING,DINO42_PARADISE_SLOT?'original':'paradise');
+  location.reload();
+ }catch(err){
+  alert('Your browser blocked storage. Enable site storage to switch world slots.');
+ }
+});
+
 document.getElementById('titlePlayerName').addEventListener('click',e=>{e.stopPropagation();openPlayerNameDialog();});
 document.getElementById('worldPlayerName').addEventListener('click',()=>openPlayerNameDialog());
 function lockGameMouseEarly(){
