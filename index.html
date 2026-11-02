@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.3 — Weapons Update</title>
+<title>DinoCraft 4.4 — Dino Expedition</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -408,9 +408,15 @@ html.playing #dcBuildStamp{display:block}
 #d42-slot:hover,#d42-slot:focus-visible{background:linear-gradient(110deg,#307f78,#7b55ae);outline:2px solid #e4fff4}
 .d42-slot-help{font:11px system-ui;color:#d5f8ef;position:relative;z-index:3;max-width:290px;line-height:1.5;margin:0 auto 8px}
 @media(max-width:520px){#d42-slot{font-size:12px;padding:8px 11px}.d42-slot-help{font-size:10px}}
-</style><style id="dc43Weapons">#spearSkillHUD{position:fixed;right:14px;bottom:94px;z-index:20;padding:9px 12px;border:1px solid #5feac4;border-radius:11px;background:#132b3ded;color:#e1fcff;font:700 12px system-ui;pointer-events:none;box-shadow:0 3px 15px #0009}#spearSkillHUD span{margin-left:12px}.touchDevice #spearSkillHUD{right:8px;bottom:calc(env(safe-area-inset-bottom) + 63px);font-size:10px;padding:5px 8px}#touchLunge{background:#174953!important;border-color:#76ffeb!important}</style></head>
+</style><style id="dc43Weapons">#spearSkillHUD{position:fixed;right:14px;bottom:94px;z-index:20;padding:9px 12px;border:1px solid #5feac4;border-radius:11px;background:#132b3ded;color:#e1fcff;font:700 12px system-ui;pointer-events:none;box-shadow:0 3px 15px #0009}#spearSkillHUD span{margin-left:12px}.touchDevice #spearSkillHUD{right:8px;bottom:calc(env(safe-area-inset-bottom) + 63px);font-size:10px;padding:5px 8px}#touchLunge{background:#174953!important;border-color:#76ffeb!important}</style><style id="d44-expedition-style">
+#d44-expedition{position:fixed;left:12px;top:148px;z-index:19;display:none;pointer-events:none;background:linear-gradient(135deg,#071d26e8,#17383ce8);border:1px solid #68dfae;border-left:3px solid #fcbe68;border-radius:9px;color:#ecffec;padding:10px 12px;box-shadow:0 7px 22px #0008;max-width:270px;font:600 12px/1.6 system-ui,sans-serif}
+#d44-expedition-title{color:#9af5d0;font-weight:900;letter-spacing:.6px}
+#d44-expedition-next{color:#fff2cc;font-weight:600}
+.touchDevice #d44-expedition{left:6px;top:68px;padding:6px 8px;font-size:10px;max-width:220px}
+@media(max-width:600px){#d44-expedition{top:85px;left:6px;padding:7px 8px;font-size:10px;max-width:215px}}
+</style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.3 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.4 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -475,7 +481,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Weapons Update 4.3 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Dino Expedition 4.4 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -553,6 +559,7 @@ html.playing #dcBuildStamp{display:block}
   <div id="dmg"></div>
   <div id="heldName"></div>
 </div>
+<div id="d44-expedition" role="status" aria-live="off"><div id="d44-expedition-title">🧭 DINO EXPEDITION · 0/4</div><div id="d44-expedition-next">Explore the dinosaur habitats</div></div>
 <div id="mobileControls" aria-label="Mobile game controls">
 <button class="touchButton" id="touchMenuToggle" type="button" aria-expanded="false" aria-controls="touchMenu">☰ MENU</button>
 <div id="touchMenu" aria-label="Game menu">
@@ -623,7 +630,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.3 · WEAPONS UPDATE · SIX WORLDS</p>
+  <p>4.4 · DINO EXPEDITION · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -634,7 +641,7 @@ html.playing #dcBuildStamp{display:block}
    </select>
   </div>
   <button id="d42-slot" type="button" aria-label="Change Survival world save slot">🌍 Survival Save: <span id="d42-slot-label">Original World</span> · Switch</button>
-  <div class="d42-slot-help">Original world stays safe. Choose Paradise for a new 4.2 landscape.</div>
+  <div class="d42-slot-help">Three separate saves: Original, Paradise and Dino Expedition. Switch here before playing.</div>
   <div class="cta">▶ CLICK TO PLAY ◀</div>
   <div class="sub">Six Worlds · DinoCoins · Dinosaurs · Epic Bosses · Mobile + PC<br>🔐 Creative access requires a code · Press I or C to unlock</div>
   <button id="dcTitleOwnership" class="dcRulesButton" type="button">🛡️ Official Game · Copyright Rules</button>
@@ -1042,13 +1049,15 @@ const REV_MISSIONS=[
 ];
 const ADVENTURE_SAVE='dinocraft_revolution_inventory_v3';
 const DINO42_SLOT_SETTING='dinocraft_survival_slot_v42';
-const DINO42_PARADISE_SLOT=(()=>{try{return localStorage.getItem(DINO42_SLOT_SETTING)==='paradise'}catch(e){return false}})();
-const d42InventoryKey=()=>DINO42_PARADISE_SLOT?ADVENTURE_SAVE+'_paradise42':ADVENTURE_SAVE;
+const DINO44_CURRENT_SLOT=(()=>{try{return localStorage.getItem(DINO42_SLOT_SETTING)||'original'}catch(e){return 'original'}})();
+const DINO42_PARADISE_SLOT=DINO44_CURRENT_SLOT==='paradise';
+const DINO44_EXPEDITION_SLOT=DINO44_CURRENT_SLOT==='expedition';
+const d42InventoryKey=()=>DINO44_EXPEDITION_SLOT?ADVENTURE_SAVE+'_expedition44':DINO42_PARADISE_SLOT?ADVENTURE_SAVE+'_paradise42':ADVENTURE_SAVE;
 
 let adventureLoaded=false;
 function sanitizeInventory(data){if(!Array.isArray(data))return null;return Array.from({length:36},(_,i)=>{const s=data[i];if(!s||!ITEMS[s.id]||!Number.isInteger(s.count)||s.count<=0)return null;const item={...makeItem(s.id),count:Math.min(64,s.count)};if(s.ench&&typeof s.ench==='object')item.ench={...s.ench};return item;});}
 const SURVIVAL_WORLD_SAVE='dinocraft_revolution_survival_world_v3';
-const d42WorldKey=()=>DINO42_PARADISE_SLOT?SURVIVAL_WORLD_SAVE+'_paradise42':SURVIVAL_WORLD_SAVE;
+const d42WorldKey=()=>DINO44_EXPEDITION_SLOT?SURVIVAL_WORLD_SAVE+'_expedition44':DINO42_PARADISE_SLOT?SURVIVAL_WORLD_SAVE+'_paradise42':SURVIVAL_WORLD_SAVE;
 function saveSurvivalWorld(){
  if(worldMode!=='survival')return;
  try{
@@ -1263,6 +1272,7 @@ function generateSurvivalWorld(){
   buildRevolutionLandmarks();
   buildLostParadise40();
   seedDecorativeWorld42();
+  buildDinosaurHabitats44();
 }
 // THE NEW REVOLUTION: discoverable landmarks with real mineable blocks.
 function buildRevolutionLandmarks(){
@@ -1446,6 +1456,134 @@ function seedDecorativeWorld42(){
      if(getBlock(x,y,z)===B.STONE)safe(x,y,z,39+(i%6));
    }
  }
+}
+
+
+/* ===== DINOCRAFT 4.4: DINOSAUR EXPEDITION =====
+   An independent Survival save with four landmark habitats, hand-laid trails,
+   living dinosaur encounters, and one-time exploration rewards. */
+const DINO44_HABITATS=[
+ {id:'raptor',name:'Raptor Ridge',x:22,z:40,icon:'🦖',creature:'raptor',core:39,trim:32,floor:35,reward:175,loot:'d39_18'},
+ {id:'grove',name:'Triceratops Grove',x:57,z:40,icon:'🌿',creature:'triceratops',core:41,trim:34,floor:28,reward:225,loot:'d39_20'},
+ {id:'rex',name:'Rex Canyon',x:40,z:20,icon:'🦴',creature:'rex',core:43,trim:35,floor:35,reward:325,loot:'d39_22'},
+ {id:'sapphire',name:'Sapphire Nest',x:40,z:58,icon:'💎',creature:'raptor',core:40,trim:33,floor:38,reward:225,loot:'d39_19'}
+];
+function buildDinosaurHabitats44(){
+ if(!DINO44_EXPEDITION_SLOT)return;
+ const inBounds=(x,y,z)=>x>1&&z>1&&x<WORLD_SIZE-2&&z<WORLD_SIZE-2&&y>1&&y<WORLD_HEIGHT-6;
+ const put=(x,y,z,t)=>{if(inBounds(x,y,z))setRaw(x,y,z,t);};
+ const realSurface=(x,z)=>{
+   if(x<2||z<2||x>=WORLD_SIZE-2||z>=WORLD_SIZE-2)return SEA_LEVEL;
+   const start=Math.min(WORLD_HEIGHT-12,Math.max(SEA_LEVEL+30,terrainH(x,z)+7));
+   for(let y=start;y>=3;y--){
+     const b=getBlock(x,y,z);
+     if(b===B.GRASS||b===B.SAND||b===B.DIRT||b===B.STONE||b===50||b===34||b===23||b===30)return y;
+   }
+   return Math.max(SEA_LEVEL,terrainH(x,z));
+ };
+ // Blended, step-following trails. Build only on this new Expedition slot.
+ function trailPoint(x,z,tile){
+   const sy=realSurface(x,z),y=Math.min(WORLD_HEIGHT-12,Math.max(SEA_LEVEL+1,sy+1));
+   if(y>4&&getBlock(x,y,z)!==B.WOOD&&getBlock(x,y,z)!==B.OBSIDIAN){
+     put(x,y,z,tile);
+     if(getBlock(x,y+1,z)!==B.AIR)put(x,y+1,z,B.AIR);
+   }
+ }
+ // Four radial paths connect the player spawn to the sites.
+ for(const site of DINO44_HABITATS){
+   const vx=site.x-40,vz=site.z-40,steps=Math.max(Math.abs(vx),Math.abs(vz));
+   for(let n=4;n<steps-5;n++){
+     const x=Math.round(40+vx*n/steps),z=Math.round(40+vz*n/steps);
+     for(const off of [-1,0,1]){
+       const xx=x+(Math.abs(vz)>Math.abs(vx)?off:0);
+       const zz=z+(Math.abs(vx)>=Math.abs(vz)?off:0);
+       trailPoint(xx,zz,n%6===0?36:37);
+     }
+   }
+ }
+ // Four compact, colorful fossil/egg sanctuaries. All blocks are mineable.
+ for(const site of DINO44_HABITATS){
+   const {x:cx,z:cz}=site;
+   const y=Math.min(WORLD_HEIGHT-14,Math.max(SEA_LEVEL+3,terrainH(cx,cz)+2));
+   const radius=5;
+   for(let dx=-radius;dx<=radius;dx++)for(let dz=-radius;dz<=radius;dz++){
+     const d=dx*dx+dz*dz;if(d>radius*radius+3)continue;
+     const x=cx+dx,z=cz+dz;
+     const rim=d>=15;
+     for(let fy=y-3;fy<y;fy++)put(x,fy,z,site.floor);
+     put(x,y,z,rim?site.trim:site.floor);
+     for(let yy=y+1;yy<=y+5;yy++)put(x,yy,z,B.AIR);
+     if(rim&&((Math.abs(dx)+Math.abs(dz))%4===0))put(x,y+1,z,site.trim);
+   }
+   // Chunky arch and watchposts, standing taller than surrounding trees.
+   for(const [dx,dz] of [[-4,0],[4,0],[0,-4],[0,4]]){
+     for(let h=1;h<=4;h++)put(cx+dx,y+h,cz+dz,site.trim);
+     put(cx+dx,y+5,cz+dz,site.core);
+   }
+   for(let dx=-2;dx<=2;dx++){
+     put(cx+dx,y+5,cz-4,site.trim);
+     put(cx+dx,y+5,cz+4,site.trim);
+   }
+   // Dinosaur egg displays built from contrasting materials (real voxel blocks).
+   for(const [dx,dz] of [[-2,-1],[2,-1],[0,2]]){
+     put(cx+dx,y+1,cz+dz,site.trim);
+     put(cx+dx,y+2,cz+dz,site.core);
+     if(dx===0)put(cx+dx,y+3,cz+dz,site.core);
+   }
+   put(cx,y+1,cz,site.core);
+   put(cx,y+2,cz,44); // moonstone centerpiece
+   // Four glowing resource clusters around each exhibit.
+   for(const [dx,dz] of [[-3,-3],[-3,3],[3,-3],[3,3]]){
+     put(cx+dx,y+1,cz+dz,site.core);
+     put(cx+dx,y+2,cz+dz,42);
+   }
+ }
+ // Landmark gateway at spawn.
+ const cx=40,cz=40,base=Math.min(WORLD_HEIGHT-15,Math.max(SEA_LEVEL+3,terrainH(cx,cz)+1));
+ for(let dx=-3;dx<=3;dx++)for(let dz=-3;dz<=3;dz++){
+   const x=cx+dx,z=cz+dz;
+   for(let fy=base-2;fy<base;fy++)put(x,fy,z,31);
+   put(x,base,z,Math.abs(dx)===3||Math.abs(dz)===3?36:37);
+   for(let h=1;h<=4;h++)put(x,base+h,z,B.AIR);
+ }
+ for(const [dx,dz] of [[-3,-3],[-3,3],[3,-3],[3,3]]){
+   for(let h=1;h<=3;h++)put(cx+dx,base+h,cz+dz,31);
+   put(cx+dx,base+4,cz+dz,43);
+ }
+ put(cx,base+1,cz,44);
+}
+const DINO44_DISCOVERY_KEY='dinocraft_expedition44_visited_v1';
+let dino44Visited={};try{dino44Visited=JSON.parse(localStorage.getItem(DINO44_DISCOVERY_KEY)||'{}')||{};}catch(e){}
+let dino44Tick=0;
+function updateDino44Expedition(dt){
+ const el=document.getElementById('d44-expedition');
+ if(!el)return;
+ const active=worldReady&&worldMode==='survival'&&DINO44_EXPEDITION_SLOT&&!player.dead;
+ el.style.display=active?'block':'none';
+ if(!active)return;
+ dino44Tick-=dt;if(dino44Tick>0)return;dino44Tick=.65;
+ for(const site of DINO44_HABITATS){
+   const distance=Math.hypot(player.pos.x-site.x,player.pos.z-site.z);
+   if(distance>6||dino44Visited[site.id])continue;
+   dino44Visited[site.id]=true;
+   try{localStorage.setItem(DINO44_DISCOVERY_KEY,JSON.stringify(dino44Visited));}catch(e){}
+   earnCoins(site.reward,'Discovered '+site.name);
+   const gift=makeItem(site.loot);gift.count=5;
+   if(addItem(gift))showToast(site.icon+' '+site.name+' — 5 collectible blocks added!','🎒');
+   const done=DINO44_HABITATS.every(x=>dino44Visited[x.id]);
+   if(done){earnCoins(500,'All dinosaur habitats discovered!');showToast('🏆 EXPEDITION COMPLETE — all four habitats!','🏆');}
+   updateHotbarUI();
+ }
+ const count=DINO44_HABITATS.filter(x=>dino44Visited[x.id]).length;
+ const next=DINO44_HABITATS.filter(x=>!dino44Visited[x.id]).sort((a,b)=>
+   Math.hypot(a.x-player.pos.x,a.z-player.pos.z)-Math.hypot(b.x-player.pos.x,b.z-player.pos.z))[0];
+ const title=document.getElementById('d44-expedition-title');
+ const nextTxt=document.getElementById('d44-expedition-next');
+ title.textContent='🧭 DINO EXPEDITION · '+count+'/4';
+ if(!next){nextTxt.textContent='🏆 All habitats discovered · +1,450 DinoCoins';return;}
+ const dx=next.x-player.pos.x,dz=next.z-player.pos.z;
+ const ns=dz< -3?'N':dz>3?'S':'',ew=dx<-3?'W':dx>3?'E':'';
+ nextTxt.textContent=next.icon+' '+next.name+' · '+(ns+ew||'HERE')+' · '+Math.round(Math.hypot(dx,dz))+' blocks';
 }
 
 function carveCaves(count){
@@ -5401,6 +5539,13 @@ function setupWorld(mode){
       const z = 5 + Math.random()*(WORLD_SIZE-10);
       spawnMob(t, x, terrainH(x,z)+2, z);
     }
+    if(DINO44_EXPEDITION_SLOT){
+      for(const site of DINO44_HABITATS){
+        const safeY=Math.min(WORLD_HEIGHT-12,Math.max(SEA_LEVEL+7,terrainH(site.x,site.z)+6));
+        spawnMob(site.creature,site.x+2,safeY,site.z+1);
+        if(site.id==='raptor'||site.id==='sapphire')spawnMob('raptor',site.x-2,safeY,site.z-1);
+      }
+    }
     // Supply a starter kit only once; never duplicate items by re-entering the world.
     if(!starterKitClaimedThisSession){
       let previouslyClaimed=false;
@@ -5411,7 +5556,7 @@ function setupWorld(mode){
     }
       try{localStorage.setItem('dinocraft_first_starter_v2','1');}catch(e){}
     }
-    showToast('THE NEW REVOLUTION: Explore 8 hidden towers, temples, forts and camps!','🌍');
+    showToast(DINO44_EXPEDITION_SLOT?'🦖 DINO EXPEDITION: Follow the trail, find four habitats, earn 1,450 DinoCoins!':'THE NEW REVOLUTION: Explore 8 hidden towers, temples, forts and camps!','🌍');
     document.getElementById('weaponQuest').style.display = 'none';
   } else if(mode === 'pvp'){
     generatePvPWorld();
@@ -6065,11 +6210,11 @@ document.getElementById('title').addEventListener('click',e=>{
 /* Select between the previous Survival save and a fresh Paradise 4.2 save.
    Switching does not delete or rewrite the other save. */
 const d42SlotBtn=document.getElementById('d42-slot');
-document.getElementById('d42-slot-label').textContent=DINO42_PARADISE_SLOT?'Paradise 4.2':'Original World';
+document.getElementById('d42-slot-label').textContent=DINO44_EXPEDITION_SLOT?'Dino Expedition 4.4':DINO42_PARADISE_SLOT?'Paradise 4.2':'Original World';
 d42SlotBtn.addEventListener('click',e=>{
  e.preventDefault();e.stopPropagation();
  try{
-  localStorage.setItem(DINO42_SLOT_SETTING,DINO42_PARADISE_SLOT?'original':'paradise');
+  localStorage.setItem(DINO42_SLOT_SETTING,DINO44_EXPEDITION_SLOT?'original':DINO42_PARADISE_SLOT?'expedition':'paradise');
   location.reload();
  }catch(err){
   alert('Your browser blocked storage. Enable site storage to switch world slots.');
@@ -6497,6 +6642,7 @@ function animate(){
     updatePlayer(dt);
     updatePrettyWorld(dt);
     updateNetherExploration(dt);
+    updateDino44Expedition(dt);
     updateMobs(dt);
     updateFighterBots(dt);
     updateDinoArena(dt);
