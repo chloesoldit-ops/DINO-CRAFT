@@ -2875,7 +2875,7 @@ function spawnFighterBot(team, x, y, z){
     target: null,
     targetCheckT: 0,
     atkCD: 0,
-    atkWindup: 0, heavyTarget: null, heavyDamage: 0, heavyCrit: false,
+    atkWindup: 0, heavyTarget: null, heavyDamage: 0, heavyCrit: false, staggerT: 0,
     blockT: 0,
     blockCD: 2 + Math.random() * 3,
     retreatT: 0,
@@ -2937,6 +2937,13 @@ function damageBot(bot, dmg, srcBot, isPlayerSrc, crit){
       const facingDiff=Math.atan2(Math.sin(towardPlayer-bot.mesh.rotation.y),Math.cos(towardPlayer-bot.mesh.rotation.y));
       if(Math.abs(facingDiff)<1.2){dmg*=0.55; showToast('🛡️ Enemy blocked part of the hit','🛡️');}
     }
+  }
+  // Heavy attacks can be interrupted by a strong strike during the windup.
+  if(isPlayerSrc && bot.atkWindup>0 && (crit || dmg>=16)){
+    bot.atkWindup=0;bot.heavyTarget=null;bot.staggerT=.42;
+    bot.atkCD=Math.max(bot.atkCD,.6);
+    showCombatAlert('⚔️ INTERRUPTED '+bot.name+'!',.65);
+    dmg*=1.14;
   }
   bot.hp -= dmg;
   bot.hit = 0.35;
@@ -3070,7 +3077,7 @@ function updateFighterBots(dt){
         bot.pos.set(spawns.x + (Math.random()-0.5)*3, 22.0, spawns.z + (Math.random()-0.5)*3);
         bot.vel.set(0,0,0);
         bot.hp = bot.maxHp;
-        bot.berserk=false;bot.flankT=0;bot.atkWindup=0;bot.heavyTarget=null;
+        bot.berserk=false;bot.flankT=0;bot.atkWindup=0;bot.heavyTarget=null;bot.staggerT=0;
         bot.speed=bot.baseSpeed;bot.dmg=bot.baseDamage;bot.attackRate=bot.baseAttackRate;
         bot.eliteGuard = 1;
         bot.dead = false;
@@ -3100,6 +3107,7 @@ function updateFighterBots(dt){
     if(bot.blockT > 0) bot.blockT -= dt;
     if(bot.blockCD > 0) bot.blockCD -= dt;
     if(bot.atkCD > 0) bot.atkCD -= dt;
+    if(bot.staggerT>0)bot.staggerT=Math.max(0,bot.staggerT-dt);
     if(bot.atkWindup>0){
       bot.atkWindup-=dt;
       if(bot.atkWindup<=0){
@@ -3150,6 +3158,8 @@ function updateFighterBots(dt){
 
     const target = bot.target;
     let moved = false;
+    // Stagger briefly disrupts attacks and movement, but never freezes AI permanently.
+    if(bot.staggerT>0){bot.vel.x*=.6;bot.vel.z*=.6;bot.atkCD=Math.max(bot.atkCD,bot.staggerT);}
 
     if(target){
       const isPlayer = target === player;
@@ -3191,7 +3201,7 @@ function updateFighterBots(dt){
           moved = true;
         }
         // Attack (ranged)
-        if(dist < 15 && Math.abs(dy) < 4 && bot.atkCD <= 0){
+        if(dist < 15 && Math.abs(dy) < 4 && bot.atkCD <= 0 && bot.staggerT<=0){
           bot.atkCD = bot.attackRate;
           bot.attackAnim = 0.35;
           bot.bowDrawT = 0.3;
@@ -3211,7 +3221,7 @@ function updateFighterBots(dt){
           bot.vel.z = (dz/dist) * bot.speed * 1.3;
           moved = true;
         }
-        if(dist < bot.attackRange + 0.3 && Math.abs(dy) < 2 && bot.atkCD <= 0){
+        if(dist < bot.attackRange + 0.3 && Math.abs(dy) < 2 && bot.atkCD <= 0 && bot.staggerT<=0){
           bot.atkCD = bot.attackRate;
           bot.attackAnim = 0.25;
           const crit = Math.random() < 0.2;
@@ -3229,7 +3239,7 @@ function updateFighterBots(dt){
           bot.vel.x = -(dx/dist) * bot.speed * 0.4;
           bot.vel.z = -(dz/dist) * bot.speed * 0.4;
         }
-        if(dist < bot.attackRange + 0.4 && Math.abs(dy) < 2 && bot.atkCD <= 0){
+        if(dist < bot.attackRange + 0.4 && Math.abs(dy) < 2 && bot.atkCD <= 0 && bot.staggerT<=0){
           bot.atkCD = bot.attackRate;
           bot.attackAnim = 0.65;
           bot.atkWindup = 0.43;
@@ -3250,7 +3260,7 @@ function updateFighterBots(dt){
           bot.vel.z = -(dz/dist) * bot.speed * 0.8;
           moved = true;
         }
-        if(dist < bot.attackRange && Math.abs(dy) < 2 && bot.atkCD <= 0){
+        if(dist < bot.attackRange && Math.abs(dy) < 2 && bot.atkCD <= 0 && bot.staggerT<=0){
           bot.atkCD = bot.attackRate;
           bot.attackAnim = 0.3;
           const crit = Math.random() < 0.15;
@@ -3274,7 +3284,7 @@ function updateFighterBots(dt){
           bot.vel.z = (dx/dist) * bot.speed * 0.6 * bot.strafeDir;
           moved = true;
         }
-        if(dist < bot.attackRange + 0.2 && Math.abs(dy) < 2 && bot.atkCD <= 0){
+        if(dist < bot.attackRange + 0.2 && Math.abs(dy) < 2 && bot.atkCD <= 0 && bot.staggerT<=0){
           bot.atkCD = bot.attackRate;
           bot.attackAnim = 0.35;
           const crit = Math.random() < 0.15;
@@ -6504,6 +6514,7 @@ applyDinoControlMode();
 /* ===== DINOCRAFT COMBAT 1.0: DINO ARENA EVENTS ===== */
 let dinoArenaTimer=35, dinoArenaWave=0;
 let arenaWaveRecord=0;
+let arenaWavePending=0;
 function arenaWaveHud(){
  let el=document.getElementById('dcWaveHud');
  if(!el){el=document.createElement('div');el.id='dcWaveHud';el.style.cssText='position:fixed;right:12px;top:92px;z-index:11;pointer-events:none;background:rgba(9,16,28,.76);border:1px solid #ffcf71;border-radius:10px;padding:8px 12px;color:#ffecba;font:800 13px system-ui;text-shadow:0 1px 2px #000';document.body.appendChild(el);}
@@ -6515,16 +6526,26 @@ function updateDinoArena(dt){
  const waveLabel=arenaWaveHud();
  const active=mobs.some(m=>!m.dead&&['raptor','triceratops','rex'].includes(m.type));
  if(active){
-   waveLabel.textContent='🦖 WAVE '+dinoArenaWave+' · DINOSAURS REMAIN';
+   const remain=mobs.filter(m=>!m.dead&&['raptor','triceratops','rex'].includes(m.type)).length;
+   waveLabel.textContent='🦖 WAVE '+dinoArenaWave+' · '+remain+' ENEMIES LEFT';
    const boss=mobs.find(m=>!m.dead&&m.type==='rex');
    if(boss)showBossBar('🦖 TYRANT REX — ARENA BOSS',boss.hp,boss.maxHp);
    return;
+ }
+ if(arenaWavePending){
+   const cleared=arenaWavePending;arenaWavePending=0;
+   const coins=cleared%3===0?40+cleared*8:10+cleared*2;
+   earnCoins(coins,'Cleared dinosaur wave '+cleared);
+   showToast('🏆 WAVE '+cleared+' CLEARED! +'+coins+' COINS','🏆');
+   if(cleared%5===0){player.hp=Math.min(player.maxHp,player.hp+Math.max(5,Math.round(player.maxHp*.22)));updateHUD();showToast('💚 SURVIVAL MILESTONE — BONUS HEAL!','💚');}
+   dinoArenaTimer=Math.max(dinoArenaTimer,cleared%5===0?12:7);
  }
  dinoArenaTimer-=dt;
  waveLabel.textContent='⚔️ WAVE '+(dinoArenaWave+1)+' IN '+Math.ceil(Math.max(0,dinoArenaTimer))+'s';
  if(dinoArenaTimer>0)return;
  dinoArenaWave++;
- if(dinoArenaWave>arenaWaveRecord){arenaWaveRecord=dinoArenaWave;if(dinoArenaWave%3===0){earnCoins(40+dinoArenaWave*8,'Dinosaur survival wave '+dinoArenaWave);showToast('🏆 WAVE '+dinoArenaWave+' BONUS COINS!','🏆');}}
+ arenaWaveRecord=Math.max(arenaWaveRecord,dinoArenaWave);
+ arenaWavePending=dinoArenaWave;
  waveLabel.textContent='🦖 WAVE '+dinoArenaWave+' · FIGHT!';
  const type=arenaDifficulty==='apex'?'rex':arenaDifficulty==='hard'?(dinoArenaWave%2===0?'rex':'triceratops'):arenaDifficulty==='easy'?'raptor':dinoArenaWave%3===0?'rex':(dinoArenaWave%2===0?'triceratops':'raptor');
  const x=WORLD_SIZE/2+11,z=WORLD_SIZE/2+10;
@@ -6539,6 +6560,12 @@ function updateDinoArena(dt){
      enemy.def=Object.assign({},enemy.def,{dmg:enemy.def.dmg*(1+Math.min(.55,Math.max(0,dinoArenaWave-1)*.045))});
    }
    if(type==='raptor'){spawnMob('raptor',x+3,22,z+1);spawnMob('raptor',x-3,22,z+1);}
+   // Every fourth wave has an elite dinosaur with extra endurance, not extra entities.
+   if(dinoArenaWave%4===0){
+     m.hp=Math.round(m.hp*1.45);m.maxHp=m.hp;
+     m.def=Object.assign({},m.def,{dmg:m.def.dmg*1.16});
+     showCombatAlert('☠️ ELITE DINOSAUR WAVE '+dinoArenaWave,1.2);
+   }
    showToast(type==='rex'?'🦖 BOSS WAVE: TYRANT REX!':'🦖 DINOSAUR INVASION: '+type.toUpperCase(),'⚔️');
    if(type==='rex')showBossBar('🦖 TYRANT REX — ARENA BOSS',m.hp,m.maxHp);
  }
