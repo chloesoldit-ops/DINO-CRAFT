@@ -2875,7 +2875,7 @@ function spawnFighterBot(team, x, y, z){
     target: null,
     targetCheckT: 0,
     atkCD: 0,
-    atkWindup: 0,
+    atkWindup: 0, heavyTarget: null, heavyDamage: 0, heavyCrit: false,
     blockT: 0,
     blockCD: 2 + Math.random() * 3,
     retreatT: 0,
@@ -3042,6 +3042,22 @@ function getBotAllyCount(bot){
   return n;
 }
 
+let combatAlertDeadline=0;
+function showCombatAlert(message,seconds){
+  let el=document.getElementById('dcCombatAlert');
+  if(!el){
+    el=document.createElement('div');el.id='dcCombatAlert';
+    el.style.cssText='position:fixed;left:50%;top:27%;transform:translateX(-50%);z-index:12;pointer-events:none;background:rgba(31,12,18,.85);border:1px solid #ff8069;color:#ffe4d5;padding:9px 16px;border-radius:9px;font:900 15px system-ui;text-align:center;text-shadow:0 2px 4px #000;display:none;max-width:90vw';
+    document.body.appendChild(el);
+  }
+  const now=performance.now();
+  if(now<combatAlertDeadline-180)return;
+  el.textContent=message;el.style.display='block';combatAlertDeadline=now+(seconds||.6)*1000;
+}
+function updateCombatAlert(){
+  const el=document.getElementById('dcCombatAlert');
+  if(el && (performance.now()>combatAlertDeadline || player.dead || !worldReady))el.style.display='none';
+}
 function updateFighterBots(dt){
   if(worldMode !== 'pvp') return;
   for(let i=fighterBots.length-1;i>=0;i--){
@@ -3054,7 +3070,7 @@ function updateFighterBots(dt){
         bot.pos.set(spawns.x + (Math.random()-0.5)*3, 22.0, spawns.z + (Math.random()-0.5)*3);
         bot.vel.set(0,0,0);
         bot.hp = bot.maxHp;
-        bot.berserk=false;bot.flankT=0;
+        bot.berserk=false;bot.flankT=0;bot.atkWindup=0;bot.heavyTarget=null;
         bot.speed=bot.baseSpeed;bot.dmg=bot.baseDamage;bot.attackRate=bot.baseAttackRate;
         bot.eliteGuard = 1;
         bot.dead = false;
@@ -3084,6 +3100,25 @@ function updateFighterBots(dt){
     if(bot.blockT > 0) bot.blockT -= dt;
     if(bot.blockCD > 0) bot.blockCD -= dt;
     if(bot.atkCD > 0) bot.atkCD -= dt;
+    if(bot.atkWindup>0){
+      bot.atkWindup-=dt;
+      if(bot.atkWindup<=0){
+        const victim=bot.heavyTarget;
+        bot.heavyTarget=null;
+        if(victim && !victim.dead && !bot.dead && victim.pos &&
+           Math.hypot(victim.pos.x-bot.pos.x,victim.pos.z-bot.pos.z)<bot.attackRange+.45 &&
+           Math.abs(victim.pos.y-bot.pos.y)<2.2){
+          applyBotHit(bot,victim,bot.heavyDamage,bot.heavyCrit);
+          if(bot.weaponDef.type==='hammer'){
+            for(const other of fighterBots){
+              if(other===bot||other===victim||other.dead||other.team===bot.team)continue;
+              if(Math.hypot(other.pos.x-victim.pos.x,other.pos.z-victim.pos.z)<2.6)
+                damageBot(other,Math.floor(bot.heavyDamage*.4),bot,false,false);
+            }
+          }
+        }
+      }
+    }
     if(bot.strafeT > 0) bot.strafeT -= dt;
     if(bot.stateT > 0) bot.stateT -= dt;
     if(bot.wanderT > 0) bot.wanderT -= dt;
@@ -3196,25 +3231,13 @@ function updateFighterBots(dt){
         }
         if(dist < bot.attackRange + 0.4 && Math.abs(dy) < 2 && bot.atkCD <= 0){
           bot.atkCD = bot.attackRate;
-          bot.attackAnim = 0.5;
-          bot.atkWindup = 0.2;
-          const crit = Math.random() < 0.15;
-          let dmg = bot.dmg;
-          if(crit) dmg *= 1.5;
-          // Hammer has AoE
-          if(bot.weaponDef.type === 'hammer'){
-            applyBotHit(bot, target, dmg, crit);
-            // AoE around target
-            const aoeRadius = 3.0;
-            for(const other of fighterBots){
-              if(other === bot || other.dead || other.team === bot.team) continue;
-              if(other.pos.distanceTo(target.pos || player.pos) < aoeRadius){
-                if(other !== target) damageBot(other, Math.floor(dmg * 0.5), bot, false, false);
-              }
-            }
-          } else {
-            applyBotHit(bot, target, dmg, crit);
-          }
+          bot.attackAnim = 0.65;
+          bot.atkWindup = 0.43;
+          bot.heavyTarget = target;
+          bot.heavyCrit = Math.random()<0.15;
+          bot.heavyDamage = bot.dmg*(bot.heavyCrit?1.5:1);
+          if(target===player && dist<5)
+            showCombatAlert('⚠️ HEAVY SWING — DODGE!',0.65);
         }
       } else if(bot.style === 'poker'){
         // Spear — stay just out of reach
@@ -6688,6 +6711,7 @@ function animate(){
     updateDino44Expedition(dt);
     updateMobs(dt);
     updateFighterBots(dt);
+    updateCombatAlert();
     updateDinoArena(dt);
     updateMagicProjectiles(dt);
     updateDragonBattle(dt);
