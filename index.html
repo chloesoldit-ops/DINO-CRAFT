@@ -4820,6 +4820,17 @@ function updateBotTargetHUD(){
     const cl = dir.clone().multiplyScalar(t);
     if(to.distanceTo(cl) < 1.2){ closestD = t; closest = bot; }
   }
+  // Include large arena dinosaurs and survival predators in the crosshair target HUD.
+  let mobTarget=null;
+  for(const mob of mobs){
+    if(mob.dead || !mob.def.hostile)continue;
+    const center=mob.pos.clone();center.y+=mob.def.size*.7;
+    const to=center.sub(origin),t=to.dot(dir);
+    if(t<0||t>Math.max(REACH,5.8)||t>=closestD)continue;
+    if(to.distanceTo(dir.clone().multiplyScalar(t))<Math.max(1.1,mob.def.size*.85)){
+      mobTarget=mob;closestD=t;closest=null;
+    }
+  }
   const el = document.getElementById('botTarget');
   if(closest && worldMode === 'pvp'){
     el.style.display = 'flex';
@@ -4829,6 +4840,15 @@ function updateBotTargetHUD(){
     el.querySelector('.weapon').textContent = shortWeaponName(closest.weapon) + ' · ' + closest.style.toUpperCase();
     el.querySelector('.hptrack').style.borderColor = tc;
     el.querySelector('.hpfill').style.width = Math.max(0, closest.hp/closest.maxHp*100) + '%';
+  } else if(mobTarget && ['pvp','survival','nether','end'].includes(worldMode)){
+    el.style.display='flex';
+    const name=mobTarget.type.replace(/_/g,' ').toUpperCase();
+    const status=mobTarget.enraged?' 🔥 ENRAGED':'';
+    el.querySelector('.name').textContent=name+status;
+    el.querySelector('.name').style.color=mobTarget.def.boss?'#ff9d63':'#ffcb76';
+    el.querySelector('.weapon').textContent=(mobTarget.def.boss?'BOSS':'PREDATOR')+' · '+Math.ceil(mobTarget.hp)+' / '+Math.ceil(mobTarget.maxHp)+' HP';
+    el.querySelector('.hptrack').style.borderColor=mobTarget.enraged?'#ff5544':'#ffcb76';
+    el.querySelector('.hpfill').style.width=Math.max(0,Math.min(100,mobTarget.hp/mobTarget.maxHp*100))+'%';
   } else {
     el.style.display = 'none';
   }
@@ -6483,17 +6503,29 @@ applyDinoControlMode();
 
 /* ===== DINOCRAFT COMBAT 1.0: DINO ARENA EVENTS ===== */
 let dinoArenaTimer=35, dinoArenaWave=0;
+let arenaWaveRecord=0;
+function arenaWaveHud(){
+ let el=document.getElementById('dcWaveHud');
+ if(!el){el=document.createElement('div');el.id='dcWaveHud';el.style.cssText='position:fixed;right:12px;top:92px;z-index:11;pointer-events:none;background:rgba(9,16,28,.76);border:1px solid #ffcf71;border-radius:10px;padding:8px 12px;color:#ffecba;font:800 13px system-ui;text-shadow:0 1px 2px #000';document.body.appendChild(el);}
+ el.style.display=worldMode==='pvp'&&worldReady&&!player.dead?'block':'none';
+ return el;
+}
 function updateDinoArena(dt){
- if(worldMode!=='pvp'||!worldReady||player.dead)return;
+ if(worldMode!=='pvp'||!worldReady||player.dead){const el=document.getElementById('dcWaveHud');if(el)el.style.display='none';return;}
+ const waveLabel=arenaWaveHud();
  const active=mobs.some(m=>!m.dead&&['raptor','triceratops','rex'].includes(m.type));
  if(active){
+   waveLabel.textContent='🦖 WAVE '+dinoArenaWave+' · DINOSAURS REMAIN';
    const boss=mobs.find(m=>!m.dead&&m.type==='rex');
    if(boss)showBossBar('🦖 TYRANT REX — ARENA BOSS',boss.hp,boss.maxHp);
    return;
  }
  dinoArenaTimer-=dt;
+ waveLabel.textContent='⚔️ WAVE '+(dinoArenaWave+1)+' IN '+Math.ceil(Math.max(0,dinoArenaTimer))+'s';
  if(dinoArenaTimer>0)return;
  dinoArenaWave++;
+ if(dinoArenaWave>arenaWaveRecord){arenaWaveRecord=dinoArenaWave;if(dinoArenaWave%3===0){earnCoins(40+dinoArenaWave*8,'Dinosaur survival wave '+dinoArenaWave);showToast('🏆 WAVE '+dinoArenaWave+' BONUS COINS!','🏆');}}
+ waveLabel.textContent='🦖 WAVE '+dinoArenaWave+' · FIGHT!';
  const type=arenaDifficulty==='apex'?'rex':arenaDifficulty==='hard'?(dinoArenaWave%2===0?'rex':'triceratops'):arenaDifficulty==='easy'?'raptor':dinoArenaWave%3===0?'rex':(dinoArenaWave%2===0?'triceratops':'raptor');
  const x=WORLD_SIZE/2+11,z=WORLD_SIZE/2+10;
  const m=spawnMob(type,x,22,z);
