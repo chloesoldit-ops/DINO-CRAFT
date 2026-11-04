@@ -2528,9 +2528,9 @@ function spawnMob(type, x, y, z){
   };
   // Revolution challenge: all hostile Survival dinosaurs and monsters are tougher.
    if(['survival','nether','end'].includes(worldMode) && def.hostile){
-    const bonus=['rex','triceratops','raptor'].includes(type)?1.55:1.22;
+    const bonus=['rex','triceratops','raptor'].includes(type)?2.35:1.85;
     mob.hp=Math.round(mob.hp*bonus);mob.maxHp=mob.hp;
-    mob.def=Object.assign({},mob.def,{speed:mob.def.speed*1.13,dmg:mob.def.dmg*1.15});
+    mob.def=Object.assign({},mob.def,{speed:mob.def.speed*1.23,dmg:mob.def.dmg*1.55});
   }
   if(isBloodMoon && def.hostile){
     mob.hp *= 1.5; mob.maxHp *= 1.5;
@@ -2565,7 +2565,7 @@ function updateMobs(dt){
     const dx = player.pos.x - m.pos.x, dy = player.pos.y - m.pos.y, dz = player.pos.z - m.pos.z;
     const dp = Math.hypot(dx, dy, dz);
     if(m.def.hostile && !m.def.boss && m.hp < m.maxHp * 0.25 && m.retreatT <= 0 && Math.random() < 0.005) m.retreatT = 3 + Math.random()*2;
-    if(m.def.hostile && dp < 26 && m.retreatT <= 0) m.target = player;
+    if(m.def.hostile && dp < 34 && m.retreatT <= 0) m.target = player;
     else m.target = null;
     const horizDist = Math.hypot(dx, dz) || 1;
     if(m.retreatT > 0){
@@ -2577,7 +2577,7 @@ function updateMobs(dt){
       m.vel.x = (dx/horizDist) * m.def.speed * desired;
       m.vel.z = (dz/horizDist) * m.def.speed * desired;
       m.mesh.rotation.y = Math.atan2(dx, dz);
-      if(m.atkCD <= 0 && horizDist < 2.2 && Math.abs(dy) < 2){ playerHurt(m.def.dmg, m); m.atkCD = 1.0; }
+      if(m.atkCD <= 0 && horizDist < (m.def.boss ? 3.0 : 2.35) && Math.abs(dy) < 2.5){ playerHurt(m.def.dmg, m); m.atkCD = m.def.boss ? 0.72 : 0.78; }
     } else {
       m.wanderT -= dt;
       if(m.wanderT <= 0){ m.wanderDir = Math.random()*Math.PI*2; m.wanderT = 2 + Math.random()*4; }
@@ -2839,14 +2839,14 @@ function spawnFighterBot(team, x, y, z){
     elite: false, eliteDodge: 0, eliteGuard: 0,
     pos: new THREE.Vector3(x, y, z),
     vel: new THREE.Vector3(),
-    hp: 24, maxHp: 24,
-    speed: wdef.speed,
-    dmg: wdef.dmg,
+    hp: 46, maxHp: 46,
+    speed: wdef.speed * 1.22,
+    dmg: Math.round(wdef.dmg * 1.35),
     weapon: wdef.id,
     weaponDef: wdef,
     style: wdef.style,
     attackRange: wdef.attackRange,
-    attackRate: wdef.attackRate,
+    attackRate: wdef.attackRate * 0.78,
     onGround: false,
     state: 'patrol',
     stateT: 0,
@@ -2873,12 +2873,12 @@ function spawnFighterBot(team, x, y, z){
     aggroTime: 0, lastX: x, lastZ: z, personality: Math.random(), reaction: 0.15 + Math.random()*0.28
   };
   // Elite fighters: tougher, tactically alert, visibly distinguished.
-  bot.elite = Math.random() < 0.22;
+  bot.elite = Math.random() < 0.43;
   if(bot.elite){
     bot.name = '★ ' + bot.name;
-    bot.hp = bot.maxHp = 42;
-    bot.dmg = Math.round(bot.dmg * 1.18);
-    bot.speed *= 1.12;
+    bot.hp = bot.maxHp = 85;
+    bot.dmg = Math.round(bot.dmg * 1.30);
+    bot.speed *= 1.18;
     bot.reaction *= 0.6;
     bot.dodgeCD *= 0.55;
     bot.eliteGuard = 1.5;
@@ -2972,7 +2972,7 @@ function killBot(bot, killer, isPlayerSrc){
     killer.kills++;
     addKillfeedEntry(killer.name + ' (' + shortWeaponName(killer.weapon) + ')', bot.name + ' (' + shortWeaponName(bot.weapon) + ')', teamColor(killer.team));
   }
-  bot.respawnT = 3 + Math.random() * 2;
+  bot.respawnT = 2.2 + Math.random() * 1.2;
   bot.mesh.visible = false;
 }
 
@@ -3066,8 +3066,8 @@ function updateFighterBots(dt){
       const tgt = bot.target;
       const dist = bot.pos.distanceTo(tgt.pos || tgt);
       if(dist < bot.attackRange + 1){
-        bot.blockT = 0.8 + Math.random() * 0.6;
-        bot.blockCD = 2 + Math.random() * 3;
+        bot.blockT = 1.0 + Math.random() * 0.65;
+        bot.blockCD = 1.1 + Math.random() * 1.4;
       }
     }
     bot.mesh.userData.shield.visible = bot.blockT > 0;
@@ -3075,7 +3075,7 @@ function updateFighterBots(dt){
     // Target acquisition
     if(bot.targetCheckT <= 0 || !bot.target || bot.target.dead){
       bot.target = getBotTarget(bot);
-      bot.targetCheckT = 0.4;
+      bot.targetCheckT = 0.22;
       if(bot.target) bot.alertT = 0.8;
     }
 
@@ -6432,7 +6432,7 @@ function updateDinoArena(dt){
  const x=WORLD_SIZE/2+11,z=WORLD_SIZE/2+10;
  const m=spawnMob(type,x,22,z);
  if(m){
-   if(arenaDifficulty==='apex'||arenaDifficulty==='hard'){const mult=arenaDifficulty==='apex'?3.4:2.05;m.hp*=mult;m.maxHp*=mult;spawnMob(arenaDifficulty==='apex'?'rex':'raptor',x+5,22,z+4);}
+   if(arenaDifficulty==='apex'||arenaDifficulty==='hard'){const mult=arenaDifficulty==='apex'?4.2:2.7;m.hp*=mult;m.maxHp*=mult;spawnMob(arenaDifficulty==='apex'?'rex':'raptor',x+5,22,z+4);}
    if(type==='raptor'){spawnMob('raptor',x+3,22,z+1);spawnMob('raptor',x-3,22,z+1);}
    showToast(type==='rex'?'🦖 BOSS WAVE: TYRANT REX!':'🦖 DINOSAUR INVASION: '+type.toUpperCase(),'⚔️');
    if(type==='rex')showBossBar('🦖 TYRANT REX — ARENA BOSS',m.hp,m.maxHp);
