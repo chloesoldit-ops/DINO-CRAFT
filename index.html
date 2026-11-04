@@ -2858,7 +2858,7 @@ function spawnFighterBot(team, x, y, z){
   const bot = {
     type: 'fighter', team, mesh,
     name: randomBotName(),
-    elite: false, eliteDodge: 0, eliteGuard: 0,
+    elite: false, champion: false, lastStand: false, eliteDodge: 0, eliteGuard: 0,
     pos: new THREE.Vector3(x, y, z),
     vel: new THREE.Vector3(),
     hp: 46, maxHp: 46,
@@ -2908,6 +2908,15 @@ function spawnFighterBot(team, x, y, z){
     const crown = new THREE.Mesh(new THREE.OctahedronGeometry(0.20), new THREE.MeshBasicMaterial({color:0xffd858}));
     crown.position.set(0,2.95,0); crown.userData.isEye=true;
     mesh.add(crown);
+  }
+  // A rare champion uses existing meshes and AI, so it adds almost no GPU cost.
+  bot.champion=bot.elite && Math.random()<.24;
+  if(bot.champion){
+    bot.name='☠ CHAMPION '+bot.name.replace(/^★ /,'');
+    bot.hp=bot.maxHp=Math.round(bot.maxHp*1.6);
+    bot.dmg=Math.round(bot.dmg*1.15);
+    bot.speed*=1.06;
+    bot.attackRate*=.92;
   }
   bot.baseSpeed=bot.speed;
   bot.baseDamage=bot.dmg;
@@ -2979,7 +2988,7 @@ function killBot(bot, killer, isPlayerSrc){
 
   playSound('kill');
   if(isPlayerSrc){
-    earnCoins(bot.elite?70:20,bot.elite?'Elite arena victory':'Arena victory');
+    earnCoins(bot.champion?150:bot.elite?70:20,bot.champion?'Champion victory':bot.elite?'Elite arena victory':'Arena victory');
     player.kills++;
     player.killStreak++;
     if(player.killStreak > player.bestStreak) player.bestStreak = player.killStreak;
@@ -2987,15 +2996,16 @@ function killBot(bot, killer, isPlayerSrc){
     addKillfeedEntry('You', bot.name + ' (' + shortWeaponName(bot.weapon) + ')', teamColor(bot.team));
     showToast('⚔️ Killed ' + bot.name, '⚔️');
     const streakBonus = Math.min(18, Math.floor(Math.max(0,player.killStreak-1)/2)*3);
-    const eliteBonus = bot.elite ? 22 : 0;
+    const eliteBonus = bot.champion?45:bot.elite?22:0;
     const comboBonus = combatCombo >= 3 ? Math.min(15, combatCombo * 2) : 0;
-    if(bot.elite) showToast('💀 ELITE DEFEATED! +22 XP', '🏆');
+    if(bot.champion)showToast('🏆 CHAMPION DEFEATED! +45 XP','🏆');
+    else if(bot.elite)showToast('💀 ELITE DEFEATED! +22 XP','🏆');
     const lootingBonus=(inventory[hotbar]&&inventory[hotbar].ench&&inventory[hotbar].ench.looting)?inventory[hotbar].ench.looting*2:0;
     awardXP(18 + streakBonus + eliteBonus + comboBonus + lootingBonus); // Kill-streak XP bonuses, plus enchant bonuses.
     if(comboBonus) showToast('⚡ Combo finish +'+comboBonus+' XP','⚡');
     if(streakBonus) showToast('🔥 Streak bonus +'+streakBonus+' XP','🔥');
     score += bot.elite ? 65 : 25;
-    player.hp = Math.min(player.maxHp,player.hp+(bot.elite?5:2));
+    player.hp = Math.min(player.maxHp,player.hp+(bot.champion?12:bot.elite?5:2));
     checkWeaponUnlocks();
     updateScoreboard();
     updateWeaponQuest();
@@ -3050,6 +3060,7 @@ function getBotAllyCount(bot){
 }
 
 let combatAlertDeadline=0;
+let shieldParryUntil=0, shieldParryReadyAt=0;
 function showCombatAlert(message,seconds){
   let el=document.getElementById('dcCombatAlert');
   if(!el){
@@ -3077,7 +3088,7 @@ function updateFighterBots(dt){
         bot.pos.set(spawns.x + (Math.random()-0.5)*3, 22.0, spawns.z + (Math.random()-0.5)*3);
         bot.vel.set(0,0,0);
         bot.hp = bot.maxHp;
-        bot.berserk=false;bot.flankT=0;bot.atkWindup=0;bot.heavyTarget=null;bot.staggerT=0;
+        bot.berserk=false;bot.lastStand=false;bot.flankT=0;bot.atkWindup=0;bot.heavyTarget=null;bot.staggerT=0;
         bot.speed=bot.baseSpeed;bot.dmg=bot.baseDamage;bot.attackRate=bot.baseAttackRate;
         bot.eliteGuard = 1;
         bot.dead = false;
@@ -3096,6 +3107,12 @@ function updateFighterBots(dt){
     }
     if(bot.eliteGuard > 0) bot.eliteGuard -= dt;
     if(bot.flankT>0)bot.flankT-=dt;
+    if(bot.champion && !bot.lastStand && bot.hp>0 && bot.hp<bot.maxHp*.5){
+      bot.lastStand=true;
+      bot.hp=Math.min(bot.maxHp,bot.hp+Math.round(bot.maxHp*.10));
+      bot.blockT=1.0;bot.dodgeCD=0;
+      if(bot.pos.distanceTo(player.pos)<14)showCombatAlert('☠ CHAMPION SECOND PHASE!',1.2);
+    }
     if(!bot.berserk && bot.hp>0 && bot.hp<bot.maxHp*.32){
       bot.berserk=true;bot.speed*=1.13;bot.dmg=Math.round(bot.dmg*1.12);
       bot.attackRate*=.89;
@@ -4135,7 +4152,23 @@ function playerHurt(amt, srcBot){
   if(dashProtection > 0) amt *= .5;
   if(player.dead) return;
   if(player.invuln > 0) return;
-  if(player.blocking) amt *= 0.3;
+  if(player.blocking){
+    const now=performance.now();
+    if(now<shieldParryUntil && now>shieldParryReadyAt){
+      shieldParryUntil=0;shieldParryReadyAt=now+4200;
+      if(srcBot && srcBot.type==='fighter' && !srcBot.dead){
+        srcBot.staggerT=Math.max(srcBot.staggerT||0,.8);
+        srcBot.atkWindup=0;srcBot.heavyTarget=null;
+        srcBot.atkCD=Math.max(srcBot.atkCD,.8);
+        const dx=srcBot.pos.x-player.pos.x,dz=srcBot.pos.z-player.pos.z,d=Math.hypot(dx,dz)||1;
+        srcBot.vel.x+=dx/d*.22;srcBot.vel.z+=dz/d*.22;
+      }
+      showCombatAlert('🛡️ PERFECT PARRY!',.9);
+      player.hp=Math.min(player.maxHp,player.hp+.75);
+      updateHUD();return;
+    }
+    amt*=.3;
+  }
 
   if(player.goldenHp > 0){
     const blocked=Math.min(player.goldenHp,amt);
@@ -5584,7 +5617,7 @@ function setupWorld(mode){
   player.thirst = 20;
   player.dead = false;
   player.vel.set(0,0,0);
-  spearLungeCooldown=0;
+  spearLungeCooldown=0;shieldParryUntil=0;shieldParryReadyAt=0;
   player.invuln = 2.0;
   player.blocking = false;
   player.fallStartY = null;
@@ -6276,7 +6309,9 @@ document.addEventListener('mousedown', e => {
     const slot = inventory[hotbar];
     if(slot && ITEMS[slot.id] && ITEMS[slot.id].type === 'shield'){
       player.blocking = !player.blocking;
-      showToast(player.blocking ? '🛡️ Blocking' : 'Lowered shield', '🛡️');
+      if(player.blocking && performance.now()>=shieldParryReadyAt)shieldParryUntil=performance.now()+340;
+      else shieldParryUntil=0;
+      showToast(player.blocking ? (shieldParryUntil?'🛡️ Parry window!':'🛡️ Blocking') : 'Lowered shield', '🛡️');
     } else {
       tryPlace(); placeCooldown = 0.22;
     }
