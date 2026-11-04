@@ -2909,6 +2909,9 @@ function spawnFighterBot(team, x, y, z){
     crown.position.set(0,2.95,0); crown.userData.isEye=true;
     mesh.add(crown);
   }
+  bot.baseSpeed=bot.speed;
+  bot.baseDamage=bot.dmg;
+  bot.baseAttackRate=bot.attackRate;
   mesh.position.copy(bot.pos);
   scene.add(mesh);
   fighterBots.push(bot);
@@ -3052,6 +3055,7 @@ function updateFighterBots(dt){
         bot.vel.set(0,0,0);
         bot.hp = bot.maxHp;
         bot.berserk=false;bot.flankT=0;
+        bot.speed=bot.baseSpeed;bot.dmg=bot.baseDamage;bot.attackRate=bot.baseAttackRate;
         bot.eliteGuard = 1;
         bot.dead = false;
         bot.mesh.visible = true;
