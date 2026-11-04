@@ -2998,7 +2998,13 @@ function killBot(bot, killer, isPlayerSrc){
     const streakBonus = Math.min(18, Math.floor(Math.max(0,player.killStreak-1)/2)*3);
     const eliteBonus = bot.champion?45:bot.elite?22:0;
     const comboBonus = combatCombo >= 3 ? Math.min(15, combatCombo * 2) : 0;
-    if(bot.champion)showToast('🏆 CHAMPION DEFEATED! +45 XP','🏆');
+    if(bot.champion){
+      showToast('🏆 CHAMPION DEFEATED! +45 XP','🏆');
+      // Rare champion treasure, using existing inventory and drop systems.
+      const gift=Math.random()<.5?'diamond':'emerald';
+      spawnDroppedItem(gift,bot.pos.x,bot.pos.y+1.2,bot.pos.z,false);
+      showToast('💎 CHAMPION TREASURE DROPPED!','💎');
+    }
     else if(bot.elite)showToast('💀 ELITE DEFEATED! +22 XP','🏆');
     const lootingBonus=(inventory[hotbar]&&inventory[hotbar].ench&&inventory[hotbar].ench.looting)?inventory[hotbar].ench.looting*2:0;
     awardXP(18 + streakBonus + eliteBonus + comboBonus + lootingBonus); // Kill-streak XP bonuses, plus enchant bonuses.
@@ -4386,6 +4392,25 @@ function updateCombatAbilities(dt){
     status.style.color=spearLungeCooldown>0?'#ffc08a':'#8affba';
   }
   if(dashProtection>0) dashProtection=Math.max(0,dashProtection-dt);
+  // Small combat skill indicator; update text only when its state changes.
+  if(worldMode==='pvp'){
+    let parry=document.getElementById('dcParrySkill');
+    if(!parry){
+      parry=document.createElement('div');
+      parry.id='dcParrySkill';
+      parry.style.cssText='position:fixed;bottom:135px;left:12px;z-index:11;pointer-events:none;padding:6px 10px;border-radius:8px;border:1px solid #74c9e9;background:rgba(7,19,34,.76);color:#c4eefe;font:700 12px system-ui;max-width:175px';
+      document.body.appendChild(parry);
+    }
+    const shield=ITEMS[inventory[hotbar]?.id]?.type==='shield';
+    parry.style.display=worldReady&&!player.dead&&shield?'block':'none';
+    if(shield){
+      const wait=Math.max(0,(shieldParryReadyAt-performance.now())/1000);
+      const label=wait>0?'🛡️ PARRY '+wait.toFixed(1)+'s':performance.now()<shieldParryUntil?'🛡️ PERFECT PARRY WINDOW':'🛡️ PARRY READY · RIGHT CLICK';
+      if(parry.textContent!==label)parry.textContent=label;
+    }
+  } else {
+    const parry=document.getElementById('dcParrySkill');if(parry)parry.style.display='none';
+  }
   if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0)combatCombo=0;}
   const hud=document.getElementById('combatAbilityHUD');
   if(!hud)return;
