@@ -2524,7 +2524,8 @@ function spawnMob(type, x, y, z){
     type, def, mesh, pos: new THREE.Vector3(x, y, z), vel: new THREE.Vector3(),
     hp: def.hp, maxHp: def.hp, onGround: false, atkCD: 0, target: null,
     wanderDir: Math.random()*Math.PI*2, wanderT: Math.random()*3,
-    hit: 0, dead: false, walkPhase: 0, retreatT: 0
+    hit: 0, dead: false, walkPhase: 0, retreatT: 0,
+    enraged: false, leapCD: 3 + Math.random()*3, surgeT: 0, surgeCD: 6 + Math.random()*4
   };
   // Revolution challenge: all hostile Survival dinosaurs and monsters are tougher.
    if(['survival','nether','end'].includes(worldMode) && def.hostile){
@@ -2557,6 +2558,15 @@ function updateMobs(dt){
     const m = mobs[i];
     if(m.dead){ scene.remove(m.mesh); m.mesh.traverse(o => { if(o.material) o.material.dispose?.(); if(o.geometry && o.geometry !== blockGeo) o.geometry.dispose?.(); }); mobs.splice(i,1); continue; }
     if(m.hit > 0) m.hit -= dt;
+    // Injured predators enter a more dangerous phase.
+    if(m.def.hostile && !m.enraged && m.hp > 0 && m.hp < m.maxHp * .38){
+      m.enraged = true;
+      m.def = Object.assign({},m.def,{speed:m.def.speed*1.18,dmg:m.def.dmg*1.20});
+      if(m.def.boss && m.pos.distanceTo(player.pos)<24) showToast('⚠️ '+m.type.toUpperCase()+' IS ENRAGED — DODGE!', '🔥');
+    }
+    m.leapCD = Math.max(0,m.leapCD-dt);
+    m.surgeCD = Math.max(0,m.surgeCD-dt);
+    m.surgeT = Math.max(0,m.surgeT-dt);
     m.walkPhase += dt * 8;
     if(m.mesh.userData.tail) m.mesh.userData.tail.rotation.y=Math.sin(m.walkPhase*.35)*.20;
     if(m.type==='raptor' && m.target===player && m.onGround && m.atkCD<=0 && Math.random()<0.006){m.vel.y=.23;m.onGround=false;}
@@ -2567,6 +2577,17 @@ function updateMobs(dt){
     if(m.def.hostile && !m.def.boss && m.hp < m.maxHp * 0.25 && m.retreatT <= 0 && Math.random() < 0.005) m.retreatT = 3 + Math.random()*2;
     if(m.def.hostile && dp < 34 && m.retreatT <= 0) m.target = player;
     else m.target = null;
+    // Cooldown-based pounces and boss charges: no new entities, low FPS cost.
+    if(m.target===player && m.onGround && m.leapCD<=0 && dp<11 &&
+       ['raptor','spider'].includes(m.type)){
+      m.vel.y = m.type==='raptor' ? .28 : .20;
+      m.onGround=false;
+      m.leapCD=3.0+Math.random()*2;
+    }
+    if(m.target===player && m.def.boss && m.surgeCD<=0 && dp>4 && dp<15){
+      m.surgeT=.70; m.surgeCD=6.5+Math.random()*3;
+      if(dp<12)showToast('⚠️ '+m.type.toUpperCase()+' CHARGING! MOVE SIDEWAYS!', '⚡');
+    }
     const horizDist = Math.hypot(dx, dz) || 1;
     if(m.retreatT > 0){
       m.vel.x = -(dx/horizDist) * m.def.speed * 1.3;
@@ -2574,8 +2595,9 @@ function updateMobs(dt){
       m.mesh.rotation.y = Math.atan2(-dx, -dz);
     } else if(m.target === player){
       const desired = horizDist > 2.5 ? 1 : (horizDist < 1.4 ? -0.4 : 0);
-      m.vel.x = (dx/horizDist) * m.def.speed * desired;
-      m.vel.z = (dz/horizDist) * m.def.speed * desired;
+      const burst = m.surgeT>0 ? 2.15 : 1;
+      m.vel.x = (dx/horizDist) * m.def.speed * desired * burst;
+      m.vel.z = (dz/horizDist) * m.def.speed * desired * burst;
       m.mesh.rotation.y = Math.atan2(dx, dz);
       if(m.atkCD <= 0 && horizDist < (m.def.boss ? 3.0 : 2.35) && Math.abs(dy) < 2.5){ playerHurt(m.def.dmg, m); m.atkCD = m.def.boss ? 0.72 : 0.78; }
     } else {
@@ -2870,7 +2892,8 @@ function spawnFighterBot(team, x, y, z){
     bowDrawT: 0,
     lastTargetX: x, lastTargetZ: z,
     alertT: 0, stuckT: 0, dodgeCD: Math.random()*2, dodgeT: 0, dodgeDir: 1,
-    aggroTime: 0, lastX: x, lastZ: z, personality: Math.random(), reaction: 0.15 + Math.random()*0.28
+    aggroTime: 0, lastX: x, lastZ: z, personality: Math.random(), reaction: 0.15 + Math.random()*0.28,
+    berserk: false, flankT: 0, flankDir: Math.random()<.5?-1:1
   };
   // Elite fighters: tougher, tactically alert, visibly distinguished.
   bot.elite = Math.random() < 0.43;
@@ -3028,6 +3051,7 @@ function updateFighterBots(dt){
         bot.pos.set(spawns.x + (Math.random()-0.5)*3, 22.0, spawns.z + (Math.random()-0.5)*3);
         bot.vel.set(0,0,0);
         bot.hp = bot.maxHp;
+        bot.berserk=false;bot.flankT=0;
         bot.eliteGuard = 1;
         bot.dead = false;
         bot.mesh.visible = true;
@@ -3044,6 +3068,12 @@ function updateFighterBots(dt){
       continue;
     }
     if(bot.eliteGuard > 0) bot.eliteGuard -= dt;
+    if(bot.flankT>0)bot.flankT-=dt;
+    if(!bot.berserk && bot.hp>0 && bot.hp<bot.maxHp*.32){
+      bot.berserk=true;bot.speed*=1.13;bot.dmg=Math.round(bot.dmg*1.12);
+      bot.attackRate*=.89;
+      if(bot.pos.distanceTo(player.pos)<10)showToast('⚠️ '+bot.name+' has entered BERSERK mode!', '🔥');
+    }
     if(bot.aggroTime > 0){ bot.aggroTime-=dt; if(bot.aggroTime<=0) bot._aggroPlayer=false; }
     if(bot.hit > 0) bot.hit -= dt;
     if(bot.attackAnim > 0) bot.attackAnim -= dt;
@@ -3244,6 +3274,15 @@ function updateFighterBots(dt){
       }
     }
 
+    // Coordinated flanking: occasional sideways rush against the player.
+    if(target===player && bot.flankT<=0 && !bot.dead && bot.pos.distanceTo(player.pos)<9 && bot.style!=='heavy' && Math.random()<dt*.22){
+      bot.flankT=.6;bot.flankDir*=-1;
+    }
+    if(target===player && bot.flankT>0){
+      const fx=player.pos.x-bot.pos.x,fz=player.pos.z-bot.pos.z,fd=Math.hypot(fx,fz)||1;
+      bot.vel.x += -fz/fd*bot.speed*.75*bot.flankDir;
+      bot.vel.z += fx/fd*bot.speed*.75*bot.flankDir;
+    }
     // Tactical dodging, allied spacing, and obstacle navigation.
     if(target && bot.dodgeCD <= 0 && bot.style !== 'heavy' &&
        Math.hypot(target.pos.x-bot.pos.x,target.pos.z-bot.pos.z) < 7){
