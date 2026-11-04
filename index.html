@@ -6552,14 +6552,14 @@ function updateDinoArena(dt){
  const m=spawnMob(type,x,22,z);
  if(m){
    if(arenaDifficulty==='apex'||arenaDifficulty==='hard'){const mult=arenaDifficulty==='apex'?4.2:2.7;m.hp*=mult;m.maxHp*=mult;spawnMob(arenaDifficulty==='apex'?'rex':'raptor',x+5,22,z+4);}
-   // Wave scaling: increasing HP and damage, capped to keep high-wave fights viable.
+   if(type==='raptor'){spawnMob('raptor',x+3,22,z+1);spawnMob('raptor',x-3,22,z+1);}
+   // Scale the complete wave, including raptor reinforcements.
    const waveScale=1+Math.min(1.35,Math.max(0,dinoArenaWave-1)*.085);
    for(const enemy of mobs){
      if(enemy.dead || !['raptor','triceratops','rex'].includes(enemy.type))continue;
      enemy.hp=Math.round(enemy.hp*waveScale);enemy.maxHp=enemy.hp;
      enemy.def=Object.assign({},enemy.def,{dmg:enemy.def.dmg*(1+Math.min(.55,Math.max(0,dinoArenaWave-1)*.045))});
    }
-   if(type==='raptor'){spawnMob('raptor',x+3,22,z+1);spawnMob('raptor',x-3,22,z+1);}
    // Every fourth wave has an elite dinosaur with extra endurance, not extra entities.
    if(dinoArenaWave%4===0){
      m.hp=Math.round(m.hp*1.45);m.maxHp=m.hp;
