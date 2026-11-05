@@ -2878,7 +2878,7 @@ function spawnFighterBot(team, x, y, z){
     atkWindup: 0, heavyTarget: null, heavyDamage: 0, heavyCrit: false, staggerT: 0,
     blockT: 0,
     blockCD: 2 + Math.random() * 3,
-    retreatT: 0,
+    retreatT: 0, retreatCD: 0,
     hit: 0, dead: false,
     respawnT: 0,
     kills: 0, deaths: 0,
@@ -3105,7 +3105,7 @@ function updateFighterBots(dt){
         bot.invulnT = 2.0;
         bot.target = null;
         bot.targetCheckT = 0;
-        bot.retreatT = 0;
+        bot.retreatT = 0;bot.retreatCD=0;
         bot.blockT = 0;
         spawnParticles(bot.pos.x, bot.pos.y + 1, bot.pos.z, 20, teamColor(bot.team));
       }
@@ -3150,6 +3150,7 @@ function updateFighterBots(dt){
         }
       }
     }
+    if(bot.retreatCD>0)bot.retreatCD=Math.max(0,bot.retreatCD-dt);
     if(bot.strafeT > 0) bot.strafeT -= dt;
     if(bot.stateT > 0) bot.stateT -= dt;
     if(bot.wanderT > 0) bot.wanderT -= dt;
@@ -3198,8 +3199,8 @@ function updateFighterBots(dt){
       const tooClose = dist < bot.attackRange * 0.65;
 
       // Retreat logic
-      if(bot.hp < bot.maxHp * 0.3 && bot.retreatT <= 0 && bot.style !== 'rush'){
-        bot.retreatT = 2.5;
+      if(bot.hp < bot.maxHp * 0.3 && bot.retreatT <= 0 && bot.retreatCD<=0 && bot.style !== 'rush'){
+        bot.retreatT = 1.65;bot.retreatCD=7.5;
       }
       if(bot.retreatT > 0){
         bot.retreatT -= dt;
@@ -4155,7 +4156,17 @@ function updatePlayer(dt){
 }
 function playerHurt(amt, srcBot){
   if(godMode || player.creative) return;
-  if(dashProtection > 0) amt *= .5;
+  if(dashProtection > 0){
+    if(dashProtection > .19 && worldMode==='pvp'){
+      if(performance.now()>lastPerfectDodgeAt+2200){
+        lastPerfectDodgeAt=performance.now();
+        combatCombo=Math.min(12,combatCombo+1);comboTimer=3.2;
+        showCombatAlert('💨 PERFECT DODGE! +1 COMBO',.75);
+      }
+      return;
+    }
+    amt *= .5;
+  }
   if(player.dead) return;
   if(player.invuln > 0) return;
   if(player.blocking){
@@ -4366,6 +4377,7 @@ function tryPlace(){
 
 /* ===== COMBAT ===== */
 let dashCooldown = 0, dashProtection = 0, combatCombo = 0, comboTimer = 0;
+let lastPerfectDodgeAt=-10000;
 function combatDash(){
   if(!worldReady || player.dead || worldMode !== 'pvp') return;
   if(dashCooldown > 0){ showToast('Dash ready in '+Math.ceil(dashCooldown)+'s','⏳');return; }
@@ -4418,7 +4430,7 @@ function updateCombatAbilities(dt){
   const d=document.getElementById('dashStatus');
   d.textContent=dashCooldown<=0?'Q — Dash: READY':'Q — Dash: '+dashCooldown.toFixed(1)+'s';
   d.className=dashCooldown<=0?'ready':'cooling';
-  document.getElementById('comboStatus').textContent='⚡ Hit combo: '+combatCombo+(comboTimer>0?' · '+comboTimer.toFixed(1)+'s':'');
+  document.getElementById('comboStatus').textContent='⚡ Hit combo: '+combatCombo+(comboTimer>0?' · '+comboTimer.toFixed(1)+'s':'')+(combatCombo>=8?' · 🔥 ON FIRE':combatCombo>=4?' · COMBO BUILDING':'');
 }
 
 /* 4.3 Spear lunge: forward collision-tested attack, 2 targets max. */
@@ -4545,7 +4557,7 @@ function tryAttack(){
     }
 
     if(hitType === 'bot'){
-      combatCombo = Math.min(12, combatCombo + 1); comboTimer = 3.2;
+      if(hitTarget.invulnT<=0){combatCombo = Math.min(12, combatCombo + 1); comboTimer = 3.2;}
       if(combatCombo===5 || combatCombo===10) showToast('⚡ '+combatCombo+' HIT COMBO!', '⚡');
       if(heldEnch&&heldEnch.wind){const kbv=new THREE.Vector3().subVectors(hitTarget.pos,origin).normalize();hitTarget.vel?.add?.(kbv.multiplyScalar(0.10*heldEnch.wind+0.08));}
       damageBot(hitTarget, dmg, null, true, crit || sprinting);
@@ -4905,7 +4917,7 @@ function updateBotTargetHUD(){
     const tc = '#' + teamColor(closest.team).toString(16).padStart(6,'0');
     el.querySelector('.name').textContent = closest.name + ' [' + closest.team.toUpperCase() + ']';
     el.querySelector('.name').style.color = tc;
-    el.querySelector('.weapon').textContent = shortWeaponName(closest.weapon) + ' · ' + closest.style.toUpperCase();
+    el.querySelector('.weapon').textContent = shortWeaponName(closest.weapon) + ' · ' + closest.style.toUpperCase() + (closest.atkWindup>0?' · ⚠️ ATTACKING':closest.staggerT>0?' · STAGGERED':closest.champion?' · CHAMPION':'')+' · '+Math.max(0,Math.ceil(closest.hp))+'/'+closest.maxHp+' HP';
     el.querySelector('.hptrack').style.borderColor = tc;
     el.querySelector('.hpfill').style.width = Math.max(0, closest.hp/closest.maxHp*100) + '%';
   } else if(mobTarget && ['pvp','survival','nether','end'].includes(worldMode)){
