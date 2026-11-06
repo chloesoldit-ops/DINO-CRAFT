@@ -4053,6 +4053,12 @@ function updatePlayer(dt){
   const accel = player.inWater ? 0.12 : 0.35;
   player.vel.x += (targetVX - player.vel.x) * accel;
   player.vel.z += (targetVZ - player.vel.z) * accel;
+  if(dashMomentumT>0 && worldMode==='pvp' && !player.inWater && !flying){
+    const strength=Math.min(1,dashMomentumT/.12);
+    player.vel.x+=dashDirX*.21*strength;
+    player.vel.z+=dashDirZ*.21*strength;
+    dashMomentumT=Math.max(0,dashMomentumT-dt);
+  }
   if(flying){
     elytraGliding=false;
     // No gravity or collision while flying. Shift descends; Space ascends.
@@ -4405,6 +4411,8 @@ function tryPlace(){
 
 /* ===== COMBAT ===== */
 let dashCooldown = 0, dashProtection = 0, combatCombo = 0, comboTimer = 0;
+let dashMomentumT=0,dashDirX=0,dashDirZ=0;
+let attackSwingT=0,attackSwingDuration=.4;
 let lastPerfectDodgeAt=-10000;
 function combatDash(){
   if(!worldReady || player.dead || worldMode !== 'pvp') return;
@@ -4415,8 +4423,10 @@ function combatDash(){
   // Dash toward held movement keys, or camera forward otherwise.
   const x=(keys['d']?1:0)-(keys['a']?1:0), z=(keys['s']?1:0)-(keys['w']?1:0);
   if(x || z){forward.set(Math.cos(player.yaw)*x-Math.sin(player.yaw)*(-z),0,-Math.sin(player.yaw)*x-Math.cos(player.yaw)*(-z)).normalize();}
-  player.vel.x += forward.x*.46;
-  player.vel.z += forward.z*.46;
+  // Preserve the dash through movement smoothing instead of losing it immediately.
+  dashDirX=forward.x;dashDirZ=forward.z;dashMomentumT=.25;
+  player.vel.x+=forward.x*.19;
+  player.vel.z+=forward.z*.19;
   if(player.onGround) player.vel.y += .07;
   spawnHitSparks(player.pos.x,player.pos.y+1,player.pos.z,0x66ddff,14);
   showToast('💨 DASH!', '💨');
@@ -4513,6 +4523,8 @@ function tryAttack(){
   let cooldown = 0.4;
   if(item && ITEMS[item.id] && ITEMS[item.id].atkSpeed) cooldown = ITEMS[item.id].atkSpeed;
   player.atkCD = item && ITEMS[item.id] && ITEMS[item.id].type === 'mace' ? cooldown * 0.72 : cooldown;
+  attackSwingDuration=Math.max(.16,Math.min(.9,player.atkCD));
+  attackSwingT=attackSwingDuration;
 
   const origin = camera.position.clone();
   const dir = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
@@ -5682,7 +5694,7 @@ function setupWorld(mode){
   player.thirst = 20;
   player.dead = false;
   player.vel.set(0,0,0);
-  spearLungeCooldown=0;shieldParryUntil=0;shieldParryReadyAt=0;
+  spearLungeCooldown=0;shieldParryUntil=0;shieldParryReadyAt=0;dashMomentumT=0;attackSwingT=0;
   player.invuln = 2.0;
   player.blocking = false;
   player.fallStartY = null;
@@ -6915,11 +6927,15 @@ function animate(){
     const idleX = Math.sin(now * 1.3) * 0.008;
     const idleY = Math.sin(now * 1.7) * 0.006;
     heldGroup.position.set(0.42 + swayX + idleX, -0.38 + bob + idleY, -0.72);
-    if(mouseDown.left && player.atkCD > 0.15){
-      const swing = (0.4 - player.atkCD) / 0.4;
-      heldGroup.rotation.set(-0.2 - Math.sin(swing*Math.PI)*0.65, -0.4, 0.1);
-    } else {
-      heldGroup.rotation.set(-0.2, -0.4, 0.1);
+    // Animate the full hit, including quick clicks and auto-attack.
+    if(attackSwingT>0 && !simPaused){
+      attackSwingT=Math.max(0,attackSwingT-dt);
+      const phase=1-attackSwingT/attackSwingDuration;
+      const arc=Math.sin(Math.min(1,phase)*Math.PI);
+      heldGroup.rotation.set(-.2-arc*.94,-.4+arc*.16,.1+arc*.28);
+      heldGroup.position.z=-.72+arc*.13;
+    }else{
+      heldGroup.rotation.set(-.2,-.4,.1);
     }
   }
   let anyBoss = null;
