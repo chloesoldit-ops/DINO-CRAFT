@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.4 — Dino Expedition</title>
+<title>DinoCraft 4.5 — Visual Upgrade</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -414,9 +414,13 @@ html.playing #dcBuildStamp{display:block}
 #d44-expedition-next{color:#fff2cc;font-weight:600}
 .touchDevice #d44-expedition{left:6px;top:68px;padding:6px 8px;font-size:10px;max-width:220px}
 @media(max-width:600px){#d44-expedition{top:85px;left:6px;padding:7px 8px;font-size:10px;max-width:215px}}
+#dcMuteButton{position:fixed;top:8px;right:12px;z-index:44;min-width:116px;padding:9px 12px;border:1px solid rgba(166,216,255,.7);border-radius:12px;color:#eff9ff;background:linear-gradient(145deg,rgba(20,40,69,.96),rgba(7,14,27,.95));font:800 12px system-ui;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.35);touch-action:manipulation}
+#dcMuteButton:hover,#dcMuteButton:focus-visible{border-color:#ffe5a5;background:#244668;outline:2px solid transparent}
+#dcMuteButton[aria-pressed="true"]{border-color:#ffafaf;color:#ffe1e1;background:rgba(66,26,37,.95)}
+@media(max-width:650px){#dcMuteButton{top:58px;right:7px;padding:8px;min-width:94px;font-size:11px}}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.4 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.5 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -447,6 +451,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <button id="desktopPause" type="button" aria-label="Pause game">⏸ PAUSE (ESC)</button>
 <div id="fpsDisplay" aria-live="off">FPS: --</div>
+<button type="button" id="dcMuteButton" aria-label="Mute game audio" aria-pressed="false" title="Mute/unmute sound (N)">🔊 SOUND ON</button>
 <div id="pauseOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
  <div class="pauseCard">
   <div class="pauseHeading"><div><h2 id="pauseTitle">⏸️ GAME PAUSED</h2><p>Make DinoCraft feel better on your device.</p></div><button type="button" id="pauseX" aria-label="Close settings">✕</button></div>
@@ -454,7 +459,7 @@ html.playing #dcBuildStamp{display:block}
   <div class="pauseSettings">
    <h3>⚙️ GAME SETTINGS</h3>
    <label class="pauseRow" for="controlModeSelect"><span>Controls Mode<small>Change anytime · Mobile or keyboard &amp; mouse</small></span><select id="controlModeSelect"><option value="auto">🤖 Automatic</option><option value="touch">📱 Mobile / Touch</option><option value="desktop">💻 Computer / Mouse</option></select></label>
-   <label class="pauseRow" for="graphicsSelect"><span>Graphics quality<small>Low = faster on older phones</small></span><select id="graphicsSelect"><option value="low">⚡ Low</option><option value="medium">⚖️ Balanced</option><option value="high">✨ High</option></select></label>
+   <label class="pauseRow" for="graphicsSelect"><span>Graphics quality<small>Low = faster on older phones</small></span><select id="graphicsSelect"><option value="low">⚡ Low</option><option value="medium">⚖️ Balanced</option><option value="high">✨ High</option><option value="ultra">💎 Ultra (fast PC)</option></select></label>
    <label class="pauseRow" for="mouseSpeed"><span>Mouse look speed<small id="mouseSpeedText">1.0×</small></span><input id="mouseSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
    <label class="pauseRow" for="touchSpeed"><span>Touch look speed<small id="touchSpeedText">1.0×</small></span><input id="touchSpeed" type="range" min="0.5" max="2" step="0.1"/></label>
    <label class="pauseRow" for="fpsCheck"><span>FPS counter<small>See how smooth the game runs</small></span><input id="fpsCheck" type="checkbox"/></label>
@@ -481,7 +486,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Dino Expedition 4.4 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Visual Upgrade 4.5 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -630,7 +635,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.4 · DINO EXPEDITION · SIX WORLDS</p>
+  <p>4.5 · VISUAL UPGRADE · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -671,8 +676,10 @@ function makeTex(draw, sz){
   draw(c.getContext('2d'), sz);
   const t = new THREE.CanvasTexture(c);
   t.magFilter = THREE.NearestFilter;
-  t.minFilter = THREE.NearestFilter;
-  t.generateMipmaps = false;
+  t.minFilter = dinoSettings.graphics==='low' ? THREE.NearestFilter : THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps = dinoSettings.graphics!=='low';
+  t.anisotropy = dinoSettings.graphics==='ultra' ? Math.min(16,renderer.capabilities.getMaxAnisotropy()) : dinoSettings.graphics==='high' ? Math.min(8,renderer.capabilities.getMaxAnisotropy()) : 1;
+  t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 function noise(ctx, sz, r, g, b, v){
@@ -1137,13 +1144,13 @@ function defaultDinoSettings(){return {graphics:isTouchForGraphics?'low':'medium
 function cleanDinoSettings(v){
  const base=defaultDinoSettings(),n=x=>Number.isFinite(+x)?Math.round(Math.min(2,Math.max(.5,+x))*10)/10:1;
  return v&&typeof v==='object'?{
-  graphics:['low','medium','high'].includes(v.graphics)?v.graphics:base.graphics,
+  graphics:['low','medium','high','ultra'].includes(v.graphics)?v.graphics:base.graphics,
   mouse:n(v.mouse),touch:n(v.touch),fps:v.fps===true,controls:['auto','touch','desktop'].includes(v.controls)?v.controls:'auto'
  }:base;
 }
 let dinoSettings=defaultDinoSettings();
 try{dinoSettings=cleanDinoSettings(JSON.parse(localStorage.getItem(DINO_SETTINGS_KEY)||'null'));}catch(e){}
-function dinoPixelRatio(){return Math.min(window.devicePixelRatio||1,{low:1,medium:1.25,high:1.6}[dinoSettings.graphics]);}
+function dinoPixelRatio(){return Math.min(window.devicePixelRatio||1,{low:1,medium:1.3,high:1.75,ultra:2}[dinoSettings.graphics]);}
 function saveDinoSettings(){try{localStorage.setItem(DINO_SETTINGS_KEY,JSON.stringify(dinoSettings));}catch(e){}}
 
 /* ===== SCENE ===== */
@@ -2163,9 +2170,9 @@ function updateSky(dt){
   const dayF = worldMode==='end'?0:worldMode==='nether'?.2:worldMode==='pretty'?Math.max(.72,Math.sin(angle)):Math.max(0, Math.sin(angle));
   const nightF = worldMode==='pretty'?0:Math.max(0, -Math.sin(angle));
   lastNightF = nightF;
-  const skyTopDay = new THREE.Color(0x3a86d6), skyBotDay = new THREE.Color(0xb8ddf8);
+  const skyTopDay = new THREE.Color(0x377fca), skyBotDay = new THREE.Color(0xcceaff);
   const skyTopNight = new THREE.Color(0x1a2444), skyBotNight = new THREE.Color(0x2e3a5a);
-  const sunsetTop = new THREE.Color(0x2a2a5a), sunsetBot = new THREE.Color(0xff8855);
+  const sunsetTop = new THREE.Color(0x5c458c), sunsetBot = new THREE.Color(0xffb477);
   const dawnTop = new THREE.Color(0x4a3a6a), dawnBot = new THREE.Color(0xffaa77);
   const bloodTop = new THREE.Color(0x2a1018), bloodBot = new THREE.Color(0x4a1a1a);
   let topC, botC;
@@ -2195,15 +2202,16 @@ function updateSky(dt){
   skyUniforms.topColor.value.copy(topC);
   skyUniforms.bottomColor.value.copy(botC);
   scene.fog.color.copy(worldMode==='pretty'?new THREE.Color(0xc7c2ff):botC);
-  const fogNear = worldMode==='pretty'?110:35 + dayF * 45, fogFar = worldMode==='pretty'?340:130 + dayF * 100;
+  const visibilityBoost=dinoSettings.graphics==='ultra'?1.48:dinoSettings.graphics==='high'?1.23:1;
+  const fogNear = (worldMode==='pretty'?110:35 + dayF * 45)*visibilityBoost, fogFar = (worldMode==='pretty'?340:130 + dayF * 100)*visibilityBoost;
   const factor = (1 - rainIntensity * 0.35);
   scene.fog.near += (fogNear * factor - scene.fog.near) * 0.06;
   scene.fog.far += (fogFar * factor - scene.fog.far) * 0.06;
-  sun.intensity = worldMode==='pretty'?1.45:dayF * 1.1 + 0.08;
+  sun.intensity = worldMode==='pretty'?1.45:dayF * 1.18 + 0.09;
   sun.color.setHex(isBloodMoon ? 0xff8866 : (rainIntensity > 0.3 ? 0xccddee : 0xfff2cc));
   moonlight.intensity = nightF * 0.65 + 0.05;
   moonlight.color.setHex(isBloodMoon ? 0xff5555 : 0xb8c8ff);
-  hemi.intensity = 0.45 + dayF * 0.45;
+  hemi.intensity = 0.50 + dayF * 0.43;
   hemi.color.setHSL(isBloodMoon ? 0.02 : 0.58, 0.5, 0.5 + dayF * 0.15);
   hemi.groundColor = new THREE.Color(isBloodMoon ? 0x3a1515 : 0x405040);
   amb.intensity = 0.42 + dayF * 0.12;
@@ -4762,6 +4770,23 @@ function buildHeldItem(){
 
 /* ===== SOUND ===== */
 let audioCtx = null, muted = false;
+try{muted=localStorage.getItem('dinocraft_audio_muted')==='true';}catch(e){}
+function syncDinoMuteButton(){
+ const btn=document.getElementById('dcMuteButton');if(!btn)return;
+ btn.textContent=muted?'🔇 MUTED':'🔊 SOUND ON';
+ btn.setAttribute('aria-pressed',String(muted));
+ btn.setAttribute('aria-label',muted?'Unmute game audio':'Mute game audio');
+ btn.title=muted?'Unmute sound (N)':'Mute sound (N)';
+}
+function setDinoMuted(value){
+ muted=!!value;
+ try{localStorage.setItem('dinocraft_audio_muted',String(muted));}catch(e){}
+ if(muted && typeof ambientGain!=='undefined' && ambientGain)ambientGain.gain.value=0;
+ syncDinoMuteButton();
+ showToast(muted?'All game audio muted':'Game sound enabled',muted?'🔇':'🔊');
+}
+document.getElementById('dcMuteButton').addEventListener('click',()=>setDinoMuted(!muted));
+syncDinoMuteButton();
 function initAudio(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
 function playSound(type){
   if(!audioCtx || muted) return;
@@ -6350,7 +6375,7 @@ window.addEventListener('keydown', e => {
     const el = document.getElementById('help');
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
   }
-  if(k === 'n'){ muted = !muted; showToast(muted ? 'Muted' : 'Sound on', muted ? '🔇' : '🔊'); }
+  if(k === 'n'){ setDinoMuted(!muted); }
   if(k === 'escape' && document.pointerLockElement) document.exitPointerLock();
 });
 window.addEventListener('keyup', e => {
@@ -6786,7 +6811,17 @@ function applyDinoQuality(){
  renderer.setSize(innerWidth,innerHeight);
  renderer.shadowMap.enabled=level!=='low';
  sun.castShadow=level!=='low';
- const resolution=level==='high'?2048:1024;
+ const resolution=level==='ultra'?3072:level==='high'?2048:1024;
+ renderer.toneMappingExposure=level==='low'?1.26:level==='medium'?1.32:level==='high'?1.38:1.42;
+ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ sun.shadow.normalBias=level==='ultra'?.013:.02;
+ for(const tex of Object.values(TX)){
+  if(!tex || !tex.isTexture)continue;
+  tex.minFilter=level==='low'?THREE.NearestFilter:THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps=level!=='low';
+  tex.anisotropy=level==='ultra'?Math.min(16,renderer.capabilities.getMaxAnisotropy()):level==='high'?Math.min(8,renderer.capabilities.getMaxAnisotropy()):1;
+  tex.needsUpdate=true;
+ }
  if(sun.shadow.mapSize.x!==resolution||sun.shadow.mapSize.y!==resolution){
   if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}
   sun.shadow.mapSize.set(resolution,resolution);
