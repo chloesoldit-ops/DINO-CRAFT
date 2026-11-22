@@ -88,11 +88,24 @@ close.Activated:Connect(function()shop.Visible=false end)
 
 local lastAttack=0
 local function findDinosaur():Model?
-    local target=mouse.Target
+    -- Desktop uses mouse aiming; mobile uses the center of the camera.
+    local target:Instance?=nil
+    if not UserInputService.TouchEnabled then
+        target=mouse.Target
+    end
+    if not target then
+        local camera=workspace.CurrentCamera
+        if camera then
+            local params=RaycastParams.new()
+            params.FilterType=Enum.RaycastFilterType.Exclude
+            if player.Character then params.FilterDescendantsInstances={player.Character} end
+            local result=workspace:Raycast(camera.CFrame.Position,camera.CFrame.LookVector*100,params)
+            if result then target=result.Instance end
+        end
+    end
     if not target then return nil end
     local model=target:FindFirstAncestorOfClass("Model")
-    if not model or not model:IsDescendantOf(workspace) then return nil end
-    if model.Parent and model.Parent.Name=="DinoCraftArena" and (model.Name=="Raptor" or model.Name=="Tyrant Rex") then
+    if model and model.Parent and model.Parent.Name=="DinoCraftArena" and (model.Name=="Raptor" or model.Name=="Tyrant Rex") then
         return model
     end
     return nil
