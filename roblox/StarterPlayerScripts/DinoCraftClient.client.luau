@@ -12,6 +12,7 @@ local events=ReplicatedStorage:WaitForChild("DinoCraftEvents")
 local attackEvent=events:WaitForChild("Attack") :: RemoteEvent
 local messageEvent=events:WaitForChild("Message") :: RemoteEvent
 local productInfo=events:WaitForChild("FireworksInfo") :: RemoteFunction
+local freeCosmetic=events:WaitForChild("FreeCosmetic") :: RemoteEvent
 
 local ui=Instance.new("ScreenGui")
 ui.Name="DinoCraftHUD"
@@ -70,7 +71,7 @@ local shopButton=button(ui,"ShopButton","✨ COSMETIC SHOP",UDim2.new(1,-165,0,1
 local shop=Instance.new("Frame")
 shop.Name="Shop"
 shop.Position=UDim2.new(.5,-195,.5,-145)
-shop.Size=UDim2.fromOffset(390,290)
+shop.Size=UDim2.fromOffset(390,345)
 shop.BackgroundColor3=Color3.fromRGB(13,29,49)
 shop.BorderSizePixel=0
 shop.Visible=false
@@ -80,9 +81,14 @@ shopCorner.CornerRadius=UDim.new(0,16)
 shopCorner.Parent=shop
 text(shop,"ShopTitle","✨ DINOCRAFT COSMETICS",UDim2.fromOffset(16,14),UDim2.fromOffset(355,40),19,Color3.fromRGB(160,255,227))
 text(shop,"ShopInfo","Optional cosmetics only. All dinosaur fights are FREE.",UDim2.fromOffset(16,60),UDim2.fromOffset(355,48),14,Color3.fromRGB(227,240,255))
-local robux=button(shop,"Fireworks","🎆 CELEBRATION FIREWORKS (ROBux)",UDim2.fromOffset(19,123),UDim2.fromOffset(352,56),Color3.fromRGB(125,70,164))
-text(shop,"PurchaseNote","Price appears in the official Roblox purchase window. No purchase required.",UDim2.fromOffset(19,186),UDim2.fromOffset(352,39),12,Color3.fromRGB(219,234,255))
-local close=button(shop,"Close","CLOSE",UDim2.fromOffset(115,237),UDim2.fromOffset(160,40),Color3.fromRGB(83,106,139))
+local freeGlow=button(shop,"FreeGlow","💠 BLUE GLOW — 60 FREE DINOCOINS",UDim2.fromOffset(19,119),UDim2.fromOffset(352,52),Color3.fromRGB(35,124,159))
+local robux=button(shop,"Fireworks","🎆 CELEBRATION FIREWORKS (ROBux)",UDim2.fromOffset(19,177),UDim2.fromOffset(352,52),Color3.fromRGB(125,70,164))
+text(shop,"PurchaseNote","Earn coins through dinosaur battles, or choose optional Robux fireworks. You never need to pay.",UDim2.fromOffset(19,232),UDim2.fromOffset(352,50),12,Color3.fromRGB(219,234,255))
+local close=button(shop,"Close","CLOSE",UDim2.fromOffset(115,294),UDim2.fromOffset(160,40),Color3.fromRGB(83,106,139))
+freeGlow.Activated:Connect(function()
+    freeCosmetic:FireServer()
+    shop.Visible=false
+end)
 shopButton.Activated:Connect(function()shop.Visible=not shop.Visible end)
 close.Activated:Connect(function()shop.Visible=false end)
 
