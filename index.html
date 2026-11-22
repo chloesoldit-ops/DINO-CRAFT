@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.7 — Online Multiplayer Beta</title>
+<title>DinoCraft 4.8 — Classic Multiplayer</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -431,9 +431,15 @@ html.playing #dcBuildStamp{display:block}
 #dcMpCard #dcMpStatus{min-height:44px;line-height:1.5;margin-top:12px;color:#b2ffe0;overflow-wrap:anywhere}
 #dcMpBadge{position:fixed;left:12px;top:58px;z-index:24;background:#0c2d30dc;border:1px solid #61d7b5;border-radius:8px;padding:5px 10px;font:700 12px system-ui;display:none;pointer-events:none}
 @media(max-width:650px){#dcMpLaunch{right:111px;top:58px;font-size:11px;padding:8px}}
+#dcMpTitle,#dcMpWorld,#dcMpPause{cursor:pointer;display:block;padding:13px 20px;border-radius:14px;border:2px solid #7af9ca;background:linear-gradient(110deg,#11684c,#175c91);color:#fff;font:900 15px system-ui;text-shadow:0 1px 3px #0009;box-shadow:0 7px 24px rgba(0,0,0,.4);margin:11px auto;max-width:95%;white-space:normal}
+#dcMpTitle:hover,#dcMpWorld:hover,#dcMpPause:hover,#dcMpTitle:focus-visible,#dcMpWorld:focus-visible,#dcMpPause:focus-visible{filter:brightness(1.22);outline:3px solid #b7f8ff}
+#dcMpLaunch{position:fixed;left:50%;right:auto;transform:translateX(-50%);top:auto;bottom:calc(120px + env(safe-area-inset-bottom));z-index:58;min-width:160px;font-size:13px;box-shadow:0 7px 26px #000a}
+#dcMpLaunch:hover{transform:translateX(-50%) scale(1.03)}
+#dcMpStatusNote{font-size:11px;color:#a6dcfa;margin-top:8px;line-height:1.4}
+@media(max-width:650px){#dcMpLaunch{top:auto;right:auto;left:50%;bottom:calc(148px + env(safe-area-inset-bottom));font-size:12px;min-width:142px}#dcMpTitle,#dcMpWorld,#dcMpPause{font-size:13px;padding:11px 13px}}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.7 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.8 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -469,19 +475,21 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcMpPanel" role="dialog" aria-modal="true" aria-label="Online multiplayer">
  <div id="dcMpCard">
   <button id="dcMpClose" type="button" aria-label="Close multiplayer menu">✕</button>
-  <h2 style="font-size:23px;color:#b5fcef;margin:4px 0 7px">🌐 DINOCRAFT ONLINE 4.7</h2>
+  <h2 style="font-size:23px;color:#b5fcef;margin:4px 0 7px">🌐 DINOCRAFT ONLINE 4.8</h2>
   <p style="font-size:12px;line-height:1.5;color:#c0dbeb;margin-bottom:15px">Start Survival or PvP first. Then create a private room or join with a friend's code. Requires a separate multiplayer server.</p>
   <label for="dcMpServer">Multiplayer WebSocket server (wss://...)</label><input id="dcMpServer" placeholder="wss://your-server.example/ws" autocomplete="off" spellcheck="false">
   <label for="dcMpName">Your nickname (not your real name)</label><input id="dcMpName" maxlength="18" value="Explorer" autocomplete="off">
   <label for="dcMpCode">Friend's private room code</label><input id="dcMpCode" maxlength="8" placeholder="ABCDEFGH" autocomplete="off" spellcheck="false">
   <div><button id="dcMpCreate" type="button">🏠 CREATE ROOM</button><button id="dcMpJoin" type="button">🚀 JOIN ROOM</button><button id="dcMpDisconnect" type="button">⏹ LEAVE</button></div>
   <div id="dcMpStatus" role="status">Offline — single-player still works.</div>
+  <p id="dcMpStatusNote">To play online: launch Survival or PvP, then enter your hosted WebSocket server URL. The separate multiplayer server must be deployed; GitHub Pages cannot run it.</p>
  </div>
 </div>
 <div id="pauseOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
  <div class="pauseCard">
   <div class="pauseHeading"><div><h2 id="pauseTitle">⏸️ GAME PAUSED</h2><p>Make DinoCraft feel better on your device.</p></div><button type="button" id="pauseX" aria-label="Close settings">✕</button></div>
   <div class="pauseMainButtons"><button id="pausePlay" type="button">▶ RESUME</button><button id="pauseSave" type="button">💾 SAVE NOW</button></div>
+  <button id="dcMpPause" type="button">🌐 OPEN MULTIPLAYER — PRIVATE ROOMS</button>
   <div class="pauseSettings">
    <h3>⚙️ GAME SETTINGS</h3>
    <label class="pauseRow" for="controlModeSelect"><span>Controls Mode<small>Change anytime · Mobile or keyboard &amp; mouse</small></span><select id="controlModeSelect"><option value="auto">🤖 Automatic</option><option value="touch">📱 Mobile / Touch</option><option value="desktop">💻 Computer / Mouse</option></select></label>
@@ -622,6 +630,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="worldSelect">
   <h1>SELECT WORLD</h1>
   <div class="sub">CHOOSE YOUR ADVENTURE</div>
+  <button type="button" id="dcMpWorld">🌐 PLAY ONLINE WITH FRIENDS — MULTIPLAYER</button>
   <button id="worldPlayerName" type="button">👤 Guest · Change username</button>
   <button id="dcWorldOwnership" class="dcRulesButton" type="button">🛡️ Official DinoCraft · Rules</button>
   <div class="worldGrid">
@@ -661,7 +670,8 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.7 · ONLINE MULTIPLAYER BETA · SIX WORLDS</p>
+  <p>4.8 · CLASSIC MULTIPLAYER · SIX WORLDS</p>
+  <button type="button" id="dcMpTitle">🌐 MULTIPLAYER — PLAY WITH FRIENDS</button>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -7114,7 +7124,7 @@ function mpUpdateBadge(){
  el.style.display=mpReady?'block':'none';
  el.textContent=mpReady?'🌐 '+mpRoom+' · '+(mpPeers.size+1)+'/8 · '+(mpMode==='pvp'?'PvP':'Co-op'):'';
  const btn=document.getElementById('dcMpLaunch');
- btn.textContent=mpReady?'🌐 '+(mpPeers.size+1)+' ONLINE':'🌐 MULTIPLAYER';
+ btn.textContent=mpReady?'🌐 '+(mpPeers.size+1)+' ONLINE':'🌐 MULTIPLAYER (O)';
 }
 function mpDisconnect(reason){
  const old=mpSocket;const wasGuest=mpReady&&!mpHost;
@@ -7270,7 +7280,9 @@ function mpTogglePanel(show){
   document.getElementById('dcMpServer').focus();
  }else if(worldReady)renderer.domElement.focus();
 }
-document.getElementById('dcMpLaunch').addEventListener('click',()=>mpTogglePanel(true));
+for(const id of ['dcMpLaunch','dcMpTitle','dcMpWorld','dcMpPause']){
+ document.getElementById(id).addEventListener('click',()=>mpTogglePanel(true));
+}
 document.getElementById('dcMpClose').addEventListener('click',()=>mpTogglePanel(false));
 window.addEventListener('keydown',e=>{
  if(e.key==='Escape'&&document.getElementById('dcMpPanel').style.display==='flex'){
