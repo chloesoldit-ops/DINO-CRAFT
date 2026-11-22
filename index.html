@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.6 — Arena Challenge</title>
+<title>DinoCraft 4.7 — Online Multiplayer Beta</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -418,9 +418,22 @@ html.playing #dcBuildStamp{display:block}
 #dcMuteButton:hover,#dcMuteButton:focus-visible{border-color:#ffe5a5;background:#244668;outline:2px solid transparent}
 #dcMuteButton[aria-pressed="true"]{border-color:#ffafaf;color:#ffe1e1;background:rgba(66,26,37,.95)}
 @media(max-width:650px){#dcMuteButton{top:58px;right:7px;padding:8px;min-width:94px;font-size:11px}}
+#dcMpLaunch{position:fixed;right:140px;top:8px;z-index:48;padding:9px 13px;border-radius:11px;border:1px solid #75f0d2;background:linear-gradient(125deg,#0e4058,#133527);color:#e6fff9;font:800 12px system-ui;cursor:pointer;box-shadow:0 3px 16px #0007}
+#dcMpLaunch:hover{filter:brightness(1.3)}
+#dcMpPanel{position:fixed;inset:0;z-index:210;background:#030b16cc;display:none;align-items:center;justify-content:center;padding:16px;font:14px system-ui}
+#dcMpCard{background:linear-gradient(155deg,#152c49,#0b1323);border:1px solid #80ddff;border-radius:18px;padding:22px;max-width:450px;width:100%;box-shadow:0 15px 65px #000a;color:#ebf8ff}
+#dcMpCard input{display:block;width:100%;margin:6px 0 13px;border:1px solid #82cde9;border-radius:8px;background:#091326;color:#fff;font:14px system-ui;padding:10px;user-select:text}
+#dcMpCard label{display:block;font-weight:700;font-size:12px;color:#c3e6ff}
+#dcMpCard button{padding:10px 12px;border:1px solid #8ceacc;background:#19506b;color:white;border-radius:9px;font-weight:800;cursor:pointer;margin:3px}
+#dcMpCard button:hover{background:#277a8c}
+#dcMpCard #dcMpClose{float:right;background:#392c43}
+#dcMpCard #dcMpDisconnect{background:#682e39}
+#dcMpCard #dcMpStatus{min-height:44px;line-height:1.5;margin-top:12px;color:#b2ffe0;overflow-wrap:anywhere}
+#dcMpBadge{position:fixed;left:12px;top:58px;z-index:24;background:#0c2d30dc;border:1px solid #61d7b5;border-radius:8px;padding:5px 10px;font:700 12px system-ui;display:none;pointer-events:none}
+@media(max-width:650px){#dcMpLaunch{right:111px;top:58px;font-size:11px;padding:8px}}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.6 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.7 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -452,6 +465,19 @@ html.playing #dcBuildStamp{display:block}
 <button id="desktopPause" type="button" aria-label="Pause game">⏸ PAUSE (ESC)</button>
 <div id="fpsDisplay" aria-live="off">FPS: --</div>
 <button type="button" id="dcMuteButton" aria-label="Mute game audio" aria-pressed="false" title="Mute/unmute sound (N)">🔊 SOUND ON</button>
+<button type="button" id="dcMpLaunch">🌐 MULTIPLAYER</button><div id="dcMpBadge"></div>
+<div id="dcMpPanel" role="dialog" aria-modal="true" aria-label="Online multiplayer">
+ <div id="dcMpCard">
+  <button id="dcMpClose" type="button" aria-label="Close multiplayer menu">✕</button>
+  <h2 style="font-size:23px;color:#b5fcef;margin:4px 0 7px">🌐 DINOCRAFT ONLINE 4.7</h2>
+  <p style="font-size:12px;line-height:1.5;color:#c0dbeb;margin-bottom:15px">Start Survival or PvP first. Then create a private room or join with a friend's code. Requires a separate multiplayer server.</p>
+  <label for="dcMpServer">Multiplayer WebSocket server (wss://...)</label><input id="dcMpServer" placeholder="wss://your-server.example/ws" autocomplete="off" spellcheck="false">
+  <label for="dcMpName">Your nickname (not your real name)</label><input id="dcMpName" maxlength="18" value="Explorer" autocomplete="off">
+  <label for="dcMpCode">Friend's private room code</label><input id="dcMpCode" maxlength="8" placeholder="ABCDEFGH" autocomplete="off" spellcheck="false">
+  <div><button id="dcMpCreate" type="button">🏠 CREATE ROOM</button><button id="dcMpJoin" type="button">🚀 JOIN ROOM</button><button id="dcMpDisconnect" type="button">⏹ LEAVE</button></div>
+  <div id="dcMpStatus" role="status">Offline — single-player still works.</div>
+ </div>
+</div>
 <div id="pauseOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
  <div class="pauseCard">
   <div class="pauseHeading"><div><h2 id="pauseTitle">⏸️ GAME PAUSED</h2><p>Make DinoCraft feel better on your device.</p></div><button type="button" id="pauseX" aria-label="Close settings">✕</button></div>
@@ -486,7 +512,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Arena Challenge 4.6 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Multiplayer Beta 4.7 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -635,7 +661,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.6 · ARENA CHALLENGE · SIX WORLDS</p>
+  <p>4.7 · ONLINE MULTIPLAYER BETA · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -4362,6 +4388,7 @@ function tryMine(){
     blockDamageMap.delete(key);
     world[idx(bx,by,bz)] = B.AIR;
     markDirty(oldType);
+    mpSendBlock(bx,by,bz,B.AIR);
     stats.mined++; score += 1;if(worldMode==='survival')missionProgress('mined');
     let dropId = null;
     if(oldType === B.WOOD) dropId = 'wood';
@@ -4412,6 +4439,7 @@ function tryPlace(){
   if(existing !== B.AIR && existing !== B.WATER) return;
   world[idx(nx,ny,nz)] = info.block;
   markDirty(info.block);
+  mpSendBlock(nx,ny,nz,info.block);
   stats.placed++; score += 1;
   playSound('place');
   if(!player.creative){
@@ -4571,6 +4599,7 @@ function tryAttack(){
     if(to.distanceTo(closest) < Math.max(weaponInfo && weaponInfo.type==='mace' ? 1.70 : 1.25,m.def.size * (weaponInfo && weaponInfo.type==='mace' ? 1.45 : 1.25))){ hitDist = t; hitTarget = m; hitType = 'mob'; }
   }
 
+  if(mpTryHitRemote(origin,dir,weaponReach,hitDist))return;
   if(hitTarget){
     let dmg = 3;
     if(item && ITEMS[item.id] && ITEMS[item.id].dmg) dmg = ITEMS[item.id].dmg;
@@ -5686,6 +5715,7 @@ function prettyTravel(name){
 let starterKitClaimedThisSession=false;
 /* ===== WORLD SETUP ===== */
 function setupWorld(mode){
+  if(mpSocket)mpDisconnect('Switched worlds');
   if(worldReady){if(worldMode==='pvp')savePvPProgress();else saveAdventure();}portalCooldown=Math.max(portalCooldown,3);
   const previousMode=worldMode;
   worldMode = mode;
@@ -6955,6 +6985,218 @@ function updateDinoFps(now){
 }
 applyDinoQuality();
 
+
+/* ===== 4.7 REAL ONLINE MULTIPLAYER BETA =====
+  Requires the optional Node WebSocket server in multiplayer/server.js.
+  Browser clients do not open listening ports and GitHub Pages cannot host the server.
+*/
+let mpSocket=null,mpRoom='',mpOwnId='',mpMode='',mpHost=false,mpReady=false,mpLastState=0,mpWaitingWorld=false;
+const mpPeers=new Map();
+function mpStatus(message){
+ const el=document.getElementById('dcMpStatus');if(el)el.textContent=message;
+}
+function mpSend(msg){
+ if(mpSocket && mpSocket.readyState===WebSocket.OPEN)mpSocket.send(JSON.stringify(msg));
+}
+function mpServerUrl(input){
+ let url=String(input||'').trim();
+ if(/^https:\/\//i.test(url))url='wss://'+url.slice(8);
+ if(/^http:\/\/localhost/i.test(url))url='ws://'+url.slice(7);
+ let parsed;try{parsed=new URL(url);}catch{return null;}
+ if(!['wss:','ws:'].includes(parsed.protocol))return null;
+ if(parsed.protocol==='ws:'&&!['localhost','127.0.0.1'].includes(parsed.hostname))return null;
+ if(parsed.username||parsed.password)return null;
+ if(!parsed.pathname||parsed.pathname==='/')parsed.pathname='/ws';
+ return parsed.href;
+}
+function mpEncodeWorld(){
+ const out=[];
+ for(let i=0;i<world.length;){
+  const v=world[i];let length=1;
+  while(length<65535&&i+length<world.length&&world[i+length]===v)length++;
+  out.push((length>>8)&255,length&255,v);i+=length;
+ }
+ let str='';const size=8192;
+ for(let i=0;i<out.length;i+=size)str+=String.fromCharCode(...out.slice(i,i+size));
+ return btoa(str);
+}
+function mpDecodeWorld(value){
+ if(typeof value!=='string'||value.length>3300000)return null;
+ let raw;try{raw=atob(value);}catch{return null;}
+ if(raw.length%3!==0)return null;
+ const result=new Uint8Array(world.length);let cursor=0;
+ for(let i=0;i<raw.length;i+=3){
+  const n=(raw.charCodeAt(i)<<8)|raw.charCodeAt(i+1),v=raw.charCodeAt(i+2);
+  if(!n||cursor+n>result.length)return null;
+  result.fill(v,cursor,cursor+n);cursor+=n;
+ }
+ return cursor===result.length?result:null;
+}
+function mpApplyWorld(encoded){
+ const decoded=mpDecodeWorld(encoded);
+ if(!decoded){mpStatus('World sync failed. Rejoin the room.');return false;}
+ world.set(decoded);blockDamageMap.clear();
+ clearAllMeshes();buildAllMeshes();
+ if(worldMode==='survival')buildDecorations();
+ showToast('🌍 Shared world loaded!','🌍');
+ return true;
+}
+function mpMakeAvatar(p){
+ if(!p||!p.id||p.id===mpOwnId||mpPeers.has(p.id))return;
+ const g=new THREE.Group();
+ const body=new THREE.Mesh(new THREE.BoxGeometry(.68,.9,.38),new THREE.MeshLambertMaterial({color:0x23bdce}));
+ body.position.y=1.22;g.add(body);
+ const head=new THREE.Mesh(new THREE.BoxGeometry(.54,.55,.53),new THREE.MeshLambertMaterial({color:0xffd3a5}));
+ head.position.y=2.04;g.add(head);
+ const legs=new THREE.Mesh(new THREE.BoxGeometry(.52,.75,.35),new THREE.MeshLambertMaterial({color:0x384fa0}));
+ legs.position.y=.42;g.add(legs);
+ const face=new THREE.Mesh(new THREE.BoxGeometry(.32,.09,.03),new THREE.MeshBasicMaterial({color:0x23313b}));
+ face.position.set(0,2.02,-.28);g.add(face);
+ const canvas=document.createElement('canvas');canvas.width=256;canvas.height=48;
+ const ctx=canvas.getContext('2d');ctx.fillStyle='rgba(6,16,27,.82)';ctx.fillRect(0,0,256,48);
+ ctx.font='bold 23px system-ui';ctx.fillStyle='#e5ffff';ctx.textAlign='center';
+ ctx.fillText(String(p.name||'Explorer').slice(0,18),128,32);
+ const tex=new THREE.CanvasTexture(canvas);
+ const label=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+ label.position.set(0,2.85,0);label.scale.set(2.8,.53,1);g.add(label);
+ g.position.set(p.x||40,p.y||23,p.z||40);
+ scene.add(g);
+ mpPeers.set(p.id,{g,tx:g.position.x,ty:g.position.y,tz:g.position.z,ry:0,name:p.name||'Explorer',hp:20});
+}
+function mpRemoveAvatar(id){
+ const p=mpPeers.get(id);if(!p)return;
+ scene.remove(p.g);
+ p.g.traverse(o=>{
+  if(o.geometry)o.geometry.dispose();
+  if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}
+ });
+ mpPeers.delete(id);
+}
+function mpUpdateBadge(){
+ const el=document.getElementById('dcMpBadge');
+ el.style.display=mpReady?'block':'none';
+ el.textContent=mpReady?'🌐 '+mpRoom+' · '+(mpPeers.size+1)+'/8 · '+(mpMode==='pvp'?'PvP':'Co-op'):'';
+ const btn=document.getElementById('dcMpLaunch');
+ btn.textContent=mpReady?'🌐 '+(mpPeers.size+1)+' ONLINE':'🌐 MULTIPLAYER';
+}
+function mpDisconnect(reason){
+ const old=mpSocket;mpSocket=null;mpReady=false;mpHost=false;mpOwnId='';mpRoom='';mpMode='';mpWaitingWorld=false;
+ if(old)try{old.close();}catch(e){}
+ for(const id of Array.from(mpPeers.keys()))mpRemoveAvatar(id);
+ mpUpdateBadge();
+ mpStatus(reason||'Disconnected — offline single-player is available.');
+}
+function mpConnect(action){
+ if(!worldReady||!['survival','pvp'].includes(worldMode)){
+  mpStatus('Enter Survival or PvP first, then create or join a room.');return;
+ }
+ const url=mpServerUrl(document.getElementById('dcMpServer').value);
+ if(!url){mpStatus('Enter a secure wss:// WebSocket server. See multiplayer/README.md.');return;}
+ const rawName=document.getElementById('dcMpName').value;
+ const name=rawName.replace(/[^a-zA-Z0-9 _-]/g,'').trim().slice(0,18)||'Explorer';
+ const code=document.getElementById('dcMpCode').value.trim().toUpperCase();
+ if(action==='join'&&!/^[A-HJ-NP-Z2-9]{8}$/.test(code)){mpStatus('Enter an 8-character room code.');return;}
+ mpDisconnect('Connecting...');
+ try{localStorage.setItem('dinocraft_mp_url',url);localStorage.setItem('dinocraft_mp_name',name);}catch(e){}
+ const ws=new WebSocket(url);
+ mpSocket=ws;mpMode=worldMode;mpHost=action==='create';
+ ws.onopen=()=>{if(mpSocket!==ws)return;mpSend({t:action,mode:worldMode,name,code});mpStatus('Connected to server. Joining '+worldMode+' room...');};
+ ws.onerror=()=>{if(mpSocket===ws)mpStatus('Could not reach multiplayer server. Check URL, deployment and WSS.');};
+ ws.onclose=()=>{if(mpSocket===ws)mpDisconnect('Connection closed. You are back in single-player.');};
+ ws.onmessage=event=>{
+  if(mpSocket!==ws)return;
+  let m;try{m=JSON.parse(event.data);}catch{return;}
+  if(!m||typeof m.t!=='string')return;
+  if(m.t==='error'){mpStatus('Server: '+String(m.message||'Error'));return;}
+  if(m.t==='joined'){
+   mpReady=true;mpOwnId=m.id;mpRoom=m.code;mpMode=m.mode;
+   document.getElementById('dcMpCode').value=mpRoom;
+   if(Array.isArray(m.players))for(const p of m.players)mpMakeAvatar(p);
+   if(typeof m.world==='string'){
+    mpWaitingWorld=!mpApplyWorld(m.world);
+    if(!mpWaitingWorld && m.players && m.players.length){
+     const host=m.players[0];player.pos.set(Math.min(78,host.x+2),host.y+2,Math.min(78,host.z+2));player.vel.set(0,0,0);
+    }
+   }else if(mpHost){
+    mpWaitingWorld=true;
+    mpStatus('Room '+mpRoom+' created. Uploading shared terrain...');
+    mpSend({t:'world',data:mpEncodeWorld()});
+   } else {mpWaitingWorld=true;mpStatus('Room '+mpRoom+' joined. Waiting for host world...');}
+   mpUpdateBadge();
+   if(!mpWaitingWorld)mpStatus('Connected! Share room code '+mpRoom+' with friends. Keep your nickname private.');
+   showToast('🌐 Multiplayer room '+mpRoom,'🌐');
+  }else if(m.t==='world'){
+   mpWaitingWorld=!mpApplyWorld(m.world);
+   if(!mpWaitingWorld)mpStatus('Shared world synced. Room '+mpRoom);
+  }else if(m.t==='world_ok'){
+   mpWaitingWorld=false;mpStatus('Room '+mpRoom+' ready. Share the code with friends!');
+  }else if(m.t==='peer'){
+   mpMakeAvatar(m.player);mpUpdateBadge();showToast('👋 '+String(m.player?.name||'Friend')+' joined!','🌐');
+  }else if(m.t==='left'){
+   mpRemoveAvatar(m.id);mpUpdateBadge();
+  }else if(m.t==='state'){
+   const p=m.player,peer=mpPeers.get(p?.id);
+   if(peer&&[p.x,p.y,p.z,p.yaw].every(Number.isFinite)){
+    peer.tx=p.x;peer.ty=p.y;peer.tz=p.z;peer.ry=p.yaw;peer.hp=p.hp;
+   }
+  }else if(m.t==='block'){
+   if(!mpWaitingWorld && [m.x,m.y,m.z,m.type].every(Number.isInteger) && m.x>=0&&m.x<WORLD_SIZE&&m.y>=0&&m.y<WORLD_HEIGHT&&m.z>=0&&m.z<WORLD_SIZE){
+    const at=idx(m.x,m.y,m.z),old=world[at];
+    if(old!==m.type){world[at]=m.type;markDirty(old);markDirty(m.type);}
+   }
+  }else if(m.t==='hit' && mpMode==='pvp'){
+   playerHurt(5,{type:'fighter',name:String(m.from||'Player'),weapon:'iron_sword'});
+   showToast('⚔️ '+String(m.from||'Player')+' hit you!','⚔️');
+  }else if(m.t==='hit_ok')showToast('⚔️ Hit '+String(m.name||'player')+'!','⚔️');
+ };
+}
+function mpSendBlock(x,y,z,type){
+ if(mpReady&&!mpWaitingWorld)mpSend({t:'block',x,y,z,type});
+}
+function mpTryHitRemote(origin,dir,reach,nearest){
+ if(!mpReady||mpWaitingWorld||mpMode!=='pvp')return false;
+ let target=null,closest=Math.min(nearest,reach,5.2);
+ for(const [id,p] of mpPeers){
+  const center=new THREE.Vector3(p.g.position.x,p.g.position.y+1.5,p.g.position.z);
+  const to=center.sub(origin),distance=to.dot(dir);
+  if(distance<0||distance>=closest)continue;
+  if(to.distanceTo(dir.clone().multiplyScalar(distance))<.85){target=id;closest=distance;}
+ }
+ if(!target)return false;
+ mpSend({t:'hit',id:target});
+ spawnHitSparks(origin.x+dir.x*closest,origin.y+dir.y*closest,origin.z+dir.z*closest,0x69eaff,10);
+ playSound('hit');return true;
+}
+function mpUpdate(dt){
+ if(!mpReady)return;
+ for(const p of mpPeers.values()){
+  const alpha=Math.min(1,dt*12);
+  p.g.position.x+=(p.tx-p.g.position.x)*alpha;
+  p.g.position.y+=(p.ty-p.g.position.y)*alpha;
+  p.g.position.z+=(p.tz-p.g.position.z)*alpha;
+  p.g.rotation.y+=Math.atan2(Math.sin(p.ry-p.g.rotation.y),Math.cos(p.ry-p.g.rotation.y))*alpha;
+ }
+ if(mpWaitingWorld||!worldReady||player.dead)return;
+ const now=performance.now();
+ if(now-mpLastState<100)return;
+ mpLastState=now;
+ mpSend({t:'state',x:player.pos.x,y:player.pos.y,z:player.pos.z,yaw:player.yaw});
+}
+document.getElementById('dcMpLaunch').addEventListener('click',()=>{
+ document.getElementById('dcMpPanel').style.display='flex';
+});
+document.getElementById('dcMpClose').addEventListener('click',()=>{
+ document.getElementById('dcMpPanel').style.display='none';
+});
+document.getElementById('dcMpCreate').addEventListener('click',()=>mpConnect('create'));
+document.getElementById('dcMpJoin').addEventListener('click',()=>mpConnect('join'));
+document.getElementById('dcMpDisconnect').addEventListener('click',()=>mpDisconnect('Left the room.'));
+try{
+ document.getElementById('dcMpServer').value=localStorage.getItem('dinocraft_mp_url')||'';
+ document.getElementById('dcMpName').value=localStorage.getItem('dinocraft_mp_name')||'Explorer';
+}catch(e){}
+window.addEventListener('pagehide',()=>{if(mpSocket)mpSocket.close();});
+
 /* ===== MAIN LOOP ===== */
 let lastTime = performance.now() / 1000;
 function animate(){
@@ -6978,6 +7220,7 @@ function animate(){
   const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
   const simDt=simPaused?0:dt;
   if(worldReady&&simDt>0)dinoUnsavedSeconds+=simDt;
+  mpUpdate(simDt);
   updateSky(simDt);
   if(worldReady){ saveElapsed += dt; if(saveElapsed > 30){saveElapsed=0;if(worldMode==='pvp')savePvPProgress();else saveAdventure();saveBank();snapshotDinoRecords();} }
   if(!invOpen && !creativeOpen && !adminOpen && !modalOpen && document.getElementById('prettyJournal')?.style.display!=='flex' && document.getElementById('cityMarket').style.display!=='flex' && !playerDead){
