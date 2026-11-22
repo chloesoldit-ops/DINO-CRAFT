@@ -68,7 +68,20 @@ async function run(){
  send(b,{t:'mob_hit',id:'m1'});
  assert.equal((await reply).damage,6);
  a.close();b.close();
- console.log('PASS create/join, world sync, movement, blocks, co-op monsters and hit relay');
+ const c=await open(),d=await open();
+ reply=wait(c,m=>m.t==='joined');
+ send(c,{t:'create',mode:'pvp',name:'DuelistA'});
+ const arena=await reply;
+ reply=wait(c,m=>m.t==='world_ok');send(c,{t:'world',data:compressedEmptyWorld()});await reply;
+ reply=wait(d,m=>m.t==='joined');send(d,{t:'join',code:arena.code,mode:'pvp',name:'DuelistB'});
+ const opponent=await reply;
+ reply=wait(c,m=>m.t==='state');
+ send(d,{t:'state',x:40,y:23,z:42,yaw:0});await reply;
+ const gotHit=wait(d,m=>m.t==='hit');
+ send(c,{t:'hit',id:opponent.id});
+ assert.equal((await gotHit).damage,5);
+ c.close();d.close();
+ console.log('PASS create/join, world sync, movement, blocks, co-op mobs, PvP hit relay');
 }
 run().catch(err=>{console.error(err);process.exitCode=1;}).finally(()=>{
  for(const ws of clients)try{ws.terminate();}catch{}
