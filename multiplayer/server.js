@@ -48,7 +48,7 @@ function join(ws,req) {
   let room;
   if(req.t==='create'){
     const k=code();
-    room={code:k,mode,players:new Map(),world:null,created:Date.now()};
+    room={code:k,mode,players:new Map(),world:null,mobs:new Map(),lastMobs:0,created:Date.now()};
     rooms.set(k,room);
   } else {
     const k=String(req.code||'').trim().toUpperCase();
@@ -58,7 +58,7 @@ function join(ws,req) {
   }
   if(room.players.size>=LIMIT)return fail(ws,'Room is full (8 players).');
   const id=crypto.randomUUID().slice(0,8);
-  const p={id,ws,room,name:safeName(req.name),x:40,y:23,z:40,yaw:0,hp:20,lastMove:0,lastAttack:0};
+  const p={id,ws,room,name:safeName(req.name),x:40,y:23,z:40,yaw:0,hp:20,lastMove:0,lastAttack:0,lastMobAttack:0};
   const others=Array.from(room.players.values(),info);
   room.players.set(id,p);ws.player=p;
   send(ws,{t:'joined',code:room.code,id,mode:room.mode,players:others,world:room.world?rleEncode(room.world):null});
@@ -108,6 +108,31 @@ wss.on('connection',(ws,req)=>{
       if(room.world[idx]===type)return;
       room.world[idx]=type;
       broadcast(room,{t:'block',x,y,z,type},ws);
+    } else if(m.t==='mobs'){
+      // Only the first connected room member simulates the shared creatures.
+      if(!room.world||Array.from(room.players.keys())[0]!==p.id||now-room.lastMobs<180)return;
+      if(!Array.isArray(m.mobs)||m.mobs.length>48)return;
+      const clean=[],snapshot=new Map();
+      for(const item of m.mobs){
+        if(!item||typeof item.id!=='string'||!/^[a-zA-Z0-9_-]{1,18}$/.test(item.id))continue;
+        if(typeof item.type!=='string'||!/^[a-z_]{1,18}$/.test(item.type))continue;
+        if(![item.x,item.y,item.z,item.hp,item.maxHp].every(x=>typeof x==='number'&&Number.isFinite(x)))continue;
+        if(item.x<0||item.x>WORLD_X||item.z<0||item.z>WORLD_Z||item.y< -25||item.y>WORLD_Y+40)continue;
+        if(item.maxHp<=0||item.maxHp>50000||item.hp<0||item.hp>item.maxHp)continue;
+        const v={id:item.id,type:item.type,x:item.x,y:item.y,z:item.z,hp:item.hp,maxHp:item.maxHp};
+        clean.push(v);snapshot.set(v.id,v);
+      }
+      room.mobs=snapshot;room.lastMobs=now;
+      broadcast(room,{t:'mobs',mobs:clean},ws);
+    } else if(m.t==='mob_hit'){
+      if(!room.world||now-p.lastMobAttack<350)return;
+      const mob=room.mobs.get(String(m.id||''));
+      if(!mob||Math.hypot(mob.x-p.x,mob.y-p.y,mob.z-p.z)>7)return;
+      const host=room.players.values().next().value;
+      if(!host||host.id===p.id)return;
+      p.lastMobAttack=now;
+      send(host.ws,{t:'mob_hit',id:mob.id,damage:6,from:p.name});
+      send(ws,{t:'mob_hit_ok',name:mob.type});
     } else if(m.t==='hit'){
       if(room.mode!=='pvp'||now-p.lastAttack<380)return;
       const victim=room.players.get(String(m.id||''));
@@ -121,8 +146,11 @@ wss.on('connection',(ws,req)=>{
   });
   ws.on('close',()=>{
     const p=ws.player;if(!p)return;
+    const wasHost=Array.from(p.room.players.keys())[0]===p.id;
     p.room.players.delete(p.id);
+    if(wasHost){p.room.mobs.clear();p.room.lastMobs=0;}
     broadcast(p.room,{t:'left',id:p.id});
+    if(wasHost&&p.room.players.size){const successor=p.room.players.values().next().value;send(successor.ws,{t:'host'});}
     if(!p.room.players.size)rooms.delete(p.room.code);
   });
   ws.on('error',()=>{});
