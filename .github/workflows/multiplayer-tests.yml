@@ -1,0 +1,27 @@
+name: Multiplayer server checks
+on:
+  push:
+    paths:
+      - 'multiplayer/**'
+      - '.github/workflows/multiplayer-tests.yml'
+  pull_request:
+    paths:
+      - 'multiplayer/**'
+      - '.github/workflows/multiplayer-tests.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: multiplayer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install WebSocket dependency
+        run: npm install --no-audit --no-fund
+      - name: Check server syntax
+        run: npm run check
+      - name: Test two-player rooms, blocks and PvP
+        run: npm test
