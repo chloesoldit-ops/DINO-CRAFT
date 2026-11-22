@@ -8,6 +8,7 @@ This is a **separate Roblox (Luau) version** of DinoCraft, not a conversion of t
 - A generated dinosaur arena with walls, trees, a spawn point and blocky dinosaurs.
 - Raptors and recurring **Tyrant Rex boss waves** with scaling health.
 - Desktop click/F attack and a large mobile **ATTACK** button.
+- **Opt-in PvP duels:** both participants must turn on PvP in the HUD before players can damage one another; the server validates hits.
 - Server-validated dinosaur damage, coins for kills, and coin persistence (DataStore).
 - Leaderboard stats `DinoCoins` and `DinoKills`.
 - An optional cosmetic shop: **Blue Glow (60 earned DinoCoins)**, and optional **celebration fireworks** as a Developer Product when configured.
@@ -20,7 +21,7 @@ This is a working-code **starter prototype**. It is not yet a complete port of a
 2. In **View → Explorer**, find **ServerScriptService**. Insert a **Script** named `DinoCraftServer`. Open `ServerScriptService/DinoCraftServer.server.luau` in GitHub, copy the entire text and paste it into this Script.
 3. In Explorer, open **StarterPlayer → StarterPlayerScripts**. Insert a **LocalScript** named `DinoCraftClient`. Paste the contents of `StarterPlayerScripts/DinoCraftClient.client.luau` into it.
 4. Press **Play**. The server script builds the arena and dinosaur waves. Move with Roblox movement keys, aim at dinosaurs, click/F or use the mobile ATTACK button.
-5. For a local multiplayer test, use Roblox Studio's **Test → Clients and Servers** controls and launch two or more clients. Verify that both players see the same dinos, waves and leaderboard.
+5. For a local multiplayer test, use Roblox Studio's **Test → Clients and Servers** controls and launch two or more clients. Verify that both players see the same dinos, waves and leaderboard. Also turn **PvP: ON** for both players, test a duel, then turn it off for one player and verify attacks no longer hurt that player.
 6. Publish through **File → Publish to Roblox** when testing is satisfactory. Set the correct content maturity and privacy settings in Creator Hub.
 
 Alternatively use [Rojo](https://rojo.space/) to sync the `roblox/default.project.json` project with Studio. Rojo is optional; manual paste is enough.
@@ -65,5 +66,5 @@ With this value **no Robux purchase is offered**. To enable cosmetic fireworks:
 1. Test two clients in Studio and fix any runtime errors.
 2. Improve dinosaur rigging, animation, and boss battle presentation.
 3. Add co-op building, inventory, crafting and save slots.
-4. Add opt-in PvP with validated damage and anti-exploit rules.
+4. Extend opt-in PvP with hit effects, round rules, clearer respawns and stronger anti-exploit protection.
 5. Publish a private test experience first, then decide whether to make it public.
