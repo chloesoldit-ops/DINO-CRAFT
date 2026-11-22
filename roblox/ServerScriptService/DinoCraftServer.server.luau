@@ -31,6 +31,9 @@ gameMessage.Parent = events
 local fireworkRequest = events:FindFirstChild("FireworksInfo") or Instance.new("RemoteFunction")
 fireworkRequest.Name = "FireworksInfo"
 fireworkRequest.Parent = events
+local cosmeticRequest=events:FindFirstChild("FreeCosmetic") or Instance.new("RemoteEvent")
+cosmeticRequest.Name="FreeCosmetic"
+cosmeticRequest.Parent=events
 fireworkRequest.OnServerInvoke = function(_player)
     return FIREWORK_PRODUCT_ID
 end
@@ -40,6 +43,7 @@ arena.Name = "DinoCraftArena"
 arena.Parent = Workspace
 local dinosaurs = {}
 local attackTimers = {}
+local cosmeticCooldowns = {}
 local wave = 0
 local nextWaveTime = 0
 local phase = "waiting"
@@ -286,6 +290,36 @@ local function fireworks(player: Player)
     sendAll(player.DisplayName .. " launched celebration fireworks!")
 end
 
+-- Free cosmetic alternative: a glowing player trail purchased with earned DinoCoins.
+-- This purchase never needs Robux and does not affect combat power.
+cosmeticRequest.OnServerEvent:Connect(function(player: Player)
+    local now=os.clock()
+    if now-(cosmeticCooldowns[player] or 0)<1 then return end
+    cosmeticCooldowns[player]=now
+    local stats=player:FindFirstChild("leaderstats")
+    local coins=stats and stats:FindFirstChild("DinoCoins")
+    local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not coins or not coins:IsA("IntValue") or not root or not root:IsA("BasePart") then return end
+    if root:FindFirstChild("DinoBlueTrail") then
+        gameMessage:FireClient(player,"Your blue glow is already active!")
+        return
+    end
+    if coins.Value<60 then
+        gameMessage:FireClient(player,"Earn 60 DinoCoins defeating dinosaurs to unlock Blue Glow.")
+        return
+    end
+    coins.Value-=60
+    local particles=Instance.new("ParticleEmitter")
+    particles.Name="DinoBlueTrail"
+    particles.Texture="rbxasset://textures/particles/sparkles_main.dds"
+    particles.Rate=13
+    particles.Lifetime=NumberRange.new(.35,.8)
+    particles.Speed=NumberRange.new(0,2)
+    particles.Color=ColorSequence.new(Color3.fromRGB(48,218,255))
+    particles.Parent=root
+    gameMessage:FireClient(player,"Blue Glow activated for this life! (60 earned DinoCoins)")
+end)
+
 -- Purchases are always granted from the server after Roblox confirms the receipt.
 -- Each PurchaseId is recorded to prevent accidentally granting twice.
 MarketplaceService.ProcessReceipt = function(receipt)
@@ -321,6 +355,7 @@ Players.PlayerAdded:Connect(function(player)
 end)
 Players.PlayerRemoving:Connect(function(player)
     attackTimers[player]=nil
+    cosmeticCooldowns[player]=nil
     local stats=player:FindFirstChild("leaderstats")
     local coins=stats and stats:FindFirstChild("DinoCoins")
     if coins and coins:IsA("IntValue") then
