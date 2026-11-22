@@ -7183,6 +7183,10 @@ function mpConnect(action){
     if(target){target.hp-=6;target.hit=.35;spawnHitSparks(target.pos.x,target.pos.y+1,target.pos.z,0x5df6dc,8);}}
   }else if(m.t==='mob_hit_ok'){
    showToast('🦖 Hit '+String(m.name||'creature')+' with your team!','⚔️');
+  }else if(m.t==='mob_warning'){
+   showCombatAlert('⚠️ '+String(m.name||'DINO').toUpperCase()+' ATTACK — DODGE!',.7);
+  }else if(m.t==='mob_attack' && mpMode==='survival'){
+   playerHurt(Math.max(0,Math.min(12,Number(m.damage)||3)),{type:'mob',name:String(m.name||'dinosaur'),weapon:'claws'});
   }else if(m.t==='world_ok'){
    mpWaitingWorld=false;mpStatus('Room '+mpRoom+' ready. Share the code with friends!');
   }else if(m.t==='peer'){
@@ -7316,7 +7320,7 @@ function animate(){
     updatePlayer(dt);
     updatePrettyWorld(dt);
     updateNetherExploration(dt);
-    updateDino44Expedition(dt);
+    if(!(mpReady&&!mpHost&&!mpWaitingWorld))updateDino44Expedition(dt);
     if(!(mpReady&&!mpHost&&!mpWaitingWorld))updateMobs(dt);
     updateFighterBots(dt);
     updateCombatAlert();
