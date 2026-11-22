@@ -1,0 +1,26 @@
+name: Classic browser smoke test
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'tests/classic-smoke.cjs'
+      - '.github/workflows/classic-browser-tests.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/classic-smoke.cjs'
+      - '.github/workflows/classic-browser-tests.yml'
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: npm install --no-save playwright@1.56.0
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify Classic game boot and multiplayer buttons
+        run: node tests/classic-smoke.cjs
