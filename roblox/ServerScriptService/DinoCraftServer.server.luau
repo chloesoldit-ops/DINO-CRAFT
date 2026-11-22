@@ -34,6 +34,12 @@ fireworkRequest.Parent = events
 local cosmeticRequest=events:FindFirstChild("FreeCosmetic") or Instance.new("RemoteEvent")
 cosmeticRequest.Name="FreeCosmetic"
 cosmeticRequest.Parent=events
+local duelToggle=events:FindFirstChild("DuelToggle") or Instance.new("RemoteEvent")
+duelToggle.Name="DuelToggle"
+duelToggle.Parent=events
+local duelHit=events:FindFirstChild("DuelHit") or Instance.new("RemoteEvent")
+duelHit.Name="DuelHit"
+duelHit.Parent=events
 fireworkRequest.OnServerInvoke = function(_player)
     return FIREWORK_PRODUCT_ID
 end
@@ -44,6 +50,7 @@ arena.Parent = Workspace
 local dinosaurs = {}
 local attackTimers = {}
 local cosmeticCooldowns = {}
+local duelCooldowns={}
 local wave = 0
 local nextWaveTime = 0
 local phase = "waiting"
@@ -290,6 +297,36 @@ local function fireworks(player: Player)
     sendAll(player.DisplayName .. " launched celebration fireworks!")
 end
 
+-- Optional PvP duels: BOTH players must explicitly enable duels.
+-- The server validates opponent identity, range, direction and attack cooldown.
+duelToggle.OnServerEvent:Connect(function(player: Player)
+    local enabled=not (player:GetAttribute("DinoDuel") == true)
+    player:SetAttribute("DinoDuel",enabled)
+    gameMessage:FireClient(player,enabled and "⚔️ Duels ON — other duelists can fight you!" or "🛡️ Duels OFF — other players cannot hurt you.")
+end)
+duelHit.OnServerEvent:Connect(function(player: Player, targetUserId: any)
+    if typeof(targetUserId)~="number" or targetUserId==player.UserId then return end
+    if player:GetAttribute("DinoDuel")~=true then return end
+    local victim=Players:GetPlayerByUserId(targetUserId)
+    if not victim or victim:GetAttribute("DinoDuel")~=true then return end
+    local attackerCharacter=player.Character
+    local victimCharacter=victim.Character
+    local from=attackerCharacter and attackerCharacter:FindFirstChild("HumanoidRootPart")
+    local toward=victimCharacter and victimCharacter:FindFirstChild("HumanoidRootPart")
+    local attackerHumanoid=attackerCharacter and attackerCharacter:FindFirstChildOfClass("Humanoid")
+    local victimHumanoid=victimCharacter and victimCharacter:FindFirstChildOfClass("Humanoid")
+    if not from or not from:IsA("BasePart") or not toward or not toward:IsA("BasePart") then return end
+    if not attackerHumanoid or not victimHumanoid or attackerHumanoid.Health<=0 or victimHumanoid.Health<=0 then return end
+    local delta=toward.Position-from.Position
+    if delta.Magnitude>12 or delta.Magnitude<.2 then return end
+    if from.CFrame.LookVector:Dot(delta.Unit)<-.4 then return end
+    local now=os.clock()
+    if now-(duelCooldowns[player] or 0)<.65 then return end
+    duelCooldowns[player]=now
+    victimHumanoid:TakeDamage(14)
+    gameMessage:FireClient(player,"⚔️ Duel hit on "..victim.DisplayName)
+end)
+
 -- Free cosmetic alternative: a glowing player trail purchased with earned DinoCoins.
 -- This purchase never needs Robux and does not affect combat power.
 cosmeticRequest.OnServerEvent:Connect(function(player: Player)
@@ -341,6 +378,7 @@ MarketplaceService.ProcessReceipt = function(receipt)
 end
 
 Players.PlayerAdded:Connect(function(player)
+    player:SetAttribute("DinoDuel",false)
     local leaderstats=Instance.new("Folder")
     leaderstats.Name="leaderstats"
     leaderstats.Parent=player
@@ -356,6 +394,7 @@ end)
 Players.PlayerRemoving:Connect(function(player)
     attackTimers[player]=nil
     cosmeticCooldowns[player]=nil
+    duelCooldowns[player]=nil
     local stats=player:FindFirstChild("leaderstats")
     local coins=stats and stats:FindFirstChild("DinoCoins")
     if coins and coins:IsA("IntValue") then
