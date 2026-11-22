@@ -1094,7 +1094,7 @@ function sanitizeInventory(data){if(!Array.isArray(data))return null;return Arra
 const SURVIVAL_WORLD_SAVE='dinocraft_revolution_survival_world_v3';
 const d42WorldKey=()=>DINO44_EXPEDITION_SLOT?SURVIVAL_WORLD_SAVE+'_expedition44':DINO42_PARADISE_SLOT?SURVIVAL_WORLD_SAVE+'_paradise42':SURVIVAL_WORLD_SAVE;
 function saveSurvivalWorld(){
- if(worldMode!=='survival')return;
+ if(worldMode!=='survival'||(mpReady&&!mpHost))return;
  try{
    const parts=[];let i=0;
    while(i<world.length){const t=world[i];let count=1;while(count<255&&i+count<world.length&&world[i+count]===t)count++;parts.push(String.fromCharCode(count,t));i+=count;}
@@ -1109,7 +1109,7 @@ function loadSurvivalWorld(){
  if(j!==decoded.length)return null;if(d.version===3){for(let y=0;y<oldHeight;y++){const slice=WORLD_SIZE*WORLD_SIZE;world.set(decoded.subarray(y*slice,(y+1)*slice),y*slice);}}else world.set(decoded);return Array.isArray(d.position)&&d.position.length===3?d.position:null;
  }catch(e){return null;}
 }
-function saveAdventure(){if(worldMode==='pvp')return;try{localStorage.setItem(d42InventoryKey(),JSON.stringify({items:inventory.slice(0,36),hotbar,armour,version:3}));}catch(e){}saveSurvivalWorld();}
+function saveAdventure(){if(worldMode==='pvp'||(mpReady&&!mpHost))return;try{localStorage.setItem(d42InventoryKey(),JSON.stringify({items:inventory.slice(0,36),hotbar,armour,version:3}));}catch(e){}saveSurvivalWorld();}
 function loadAdventure(){try{const saved=JSON.parse(localStorage.getItem(d42InventoryKey())||'null');const items=sanitizeInventory(saved?.items);if(!items)return false;inventory.length=36;for(let i=0;i<36;i++)inventory[i]=items[i];hotbar=Math.max(0,Math.min(8,Number(saved.hotbar)||0));for(const part of Object.keys(armour))armour[part]=(saved.armour&&ITEMS[saved.armour[part]]?.part===part)?saved.armour[part]:null;return true;}catch(e){return false;}}
 function resetInventory(){inventory.length=36;for(let i=0;i<36;i++)inventory[i]=null;hotbar=0;}
 
@@ -6995,6 +6995,7 @@ let mpSocket=null,mpRoom='',mpOwnId='',mpMode='',mpHost=false,mpReady=false,mpLa
 const mpPeers=new Map();
 const mpRemoteMobs=new Map();
 let mpLastMobs=0,mpMobSequence=0,mpMobSnapshotLoaded=false;
+let mpWorldBackup=null,mpPositionBackup=null;
 function mpStatus(message){
  const el=document.getElementById('dcMpStatus');if(el)el.textContent=message;
 }
@@ -7069,6 +7070,7 @@ function mpApplyMobSnapshot(snapshot){
 function mpApplyWorld(encoded){
  const decoded=mpDecodeWorld(encoded);
  if(!decoded){mpStatus('World sync failed. Rejoin the room.');return false;}
+ if(!mpWorldBackup){mpWorldBackup=world.slice();mpPositionBackup=player.pos.clone();}
  world.set(decoded);blockDamageMap.clear();
  clearAllMeshes();buildAllMeshes();
  if(worldMode==='survival')buildDecorations();
@@ -7117,6 +7119,12 @@ function mpDisconnect(reason){
  const old=mpSocket;const wasGuest=mpReady&&!mpHost;
  mpSocket=null;mpReady=false;mpHost=false;mpOwnId='';mpRoom='';mpMode='';mpWaitingWorld=false;
  mpClearRemoteMobs();
+ if(mpWorldBackup){
+  world.set(mpWorldBackup);mpWorldBackup=null;blockDamageMap.clear();
+  clearAllMeshes();buildAllMeshes();
+  if(worldMode==='survival')buildDecorations();
+  if(mpPositionBackup){player.pos.copy(mpPositionBackup);player.vel.set(0,0,0);mpPositionBackup=null;}
+ }
  if(old)try{old.close();}catch(e){}
  for(const id of Array.from(mpPeers.keys()))mpRemoveAvatar(id);
  mpUpdateBadge();
