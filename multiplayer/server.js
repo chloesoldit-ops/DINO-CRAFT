@@ -8,6 +8,7 @@ const PORT = Number(process.env.PORT || 3000);
 const LIMIT = 8, WORLD_X = 80, WORLD_Y = 128, WORLD_Z = 80, WORLD_BYTES = WORLD_X*WORLD_Y*WORLD_Z;
 const rooms = new Map();
 const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const hostileTypes=new Set(['zombie','skeleton','spider','raptor','triceratops','rex','golem','dragon','sporeburst','voidmoth','blaze','piglin','end_guardian']);
 function code() {
   let k;
   do { k = Array.from(crypto.randomBytes(8),b=>alphabet[b%alphabet.length]).join(''); } while(rooms.has(k));
@@ -58,7 +59,7 @@ function join(ws,req) {
   }
   if(room.players.size>=LIMIT)return fail(ws,'Room is full (8 players).');
   const id=crypto.randomUUID().slice(0,8);
-  const p={id,ws,room,name:safeName(req.name),x:40,y:23,z:40,yaw:0,hp:20,lastMove:0,lastAttack:0,lastMobAttack:0};
+  const p={id,ws,room,name:safeName(req.name),x:40,y:23,z:40,yaw:0,hp:20,lastMove:0,lastAttack:0,lastMobAttack:0,nextMobHit:0,mobCharge:null};
   const others=Array.from(room.players.values(),info);
   room.players.set(id,p);ws.player=p;
   send(ws,{t:'joined',code:room.code,id,mode:room.mode,players:others,world:room.world?rleEncode(room.world):null});
@@ -124,6 +125,21 @@ wss.on('connection',(ws,req)=>{
       }
       room.mobs=snapshot;room.lastMobs=now;
       broadcast(room,{t:'mobs',mobs:clean},ws);
+      // Server-checked attack telegraphs for visiting co-op players.
+      for(const guest of room.players.values()){
+        if(guest.id===p.id||now<guest.nextMobHit)continue;
+        const nearby=clean.find(m=>hostileTypes.has(m.type)&&Math.hypot(m.x-guest.x,m.y-guest.y,m.z-guest.z)<(['rex','dragon','golem','triceratops'].includes(m.type)?3.5:2.4));
+        if(!nearby){guest.mobCharge=null;continue;}
+        if(!guest.mobCharge || guest.mobCharge.id!==nearby.id){
+          guest.mobCharge={id:nearby.id,due:now+520};
+          send(guest.ws,{t:'mob_warning',name:nearby.type});continue;
+        }
+        if(now>=guest.mobCharge.due){
+          const damage=['rex','dragon','golem'].includes(nearby.type)?8:['triceratops','blaze'].includes(nearby.type)?5:3;
+          send(guest.ws,{t:'mob_attack',name:nearby.type,damage});
+          guest.nextMobHit=now+1200;guest.mobCharge=null;
+        }
+      }
     } else if(m.t==='mob_hit'){
       if(!room.world||now-p.lastMobAttack<350)return;
       const mob=room.mobs.get(String(m.id||''));
