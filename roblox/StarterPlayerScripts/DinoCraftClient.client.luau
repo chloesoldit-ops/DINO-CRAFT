@@ -13,6 +13,8 @@ local attackEvent=events:WaitForChild("Attack") :: RemoteEvent
 local messageEvent=events:WaitForChild("Message") :: RemoteEvent
 local productInfo=events:WaitForChild("FireworksInfo") :: RemoteFunction
 local freeCosmetic=events:WaitForChild("FreeCosmetic") :: RemoteEvent
+local duelToggle=events:WaitForChild("DuelToggle") :: RemoteEvent
+local duelHit=events:WaitForChild("DuelHit") :: RemoteEvent
 
 local ui=Instance.new("ScreenGui")
 ui.Name="DinoCraftHUD"
@@ -68,6 +70,15 @@ message.Visible=false
 local status=text(ui,"Status","DinoCoins and DinoKills appear in the Roblox leaderboard.",UDim2.new(0,12,1,-62),UDim2.fromOffset(340,46),13,Color3.fromRGB(211,243,255))
 local attackButton=button(ui,"AttackButton","⚔️ ATTACK",UDim2.new(1,-167,1,-115),UDim2.fromOffset(155,85),Color3.fromRGB(178,57,47))
 local shopButton=button(ui,"ShopButton","✨ COSMETIC SHOP",UDim2.new(1,-165,0,12),UDim2.fromOffset(155,45),Color3.fromRGB(61,117,160))
+local duelButton=button(ui,"DuelButton","🛡️ PVP: OFF",UDim2.new(1,-165,0,64),UDim2.fromOffset(155,45),Color3.fromRGB(63,88,118))
+duelButton.Activated:Connect(function()duelToggle:FireServer() end)
+local function updateDuelButton()
+    local enabled=player:GetAttribute("DinoDuel")==true
+    duelButton.Text=enabled and "⚔️ PVP: ON" or "🛡️ PVP: OFF"
+    duelButton.BackgroundColor3=enabled and Color3.fromRGB(178,64,62) or Color3.fromRGB(63,88,118)
+end
+player:GetAttributeChangedSignal("DinoDuel"):Connect(updateDuelButton)
+updateDuelButton()
 local shop=Instance.new("Frame")
 shop.Name="Shop"
 shop.Position=UDim2.new(.5,-195,.5,-145)
@@ -93,6 +104,21 @@ shopButton.Activated:Connect(function()shop.Visible=not shop.Visible end)
 close.Activated:Connect(function()shop.Visible=false end)
 
 local lastAttack=0
+local function aimedModel():Model?
+    local target:Instance?=nil
+    if not UserInputService.TouchEnabled then target=mouse.Target end
+    if not target then
+        local camera=workspace.CurrentCamera
+        if camera then
+            local params=RaycastParams.new()
+            params.FilterType=Enum.RaycastFilterType.Exclude
+            if player.Character then params.FilterDescendantsInstances={player.Character} end
+            local result=workspace:Raycast(camera.CFrame.Position,camera.CFrame.LookVector*100,params)
+            if result then target=result.Instance end
+        end
+    end
+    return target and target:FindFirstAncestorOfClass("Model") or nil
+end
 local function findDinosaur():Model?
     -- Desktop uses mouse aiming; mobile uses the center of the camera.
     local target:Instance?=nil
@@ -125,7 +151,14 @@ local function attack()
         attackButton.BackgroundColor3=Color3.fromRGB(255,130,68)
         TweenService:Create(attackButton,TweenInfo.new(.23),{BackgroundColor3=Color3.fromRGB(178,57,47)}):Play()
     else
-        status.Text="🎯 Aim at a dinosaur before attacking!"
+        local modelTarget=aimedModel()
+        local opponent=modelTarget and Players:GetPlayerFromCharacter(modelTarget)
+        if opponent and opponent~=player and player:GetAttribute("DinoDuel")==true and opponent:GetAttribute("DinoDuel")==true then
+            duelHit:FireServer(opponent.UserId)
+            status.Text="⚔️ Duel attack — both players opted in!"
+        else
+            status.Text="🎯 Aim at a dinosaur, or enable PvP to duel another player."
+        end
     end
 end
 attackButton.Activated:Connect(attack)
