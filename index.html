@@ -4601,6 +4601,7 @@ function tryAttack(){
 
   if(mpTryHitRemote(origin,dir,weaponReach,hitDist))return;
   if(hitTarget){
+    if(hitType==='mob' && mpReady && !mpHost && hitTarget.mpMobId){mpSend({t:'mob_hit',id:hitTarget.mpMobId});spawnHitSparks(hitTarget.pos.x,hitTarget.pos.y+1,hitTarget.pos.z,0x54dfdd,8);playSound('hit');return;}
     let dmg = 3;
     if(item && ITEMS[item.id] && ITEMS[item.id].dmg) dmg = ITEMS[item.id].dmg;
     if(weaponInfo && weaponInfo.type==='tool' && !player.creative){showToast('Delete Wand requires Creative mode','🪄');return;}
@@ -6992,6 +6993,8 @@ applyDinoQuality();
 */
 let mpSocket=null,mpRoom='',mpOwnId='',mpMode='',mpHost=false,mpReady=false,mpLastState=0,mpWaitingWorld=false;
 const mpPeers=new Map();
+const mpRemoteMobs=new Map();
+let mpLastMobs=0,mpMobSequence=0,mpMobSnapshotLoaded=false;
 function mpStatus(message){
  const el=document.getElementById('dcMpStatus');if(el)el.textContent=message;
 }
@@ -7031,6 +7034,37 @@ function mpDecodeWorld(value){
   result.fill(v,cursor,cursor+n);cursor+=n;
  }
  return cursor===result.length?result:null;
+}
+function mpClearRemoteMobs(){
+ for(const m of mpRemoteMobs.values()){
+  scene.remove(m.mesh);
+  const i=mobs.indexOf(m);if(i>=0)mobs.splice(i,1);
+  m.mesh.traverse(o=>{if(o.geometry&&o.geometry!==blockGeo)o.geometry.dispose();if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const mat of mats)mat.dispose();}});
+ }
+ mpRemoteMobs.clear();mpMobSnapshotLoaded=false;
+}
+function mpApplyMobSnapshot(snapshot){
+ if(mpHost||!Array.isArray(snapshot)||mpWaitingWorld)return;
+ if(!mpMobSnapshotLoaded){
+  // The room owner controls mobs; replace independently generated local creatures.
+  for(const m of mobs){scene.remove(m.mesh);m.mesh.traverse(o=>{if(o.geometry&&o.geometry!==blockGeo)o.geometry.dispose();if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const mat of mats)mat.dispose();}});}
+  mobs.length=0;mpRemoteMobs.clear();mpMobSnapshotLoaded=true;
+ }
+ const seen=new Set();
+ for(const p of snapshot){
+  if(!p||!MOB_TYPES[p.type]||typeof p.id!=='string'||!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.z))continue;
+  let mob=mpRemoteMobs.get(p.id);
+  if(!mob){mob=spawnMob(p.type,p.x,p.y,p.z);if(!mob)continue;mob.mpMobId=p.id;mpRemoteMobs.set(p.id,mob);}
+  mob.hp=Math.max(0,p.hp);mob.maxHp=Math.max(1,p.maxHp);
+  mob.mpTargetX=p.x;mob.mpTargetY=p.y;mob.mpTargetZ=p.z;
+  seen.add(p.id);
+ }
+ for(const [id,m] of mpRemoteMobs){
+  if(seen.has(id))continue;
+  scene.remove(m.mesh);const i=mobs.indexOf(m);if(i>=0)mobs.splice(i,1);
+  m.mesh.traverse(o=>{if(o.geometry&&o.geometry!==blockGeo)o.geometry.dispose();if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const mat of mats)mat.dispose();}});
+  mpRemoteMobs.delete(id);
+ }
 }
 function mpApplyWorld(encoded){
  const decoded=mpDecodeWorld(encoded);
@@ -7080,7 +7114,9 @@ function mpUpdateBadge(){
  btn.textContent=mpReady?'🌐 '+(mpPeers.size+1)+' ONLINE':'🌐 MULTIPLAYER';
 }
 function mpDisconnect(reason){
- const old=mpSocket;mpSocket=null;mpReady=false;mpHost=false;mpOwnId='';mpRoom='';mpMode='';mpWaitingWorld=false;
+ const old=mpSocket;const wasGuest=mpReady&&!mpHost;
+ mpSocket=null;mpReady=false;mpHost=false;mpOwnId='';mpRoom='';mpMode='';mpWaitingWorld=false;
+ mpClearRemoteMobs();
  if(old)try{old.close();}catch(e){}
  for(const id of Array.from(mpPeers.keys()))mpRemoveAvatar(id);
  mpUpdateBadge();
@@ -7128,6 +7164,16 @@ function mpConnect(action){
   }else if(m.t==='world'){
    mpWaitingWorld=!mpApplyWorld(m.world);
    if(!mpWaitingWorld)mpStatus('Shared world synced. Room '+mpRoom);
+  }else if(m.t==='host'){
+   mpHost=true;mpMobSnapshotLoaded=false;
+   mpStatus('You are now the room host. Your world controls dinosaurs.');
+  }else if(m.t==='mobs'){
+   mpApplyMobSnapshot(m.mobs);
+  }else if(m.t==='mob_hit'){
+   if(mpHost){const target=mobs.find(x=>x.mpMobId===m.id&&!x.dead);
+    if(target){target.hp-=6;target.hit=.35;spawnHitSparks(target.pos.x,target.pos.y+1,target.pos.z,0x5df6dc,8);}}
+  }else if(m.t==='mob_hit_ok'){
+   showToast('🦖 Hit '+String(m.name||'creature')+' with your team!','⚔️');
   }else if(m.t==='world_ok'){
    mpWaitingWorld=false;mpStatus('Room '+mpRoom+' ready. Share the code with friends!');
   }else if(m.t==='peer'){
@@ -7169,6 +7215,26 @@ function mpTryHitRemote(origin,dir,reach,nearest){
 }
 function mpUpdate(dt){
  if(!mpReady)return;
+ if(mpHost&&!mpWaitingWorld&&worldReady&&performance.now()-mpLastMobs>300){
+  mpLastMobs=performance.now();
+  const snapshot=[];
+  for(const m of mobs){
+   if(m.dead||m.hp<=0||snapshot.length>=40)continue;
+   if(!m.mpMobId)m.mpMobId='m'+(++mpMobSequence);
+   snapshot.push({id:m.mpMobId,type:m.type,x:m.pos.x,y:m.pos.y,z:m.pos.z,hp:m.hp,maxHp:m.maxHp});
+  }
+  mpSend({t:'mobs',mobs:snapshot});
+ }else if(!mpHost&&mpMobSnapshotLoaded){
+  const alpha=Math.min(1,dt*10);
+  for(const m of mpRemoteMobs.values()){
+   m.pos.x+=(m.mpTargetX-m.pos.x)*alpha;
+   m.pos.y+=(m.mpTargetY-m.pos.y)*alpha;
+   m.pos.z+=(m.mpTargetZ-m.pos.z)*alpha;
+   m.mesh.position.copy(m.pos);
+   m.walkPhase+=dt*8;
+   if(m.mesh.userData.tail)m.mesh.userData.tail.rotation.y=Math.sin(m.walkPhase*.35)*.2;
+  }
+ }
  for(const p of mpPeers.values()){
   const alpha=Math.min(1,dt*12);
   p.g.position.x+=(p.tx-p.g.position.x)*alpha;
@@ -7228,10 +7294,10 @@ function animate(){
     updatePrettyWorld(dt);
     updateNetherExploration(dt);
     updateDino44Expedition(dt);
-    updateMobs(dt);
+    if(!(mpReady&&!mpHost&&!mpWaitingWorld))updateMobs(dt);
     updateFighterBots(dt);
     updateCombatAlert();
-    updateDinoArena(dt);
+    if(!(mpReady&&!mpHost&&!mpWaitingWorld))updateDinoArena(dt);
     updateMagicProjectiles(dt);
     updateDragonBattle(dt);
     updateBotProjectiles(dt);
@@ -7240,7 +7306,7 @@ function animate(){
     updateAmbientParticles(dt, lastNightF);
     updateDroppedItems(dt);
     updateXPOrbs(dt);
-    tickSpawn(dt);
+    if(!(mpReady&&!mpHost&&!mpWaitingWorld))tickSpawn(dt);
     checkPortals(dt);
     updateCompass();
     updateBotTargetHUD();
