@@ -1,0 +1,21 @@
+{
+  "name": "DinoCraft Roblox Edition",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "DinoCraftServer": {
+        "$path": "ServerScriptService/DinoCraftServer.server.luau"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "DinoCraftClient": {
+          "$path": "StarterPlayerScripts/DinoCraftClient.client.luau"
+        }
+      }
+    }
+  }
+}
