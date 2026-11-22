@@ -676,9 +676,11 @@ function makeTex(draw, sz){
   draw(c.getContext('2d'), sz);
   const t = new THREE.CanvasTexture(c);
   t.magFilter = THREE.NearestFilter;
-  t.minFilter = dinoSettings.graphics==='low' ? THREE.NearestFilter : THREE.LinearMipmapLinearFilter;
-  t.generateMipmaps = dinoSettings.graphics!=='low';
-  t.anisotropy = dinoSettings.graphics==='ultra' ? Math.min(16,renderer.capabilities.getMaxAnisotropy()) : dinoSettings.graphics==='high' ? Math.min(8,renderer.capabilities.getMaxAnisotropy()) : 1;
+  // Textures are built before settings and renderer are initialized.
+  // Start with safe defaults; applyDinoQuality() upgrades these later.
+  t.minFilter = THREE.NearestFilter;
+  t.generateMipmaps = false;
+  t.anisotropy = 1;
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
@@ -6890,7 +6892,7 @@ function updateDinoFps(now){
  box.classList.toggle('slow',fps<27);
  fpsCount=0;fpsTime=now;
 }
-refreshDinoSettings();
+applyDinoQuality();
 
 /* ===== MAIN LOOP ===== */
 let lastTime = performance.now() / 1000;
