@@ -465,7 +465,7 @@ html.playing #dcBuildStamp{display:block}
 <button id="desktopPause" type="button" aria-label="Pause game">⏸ PAUSE (ESC)</button>
 <div id="fpsDisplay" aria-live="off">FPS: --</div>
 <button type="button" id="dcMuteButton" aria-label="Mute game audio" aria-pressed="false" title="Mute/unmute sound (N)">🔊 SOUND ON</button>
-<button type="button" id="dcMpLaunch">🌐 MULTIPLAYER</button><div id="dcMpBadge"></div>
+<button type="button" id="dcMpLaunch">🌐 MULTIPLAYER (O)</button><div id="dcMpBadge"></div>
 <div id="dcMpPanel" role="dialog" aria-modal="true" aria-label="Online multiplayer">
  <div id="dcMpCard">
   <button id="dcMpClose" type="button" aria-label="Close multiplayer menu">✕</button>
@@ -5948,6 +5948,7 @@ function gameplayInputAllowed(){
  document.getElementById('title').style.display==='none'&&
  document.getElementById('worldSelect').style.display!=='flex'&&
  document.getElementById('pauseOverlay').style.display!=='flex'&&
+ document.getElementById('dcMpPanel').style.display!=='flex'&&
  document.getElementById('playerNameDialog').style.display!=='flex'&&
  document.getElementById('creativeGate').style.display!=='flex'&&
  document.getElementById('invOverlay').style.display!=='flex'&&
@@ -7256,12 +7257,26 @@ function mpUpdate(dt){
  mpLastState=now;
  mpSend({t:'state',x:player.pos.x,y:player.pos.y,z:player.pos.z,yaw:player.yaw});
 }
-document.getElementById('dcMpLaunch').addEventListener('click',()=>{
- document.getElementById('dcMpPanel').style.display='flex';
-});
-document.getElementById('dcMpClose').addEventListener('click',()=>{
- document.getElementById('dcMpPanel').style.display='none';
-});
+function mpTogglePanel(show){
+ const el=document.getElementById('dcMpPanel');
+ el.style.display=show?'flex':'none';
+ if(show){
+  keys={};mouseDown.left=mouseDown.right=false;
+  if(document.pointerLockElement)document.exitPointerLock();
+  document.getElementById('dcMpServer').focus();
+ }else if(worldReady)renderer.domElement.focus();
+}
+document.getElementById('dcMpLaunch').addEventListener('click',()=>mpTogglePanel(true));
+document.getElementById('dcMpClose').addEventListener('click',()=>mpTogglePanel(false));
+window.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&document.getElementById('dcMpPanel').style.display==='flex'){
+  e.preventDefault();e.stopImmediatePropagation();mpTogglePanel(false);return;
+ }
+ if((e.key==='o'||e.key==='O')&&!e.repeat&&e.target?.tagName!=='INPUT'&&e.target?.tagName!=='TEXTAREA'&&worldReady&&document.getElementById('pauseOverlay').style.display!=='flex'){
+  e.preventDefault();e.stopImmediatePropagation();
+  mpTogglePanel(document.getElementById('dcMpPanel').style.display!=='flex');
+ }
+},true);
 document.getElementById('dcMpCreate').addEventListener('click',()=>mpConnect('create'));
 document.getElementById('dcMpJoin').addEventListener('click',()=>mpConnect('join'));
 document.getElementById('dcMpDisconnect').addEventListener('click',()=>mpDisconnect('Left the room.'));
@@ -7289,7 +7304,7 @@ function animate(){
     return;
   }
   const invOpen = document.getElementById('invOverlay').style.display === 'flex';
-  const modalOpen = document.getElementById('dcOwnershipOverlay').style.display==='flex'||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
+  const modalOpen = document.getElementById('dcMpPanel').style.display==='flex'||document.getElementById('dcOwnershipOverlay').style.display==='flex'||document.getElementById('pauseOverlay').style.display==='flex'||document.getElementById('playerNameDialog').style.display==='flex'||document.getElementById('quickMapOverlay').style.display==='flex'||document.getElementById('commandHelpOverlay')?.style.display==='flex'||document.getElementById('creativeGate').style.display==='flex'||touchMenuExpanded;
   const playerDead = player.dead || document.getElementById('respawnOverlay').style.display === 'flex';
   const simPaused=invOpen||creativeOpen||adminOpen||modalOpen||playerDead||document.getElementById('cityMarket').style.display==='flex'||document.getElementById('prettyJournal')?.style.display==='flex';
   const simDt=simPaused?0:dt;
