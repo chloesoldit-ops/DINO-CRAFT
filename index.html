@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.5 — Visual Upgrade</title>
+<title>DinoCraft 4.6 — Arena Challenge</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -420,7 +420,7 @@ html.playing #dcBuildStamp{display:block}
 @media(max-width:650px){#dcMuteButton{top:58px;right:7px;padding:8px;min-width:94px;font-size:11px}}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.5 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.6 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -486,7 +486,7 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcOwnershipOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dcOwnershipTitle">
  <div id="dcOwnershipCard">
   <div class="dcOwnerHeading">
-   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Visual Upgrade 4.5 · © 2026 DinoCraft Project</p></div>
+   <div><h2 id="dcOwnershipTitle">🛡️ DINOCRAFT · OFFICIAL GAME</h2><p>Arena Challenge 4.6 · © 2026 DinoCraft Project</p></div>
    <button id="dcOwnershipClose" type="button" aria-label="Close ownership rules">✕</button>
   </div>
   <p class="dcRightsLead">You're welcome to play DinoCraft and share the official game link with your friends!</p>
@@ -635,7 +635,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.5 · VISUAL UPGRADE · SIX WORLDS</p>
+  <p>4.6 · ARENA CHALLENGE · SIX WORLDS</p>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
    <label for="dcTitleControlMode">🎮 HOW WILL YOU PLAY?</label>
@@ -1046,7 +1046,7 @@ function missionProgress(key,amount=1){if(!bank.missions)bank.missions={};bank.m
 function earnCoins(n,label){const amount=Math.max(0,Math.floor(n));bank.coins+=amount;if(label!=='Mission reward'){
  bank.missions.earned=(bank.missions.earned||0)+amount;
  if(label.startsWith('Sold '))bank.missions.sold=(bank.missions.sold||0)+(Number.parseInt(label.split(' ')[1],10)||1);
- if(label==='Arena victory'||label==='Elite arena victory')bank.missions.arena=(bank.missions.arena||0)+1;
+ if(label==='Arena victory'||label==='Elite arena victory'||label==='Champion victory')bank.missions.arena=(bank.missions.arena||0)+1;
  if(label==='Dinosaur hunt')bank.missions.kills=(bank.missions.kills||0)+1;
  }saveBank();if(amount)showToast('🪙 +'+amount+' DinoCoins · '+label,'🪙');}
 const REV_MISSIONS=[
@@ -3031,6 +3031,9 @@ function killBot(bot, killer, isPlayerSrc){
     earnCoins(bot.champion?150:bot.elite?70:20,bot.champion?'Champion victory':bot.elite?'Elite arena victory':'Arena victory');
     player.kills++;
     player.killStreak++;
+    dcChallengeEvent('kills',1);
+    dcChallengeEvent('streak',player.killStreak);
+    if(bot.champion)dcChallengeEvent('champions',1);
     if(player.killStreak > player.bestStreak) player.bestStreak = player.killStreak;
     showKillStreak(player.killStreak);
     addKillfeedEntry('You', bot.name + ' (' + shortWeaponName(bot.weapon) + ')', teamColor(bot.team));
@@ -6653,6 +6656,60 @@ applyDinoControlMode();
 /* ===== DINOCRAFT COMBAT 1.0: DINO ARENA EVENTS ===== */
 let dinoArenaTimer=35, dinoArenaWave=0;
 let arenaWaveRecord=0;
+const DC_CHALLENGE_KEY='dinocraft46_arena_challenge';
+const dcChallengeGoals=[
+ {name:'⚔️ FIRST BLOOD',kind:'kills',target:3,reward:70,detail:'Defeat 3 arena fighters'},
+ {name:'🔥 HOT STREAK',kind:'streak',target:5,reward:110,detail:'Reach a 5-kill streak'},
+ {name:'🦖 DINOSAUR HUNTER',kind:'waves',target:3,reward:130,detail:'Clear 3 dinosaur waves'},
+ {name:'💀 CHAMPION SLAYER',kind:'champions',target:1,reward:180,detail:'Defeat a Champion fighter'},
+ {name:'🏆 ARENA LEGEND',kind:'waves',target:5,reward:220,detail:'Clear 5 dinosaur waves'}
+];
+let dcChallenge={index:0,kills:0,streak:0,waves:0,champions:0,bestWave:0,completed:0};
+try{
+ const saved=JSON.parse(localStorage.getItem(DC_CHALLENGE_KEY)||'null');
+ if(saved&&typeof saved==='object'){
+  for(const key of Object.keys(dcChallenge))if(Number.isFinite(saved[key]))
+    dcChallenge[key]=Math.max(0,Math.floor(saved[key]));
+  dcChallenge.index=Math.min(dcChallengeGoals.length-1,dcChallenge.index);
+ }
+}catch(e){}
+function saveDcChallenge(){try{localStorage.setItem(DC_CHALLENGE_KEY,JSON.stringify(dcChallenge));}catch(e){}}
+function dcChallengeProgress(){
+ const goal=dcChallengeGoals[dcChallenge.index];
+ return Math.min(goal.target,dcChallenge[goal.kind]||0);
+}
+function dcChallengeHud(){
+ let el=document.getElementById('dcChallengeHud');
+ if(!el){
+  el=document.createElement('section');el.id='dcChallengeHud';
+  el.setAttribute('aria-label','Arena challenges');
+  el.style.cssText='position:fixed;right:12px;top:147px;z-index:11;pointer-events:none;background:rgba(8,18,35,.83);border:1px solid rgba(136,213,255,.7);border-radius:12px;padding:10px 12px;color:#eefaff;font:700 12px system-ui;min-width:190px;max-width:245px;box-shadow:0 8px 28px #0006';
+  el.innerHTML='<div class="dcGoalTitle"></div><div class="dcGoalDetail" style="opacity:.78;font-size:11px;margin:3px 0 7px"></div><div style="height:7px;border-radius:10px;background:#234059;overflow:hidden"><div class="dcGoalFill" style="height:100%;background:linear-gradient(90deg,#54deff,#ffe37b);width:0%;transition:width .25s"></div></div><div class="dcGoalStats" style="margin-top:6px;font-size:11px"></div>';
+  document.body.appendChild(el);
+ }
+ el.style.display=worldMode==='pvp'&&worldReady&&!player.dead?'block':'none';
+ if(el.style.display==='none')return;
+ const goal=dcChallengeGoals[dcChallenge.index];
+ const completedAll=dcChallenge.completed>=dcChallengeGoals.length;
+ el.querySelector('.dcGoalTitle').textContent=completedAll?'🏆 ALL CHALLENGES COMPLETE':goal.name;
+ el.querySelector('.dcGoalDetail').textContent=completedAll?'You mastered the Arena!':goal.detail+' · +'+goal.reward+' coins';
+ el.querySelector('.dcGoalFill').style.width=(completedAll?100:dcChallengeProgress()/goal.target*100)+'%';
+ el.querySelector('.dcGoalStats').textContent=(completedAll?'COMPLETE':dcChallengeProgress()+'/'+goal.target)+' · Best wave '+dcChallenge.bestWave+' · '+dcChallenge.completed+'/5';
+}
+function dcChallengeEvent(kind,amount){
+ if(worldMode!=='pvp'||dcChallenge.completed>=dcChallengeGoals.length)return;
+ if(kind==='streak')dcChallenge.streak=Math.max(dcChallenge.streak,amount);
+ else dcChallenge[kind]=(dcChallenge[kind]||0)+(amount||1);
+ const goal=dcChallengeGoals[dcChallenge.index];
+ if(dcChallengeProgress()>=goal.target){
+  dcChallenge.completed++;
+  earnCoins(goal.reward,'Arena challenge completed');
+  showToast('🏆 '+goal.name+' COMPLETED! +'+goal.reward+' COINS','🏆');
+  if(dcChallenge.index<dcChallengeGoals.length-1)dcChallenge.index++;
+ }
+ saveDcChallenge();
+ dcChallengeHud();
+}
 let arenaWavePending=0;
 function arenaWaveHud(){
  let el=document.getElementById('dcWaveHud');
@@ -6663,6 +6720,7 @@ function arenaWaveHud(){
 function updateDinoArena(dt){
  if(worldMode!=='pvp'||!worldReady||player.dead){const el=document.getElementById('dcWaveHud');if(el)el.style.display='none';return;}
  const waveLabel=arenaWaveHud();
+ dcChallengeHud();
  const active=mobs.some(m=>!m.dead&&['raptor','triceratops','rex'].includes(m.type));
  if(active){
    const remain=mobs.filter(m=>!m.dead&&['raptor','triceratops','rex'].includes(m.type)).length;
@@ -6673,6 +6731,9 @@ function updateDinoArena(dt){
  }
  if(arenaWavePending){
    const cleared=arenaWavePending;arenaWavePending=0;
+   dcChallenge.bestWave=Math.max(dcChallenge.bestWave,cleared);
+   dcChallengeEvent('waves',1);
+   saveDcChallenge();
    const coins=cleared%3===0?40+cleared*8:10+cleared*2;
    earnCoins(coins,'Cleared dinosaur wave '+cleared);
    showToast('🏆 WAVE '+cleared+' CLEARED! +'+coins+' COINS','🏆');
