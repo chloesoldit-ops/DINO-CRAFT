@@ -64,7 +64,7 @@ end
 
 local title=text(ui,"Title","🦖 DINOCRAFT ROBLOX 0.1",UDim2.new(.5,-180,0,10),UDim2.fromOffset(360,42),20,Color3.fromRGB(153,255,198))
 local waveLabel=text(ui,"Wave","⚔️ WAVE 0 — GET READY",UDim2.new(.5,-160,0,60),UDim2.fromOffset(320,37),16,Color3.fromRGB(255,224,150))
-local help=text(ui,"Help","Click / tap ATTACK to hit dinosaurs  •  Survive waves with friends!",UDim2.new(.5,-210,0,105),UDim2.fromOffset(420,35),13,Color3.fromRGB(225,237,255))
+local help=text(ui,"Help","⚔️ Attack dinosaurs!  💬 Chat: /dinohelp · /wave · /coins · /duel · /heal",UDim2.new(.5,-230,0,105),UDim2.fromOffset(460,43),13,Color3.fromRGB(225,237,255))
 local message=text(ui,"Announcement","",UDim2.new(.5,-210,0,151),UDim2.fromOffset(420,42),15,Color3.fromRGB(255,227,133))
 message.Visible=false
 local status=text(ui,"Status","DinoCoins and DinoKills appear in the Roblox leaderboard.",UDim2.new(0,12,1,-62),UDim2.fromOffset(340,46),13,Color3.fromRGB(211,243,255))
