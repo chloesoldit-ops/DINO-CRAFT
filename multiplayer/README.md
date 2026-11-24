@@ -7,6 +7,7 @@ This directory contains the **real WebSocket server** for DinoCraft's private on
 - Private eight-character invite codes and up to **8 players** per room.
 - Co-op Survival and online PvP rooms (the world mode must match).
 - Avatar positions (about 10 updates/second), player names, and join/leave notices.
+- Classic 4.9 adds a **COPY ROOM CODE** button and an online status display with server ping. You must still deploy the server to use it.
 - Host-created shared block-world snapshot; block breaking and placing are broadcast to room members.
 - Host controls dinosaur movement/health; guests see synchronized creatures and contribute damage.
 - Simple PvP melee-hit relay with server checks for distance and attack rate.
