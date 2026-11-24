@@ -83,7 +83,10 @@ wss.on('connection',(ws,req)=>{
     if(!m||typeof m!=='object'||typeof m.t!=='string')return;
     if(!ws.player){if(m.t==='create'||m.t==='join')join(ws,m);else fail(ws,'Join a room first.');return;}
     const p=ws.player,room=p.room,now=Date.now();
-    if(m.t==='world'){
+    if(m.t==='ping'){
+      if(Number.isInteger(m.n) && m.n>=0 && m.n<=2147483647)
+        send(ws,{t:'pong',n:m.n,players:room.players.size});
+    } else if(m.t==='world'){
       if(room.world)return;
       // Only room creator (first remaining player) can initialize its shared terrain.
       if(Array.from(room.players.keys())[0]!==p.id)return;
