@@ -202,11 +202,15 @@ Players.PlayerAdded:Connect(function(player)
   coin.Value=math.max(0,tonumber(data.coins) or 0)
   wins.Value=math.max(0,tonumber(data.wins) or 0)
  end
- player.CharacterAdded:Connect(function()
+ local function onSpawn()
   task.wait(.3)
-  teleport(player,stage.Value)
-  applyTrail(player)
- end)
+  if player.Parent and player.Character then
+   teleport(player,stage.Value)
+   applyTrail(player)
+  end
+ end
+ player.CharacterAdded:Connect(onSpawn)
+ if player.Character then task.spawn(onSpawn) end
 end)
 Players.PlayerRemoving:Connect(function(player)save(player);touchCooldown[player]=nil end)
 game:BindToClose(function()
