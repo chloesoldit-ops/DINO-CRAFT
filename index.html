@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>DinoCraft 4.8 — Classic Multiplayer</title>
+<title>DinoCraft 4.9 — Friends & Connection Upgrade</title>
 <meta name="author" content="DinoCraft Project">
 <meta name="copyright" content="© 2026 DinoCraft Project. Original work: all rights reserved. Third-party licenses apply.">
 <meta name="description" content="DinoCraft — original browser-based dinosaur block adventure. Official game release.">
@@ -439,7 +439,7 @@ html.playing #dcBuildStamp{display:block}
 @media(max-width:650px){#dcMpLaunch{top:auto;right:auto;left:50%;bottom:calc(148px + env(safe-area-inset-bottom));font-size:12px;min-width:142px}#dcMpTitle,#dcMpWorld,#dcMpPause{font-size:13px;padding:11px 13px}}
 </style></head>
 <body>
-<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.8 · © 2026</div>
+<div id="dcBuildStamp" aria-hidden="true">🦖 DINOCRAFT 4.9 · © 2026</div>
 <div id="dcUnofficialNotice" style="display:none" role="status">
  <strong>⚠️ UNVERIFIED DINOCRAFT COPY</strong>
  <span>For the official version, use the verified game link.</span>
@@ -475,13 +475,15 @@ html.playing #dcBuildStamp{display:block}
 <div id="dcMpPanel" role="dialog" aria-modal="true" aria-label="Online multiplayer">
  <div id="dcMpCard">
   <button id="dcMpClose" type="button" aria-label="Close multiplayer menu">✕</button>
-  <h2 style="font-size:23px;color:#b5fcef;margin:4px 0 7px">🌐 DINOCRAFT ONLINE 4.8</h2>
+  <h2 style="font-size:23px;color:#b5fcef;margin:4px 0 7px">🌐 DINOCRAFT ONLINE 4.9</h2>
   <p style="font-size:12px;line-height:1.5;color:#c0dbeb;margin-bottom:15px">Start Survival or PvP first. Then create a private room or join with a friend's code. Requires a separate multiplayer server.</p>
   <label for="dcMpServer">Multiplayer WebSocket server (wss://...)</label><input id="dcMpServer" placeholder="wss://your-server.example/ws" autocomplete="off" spellcheck="false">
   <label for="dcMpName">Your nickname (not your real name)</label><input id="dcMpName" maxlength="18" value="Explorer" autocomplete="off">
   <label for="dcMpCode">Friend's private room code</label><input id="dcMpCode" maxlength="8" placeholder="ABCDEFGH" autocomplete="off" spellcheck="false">
   <div><button id="dcMpCreate" type="button">🏠 CREATE ROOM</button><button id="dcMpJoin" type="button">🚀 JOIN ROOM</button><button id="dcMpDisconnect" type="button">⏹ LEAVE</button></div>
   <div id="dcMpStatus" role="status">Offline — single-player still works.</div>
+  <div id="dcMpConnection" aria-live="polite" style="margin:8px 0;font-size:12px;color:#a5dfff">🔴 OFFLINE · No room connected</div>
+  <button id="dcMpCopy" type="button" disabled title="Copy your private room code">📋 COPY ROOM CODE</button>
   <p id="dcMpStatusNote">To play online: launch Survival or PvP, then enter your hosted WebSocket server URL. The separate multiplayer server must be deployed; GitHub Pages cannot run it.</p>
  </div>
 </div>
@@ -670,7 +672,7 @@ html.playing #dcBuildStamp{display:block}
 </div>
 <div id="title">
   <h1>DINOCRAFT</h1>
-  <p>4.8 · CLASSIC MULTIPLAYER · SIX WORLDS</p>
+  <p>4.9 · FRIENDS & CONNECTION UPGRADE · SIX WORLDS</p>
   <button type="button" id="dcMpTitle">🌐 MULTIPLAYER — PLAY WITH FRIENDS</button>
   <button id="titlePlayerName" type="button">👤 Choose your username</button>
   <div id="dcTitleControls">
@@ -7007,9 +7009,32 @@ const mpPeers=new Map();
 const mpRemoteMobs=new Map();
 let mpLastMobs=0,mpMobSequence=0,mpMobSnapshotLoaded=false;
 let mpWorldBackup=null,mpPositionBackup=null;
+let mpLastPing=0,mpPingSentAt=0,mpPingCounter=0,mpPingMs=null,mpLastPong=0;
 function mpStatus(message){
  const el=document.getElementById('dcMpStatus');if(el)el.textContent=message;
 }
+function mpConnectionView(){
+ const status=document.getElementById('dcMpConnection'),copy=document.getElementById('dcMpCopy');
+ if(!status||!copy)return;
+ const online=mpReady && !!mpRoom && mpSocket?.readyState===WebSocket.OPEN;
+ copy.disabled=!online;
+ const stale=online && mpLastPong>0 && performance.now()-mpLastPong>12000;
+ status.textContent=online?(stale?'🟠 CONNECTION DELAY · ':'🟢 ONLINE · ')+mpRoom+' · '+(mpPeers.size+1)+'/8 players'+(mpPingMs!==null?' · '+mpPingMs+'ms':' · checking latency'):'🔴 OFFLINE · Start a room or enter a code';
+ status.style.color=online&&!stale?'#a5ffd1':stale?'#ffcf89':'#a5dfff';
+}
+async function mpCopyRoom(){
+ if(!mpReady||!mpRoom){mpStatus('Create or join a room first.');return;}
+ try{
+  if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+  await navigator.clipboard.writeText(mpRoom);
+  mpStatus('Room code copied: '+mpRoom+' — share privately with friends.');
+ }catch(e){
+  const input=document.getElementById('dcMpCode');
+  input.value=mpRoom;input.focus();input.select();
+  mpStatus('Select and copy the room code: '+mpRoom);
+ }
+}
+document.getElementById('dcMpCopy').addEventListener('click',mpCopyRoom);
 function mpSend(msg){
  if(mpSocket && mpSocket.readyState===WebSocket.OPEN)mpSocket.send(JSON.stringify(msg));
 }
@@ -7125,6 +7150,7 @@ function mpUpdateBadge(){
  el.textContent=mpReady?'🌐 '+mpRoom+' · '+(mpPeers.size+1)+'/8 · '+(mpMode==='pvp'?'PvP':'Co-op'):'';
  const btn=document.getElementById('dcMpLaunch');
  btn.textContent=mpReady?'🌐 '+(mpPeers.size+1)+' ONLINE':'🌐 MULTIPLAYER (O)';
+ mpConnectionView();
 }
 function mpDisconnect(reason){
  const old=mpSocket;const wasGuest=mpReady&&!mpHost;
@@ -7138,7 +7164,8 @@ function mpDisconnect(reason){
  }
  if(old)try{old.close();}catch(e){}
  for(const id of Array.from(mpPeers.keys()))mpRemoveAvatar(id);
- mpUpdateBadge();
+ mpPingMs=null;mpLastPong=0;mpLastPing=0;mpPingSentAt=0;
+ mpUpdateBadge();mpConnectionView();
  mpStatus(reason||'Disconnected — offline single-player is available.');
 }
 function mpConnect(action){
@@ -7177,9 +7204,12 @@ function mpConnect(action){
     mpStatus('Room '+mpRoom+' created. Uploading shared terrain...');
     mpSend({t:'world',data:mpEncodeWorld()});
    } else {mpWaitingWorld=true;mpStatus('Room '+mpRoom+' joined. Waiting for host world...');}
-   mpUpdateBadge();
-   if(!mpWaitingWorld)mpStatus('Connected! Share room code '+mpRoom+' with friends. Keep your nickname private.');
+   mpLastPong=performance.now();mpLastPing=0;mpPingMs=null;
+   mpUpdateBadge();mpConnectionView();
+   if(!mpWaitingWorld)mpStatus('Connected! Copy your private room code '+mpRoom+' to invite friends.');
    showToast('🌐 Multiplayer room '+mpRoom,'🌐');
+  }else if(m.t==='pong'){
+   if(m.n===mpPingCounter){mpPingMs=Math.round(performance.now()-mpPingSentAt);mpLastPong=performance.now();mpConnectionView();}
   }else if(m.t==='world'){
    mpWaitingWorld=!mpApplyWorld(m.world);
    if(!mpWaitingWorld)mpStatus('Shared world synced. Room '+mpRoom);
@@ -7238,6 +7268,11 @@ function mpTryHitRemote(origin,dir,reach,nearest){
 }
 function mpUpdate(dt){
  if(!mpReady)return;
+ const mpNow=performance.now();
+ if(mpSocket?.readyState===WebSocket.OPEN && mpNow-mpLastPing>4500){
+  mpLastPing=mpNow;mpPingSentAt=mpNow;mpPingCounter=(mpPingCounter+1)%2147483647;
+  mpSend({t:'ping',n:mpPingCounter});mpConnectionView();
+ }
  if(mpHost&&!mpWaitingWorld&&worldReady&&performance.now()-mpLastMobs>300){
   mpLastMobs=performance.now();
   const snapshot=[];
