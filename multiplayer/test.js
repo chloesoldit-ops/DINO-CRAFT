@@ -53,6 +53,11 @@ async function run(){
  const joined=await reply;await appeared;
  assert.equal(joined.code,created.code);
  assert.equal(typeof joined.world,'string');
+ reply=wait(b,m=>m.t==='pong');
+ send(b,{t:'ping',n:42});
+ const pong=await reply;
+ assert.equal(pong.n,42);
+ assert.equal(pong.players,2);
  reply=wait(a,m=>m.t==='state');
  send(b,{t:'state',x:40,y:23,z:42,yaw:1});
  await reply;
