@@ -26,6 +26,32 @@ This is a working-code **starter prototype**. It is not yet a complete port of a
 
 Alternatively use [Rojo](https://rojo.space/) to sync the `roblox/default.project.json` project with Studio. Rojo is optional; manual paste is enough.
 
+## What to type in the Roblox chat
+
+Open the normal Roblox in-game chat **after pressing Play**. The following commands are already implemented using Roblox's `TextChatService`:
+
+| Type this | What happens |
+|---|---|
+| `/dinohelp` | Shows available DinoCraft commands |
+| `/wave` | Tells you the current dinosaur wave |
+| `/coins` | Shows your earned DinoCoins balance |
+| `/duel` | Toggles opt-in player-vs-player duels on or off |
+| `/heal` | Spend 15 earned DinoCoins to restore up to 35 HP |
+
+These are **gameplay chat commands**, not code installation commands. Do NOT paste server scripts into public Roblox chat. All commands are processed server-side; chat command feedback appears in the in-game message HUD.
+
+### Exact copy-and-paste setup
+
+1. Open [Roblox Studio](https://create.roblox.com/). Choose **Baseplate**.
+2. In **Explorer**, click **ServerScriptService** → **+** → **Script**. Delete the starter `print("Hello world!")` text. Copy all of [DinoCraftServer.server.luau](ServerScriptService/DinoCraftServer.server.luau) and paste it in.
+3. In **Explorer**, open **StarterPlayer → StarterPlayerScripts** → **+** → **LocalScript**. Delete its starter code. Copy all of [DinoCraftClient.client.luau](StarterPlayerScripts/DinoCraftClient.client.luau) and paste it in.
+4. Press the Studio **Play** button. The server creates the arena; the client creates the combat, shop and PvP buttons.
+5. Click the normal Roblox **Chat** icon and enter `/dinohelp`. You should see the commands in the on-screen HUD.
+6. Test `/wave` and `/coins`, fight a dinosaur with mouse click, `F`, or **ATTACK**, and test `/heal` after earning coins.
+7. To test true Roblox multiplayer, use Studio **Test → Clients and Servers** to run two clients. Both users must enable **PVP: ON** or type `/duel` for duels.
+
+The client and server must be in their **correct** locations. Do not insert both as ordinary Workspace scripts.
+
 ## Optional Robux product (disabled by default)
 
 The script intentionally uses:
