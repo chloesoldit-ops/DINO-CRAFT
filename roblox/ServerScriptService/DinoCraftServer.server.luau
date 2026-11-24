@@ -9,6 +9,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local DataStoreService = game:GetService("DataStoreService")
 local Debris = game:GetService("Debris")
 local Workspace = game:GetService("Workspace")
+local TextChatService = game:GetService("TextChatService")
 
 -- OPTIONAL: replace 0 with your real Developer Product ID after creating it in Creator Hub.
 -- The product is a cosmetic fireworks celebration, NOT stronger weapons or more damage.
@@ -325,6 +326,56 @@ duelHit.OnServerEvent:Connect(function(player: Player, targetUserId: any)
     duelCooldowns[player]=now
     victimHumanoid:TakeDamage(14)
     gameMessage:FireClient(player,"⚔️ Duel hit on "..victim.DisplayName)
+end)
+
+-- Player chat commands use Roblox's filtered TextChatService.
+-- Chat commands are gameplay shortcuts; commands never accept arbitrary code.
+local function registerChatCommand(name:string,alias:string,callback:(Player)->())
+    local command=TextChatService:FindFirstChild(name)
+    if not command then
+        command=Instance.new("TextChatCommand")
+        command.Name=name
+        command.PrimaryAlias=alias
+        command.Parent=TextChatService
+    end
+    (command :: TextChatCommand).Triggered:Connect(function(originTextSource,_unfilteredText)
+        local player=Players:GetPlayerByUserId(originTextSource.UserId)
+        if player then callback(player) end
+    end)
+end
+registerChatCommand("DinoHelpCommand","/dinohelp",function(player)
+    gameMessage:FireClient(player,"🦖 Commands: /dinohelp, /wave, /coins, /duel, /heal. Use ATTACK to fight dinos!")
+end)
+registerChatCommand("DinoWaveCommand","/wave",function(player)
+    gameMessage:FireClient(player,"🌊 Current dinosaur wave: "..tostring(wave)..". All battles are free!")
+end)
+registerChatCommand("DinoCoinsCommand","/coins",function(player)
+    local stats=player:FindFirstChild("leaderstats")
+    local coins=stats and stats:FindFirstChild("DinoCoins")
+    local amount=(coins and coins:IsA("IntValue")) and coins.Value or 0
+    gameMessage:FireClient(player,"🪙 You have "..tostring(amount).." DinoCoins. Defeat dinosaurs for more!")
+end)
+registerChatCommand("DinoDuelCommand","/duel",function(player)
+    local enabled=not (player:GetAttribute("DinoDuel")==true)
+    player:SetAttribute("DinoDuel",enabled)
+    gameMessage:FireClient(player,enabled and "⚔️ PvP ON. Both players must enable duels." or "🛡️ PvP OFF. Other players cannot duel you.")
+end)
+registerChatCommand("DinoHealCommand","/heal",function(player)
+    local character=player.Character
+    local humanoid=character and character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.Health<=0 then return end
+    local stats=player:FindFirstChild("leaderstats")
+    local coins=stats and stats:FindFirstChild("DinoCoins")
+    if not coins or not coins:IsA("IntValue") then return end
+    if humanoid.Health>=humanoid.MaxHealth then
+        gameMessage:FireClient(player,"❤️ Your health is already full!")
+    elseif coins.Value<15 then
+        gameMessage:FireClient(player,"🪙 You need 15 earned DinoCoins to heal.")
+    else
+        coins.Value-=15
+        humanoid.Health=math.min(humanoid.MaxHealth,humanoid.Health+35)
+        gameMessage:FireClient(player,"❤️ Healed 35 HP for 15 DinoCoins!")
+    end
 end)
 
 -- Free cosmetic alternative: a glowing player trail purchased with earned DinoCoins.
