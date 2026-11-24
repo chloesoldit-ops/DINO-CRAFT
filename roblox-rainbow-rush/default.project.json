@@ -1,0 +1,21 @@
+{
+  "name": "Rainbow Rush Obby",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "RainbowRushServer": {
+        "$path": "ServerScriptService/RainbowRushServer.server.luau"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "RainbowRushClient": {
+          "$path": "StarterPlayerScripts/RainbowRushClient.client.luau"
+        }
+      }
+    }
+  }
+}
