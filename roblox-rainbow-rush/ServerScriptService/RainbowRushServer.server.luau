@@ -194,10 +194,49 @@ local function applyTrail(player)
  trail.Color=ColorSequence.new(palette[1],palette[5])
  trail.LightEmission=1;trail.Parent=root
 end
+local function refreshPasses(player)
+ local owned={}
+ for name,id in pairs(GAME_PASSES) do
+  owned[name]=false
+  if id>0 then
+   local success,value=pcall(function()return MarketplaceService:UserOwnsGamePassAsync(player.UserId,id)end)
+   if success then owned[name]=value==true end
+  end
+ end
+ passOwnership[player]=owned
+ player:SetAttribute("RainbowVIP",owned.vip or false)
+end
+local function applyBenefits(player)
+ local owned=passOwnership[player] or {}
+ local character=player.Character
+ local humanoid=character and character:FindFirstChildOfClass("Humanoid")
+ if humanoid then
+  humanoid.WalkSpeed=owned.speed and 24 or 16
+  humanoid.UseJumpPower=true
+  humanoid.JumpPower=owned.gravity and 68 or 50
+ end
+ if owned.vip and character and not character:FindFirstChild("RainbowVIPGlow") then
+  local h=Instance.new("Highlight");h.Name="RainbowVIPGlow"
+  h.FillColor=Color3.fromRGB(251,199,54)
+  h.OutlineColor=Color3.fromRGB(255,240,130)
+  h.FillTransparency=.62
+  h.Parent=character
+ end
+ applyTrail(player)
+end
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player,id,purchased)
- if purchased and id==RAINBOW_TRAIL_PASS_ID then task.delay(1,applyTrail,player)end
+ if not purchased then return end
+ for _,productId in pairs(GAME_PASSES) do
+  if id>0 and id==productId then
+   task.delay(2,function()
+    if player.Parent then refreshPasses(player);applyBenefits(player) end
+   end)
+   break
+  end
+ end
 end)
 Players.PlayerAdded:Connect(function(player)
+ refreshPasses(player)
  local leaderstats=Instance.new("Folder");leaderstats.Name="leaderstats";leaderstats.Parent=player
  local stage=Instance.new("IntValue");stage.Name="Stage";stage.Value=1;stage.Parent=leaderstats
  local coin=Instance.new("IntValue");coin.Name="Coins";coin.Parent=leaderstats
@@ -212,13 +251,13 @@ Players.PlayerAdded:Connect(function(player)
   task.wait(.3)
   if player.Parent and player.Character then
    teleport(player,stage.Value)
-   applyTrail(player)
+   applyBenefits(player)
   end
  end
  player.CharacterAdded:Connect(onSpawn)
  if player.Character then task.spawn(onSpawn) end
 end)
-Players.PlayerRemoving:Connect(function(player)save(player);touchCooldown[player]=nil end)
+Players.PlayerRemoving:Connect(function(player)save(player);touchCooldown[player]=nil;passOwnership[player]=nil end)
 game:BindToClose(function()
  for _,player in Players:GetPlayers() do save(player)end
 end)
