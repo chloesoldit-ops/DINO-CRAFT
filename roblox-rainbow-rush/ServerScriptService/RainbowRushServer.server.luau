@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW RUSH OBBY 0.4 — Standalone Roblox game
+-- RAINBOW RUSH OBBY 0.5 — Sky Carnival Edition
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -47,6 +47,7 @@ end
 local checkpoints={}
 local touchCooldown={}
 local coins={}
+local spinningCoins={}
 local mapFolder=Instance.new("Folder")
 mapFolder.Name="RainbowRushWorld"
 mapFolder.Parent=workspace
@@ -174,7 +175,7 @@ end)
 local function neonText(part,text)
  local gui=Instance.new("BillboardGui")
  gui.Adornee=part;gui.Size=UDim2.fromOffset(250,75)
- gui.StudsOffset=Vector3.new(0,5,0);gui.AlwaysOnTop=true;gui.Parent=part
+ gui.StudsOffset=Vector3.new(0,8,0);gui.AlwaysOnTop=true;gui.MaxDistance=120;gui.Parent=part
  local label=Instance.new("TextLabel")
  label.Size=UDim2.fromScale(1,1);label.BackgroundTransparency=1
  label.Text=text;label.TextScaled=true;label.Font=Enum.Font.GothamBlack
@@ -221,6 +222,10 @@ local function coinPad(position,stage,index)
  pad.Shape=Enum.PartType.Ball
  coins[pad]={stage=stage,index=index}
  local lastCollected={}
+ spinningCoins[pad]=true
+ local glow=Instance.new("PointLight")
+ glow.Color=Color3.fromRGB(255,216,85);glow.Range=10;glow.Brightness=.7
+ glow.Parent=pad
  pad.Touched:Connect(function(hit)
   local player=playerOf(hit)
   if not player then return end
@@ -303,6 +308,58 @@ local function sparkles(part,color)
  particle.Size=NumberSequence.new(.7)
  particle.Parent=a
 end
+
+-- Obby visual kit: no colliding decoration obstructs jumping.
+local function decorative(name,size,position,color,material)
+ local p=block(name,size,CFrame.new(position),color,material or Enum.Material.Neon,false)
+ p.CanTouch=false;p.CastShadow=false
+ return p
+end
+local function orb(name,position,diameter,color)
+ local p=decorative(name,Vector3.new(diameter,diameter,diameter),position,color,Enum.Material.SmoothPlastic)
+ p.Shape=Enum.PartType.Ball
+ return p
+end
+local function rainbowArch(center,stage)
+ local z=center.Z+7.7
+ for index=1,6 do
+  local c=palette[index]
+  local width=9.6+(index-1)*.55
+  local height=13.5+(index-1)*.65
+  decorative("ArchLeft_"..stage.."_"..index,Vector3.new(.76,height,.76),Vector3.new(-width,10+height/2,z),c)
+  decorative("ArchRight_"..stage.."_"..index,Vector3.new(.76,height,.76),Vector3.new(width,10+height/2,z),c)
+  decorative("ArchTop_"..stage.."_"..index,Vector3.new(width*2+.76,.76,.76),Vector3.new(0,10+height,z),c)
+ end
+ orb("ArchStarL_"..stage,Vector3.new(-13.5,22,z),3.0,Color3.fromRGB(255,249,166))
+ orb("ArchStarR_"..stage,Vector3.new(13.5,22,z),3.0,Color3.fromRGB(255,249,166))
+end
+local function checkpointTheme(center,stage,color)
+ for side=-1,1,2 do
+  local base=center+Vector3.new(side*14,3.3,-4)
+  decorative("BeaconPole_"..stage.."_"..side,Vector3.new(1,7,1),base,color)
+  orb("BeaconOrb_"..stage.."_"..side,base+Vector3.new(0,4.2,0),2.6,Color3.fromRGB(255,242,134))
+ end
+ decorative("CheckpointStripe_"..stage,Vector3.new(23,.3,.65),
+  center+Vector3.new(0,1.22,8.8),Color3.fromRGB(255,255,255))
+end
+local function finishPodium(center)
+ for i=1,6 do
+  decorative("ChampionCarpet_"..i,Vector3.new(2.1,.3,11),
+   center+Vector3.new((i-3.5)*2.1,1.3,-5),palette[i])
+ end
+ for side=-1,1,2 do
+  local p=decorative("TrophyPillar",Vector3.new(2,11,2),
+   center+Vector3.new(side*11,5,0),Color3.fromRGB(255,218,78))
+  orb("TrophyOrb",p.Position+Vector3.new(0,6.8,0),3.5,Color3.fromRGB(255,248,168))
+ end
+end
+RunService.Heartbeat:Connect(function(dt)
+ for p in pairs(spinningCoins) do
+  if p.Parent then p.CFrame=p.CFrame*CFrame.Angles(0,dt*2.5,0)
+  else spinningCoins[p]=nil end
+ end
+end)
+
 local function boostPad(part)
  part.Touched:Connect(function(hit)
   local p,h=playerOf(hit)
