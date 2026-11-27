@@ -13,10 +13,15 @@ local RAINBOW_TRAIL_PASS_ID=0
 local GAME_PASSES={rainbow_trail=0,speed=0,gravity=0,double_coins=0,vip=0}
 local PRODUCTS={skip_1=0,skip_3=0,coins_250=0,coins_1200=0,fireworks=0,chaos=0}
 local passOwnership={}
+local lastChaosTime=0
+local productIndex={}
+for name,id in pairs(PRODUCTS) do
+ if id>0 then productIndex[id]=name end
+end
 local STAGES=12
 local STAGE_LENGTH=70
 local SAVE_STORE=DataStoreService:GetDataStore("RainbowRush_Progress_01")
-local RECEIPTS=DataStoreService:GetDataStore("RainbowRush_Receipts_v1")
+-- Purchases are stored in the same player record as progression for atomic grants.
 local checkpoints={}
 local touchCooldown={}
 local coins={}
@@ -80,7 +85,7 @@ local function save(player)
  local data={stage=stage.Value,coins=points.Value,wins=wins.Value}
  pcall(function()SAVE_STORE:UpdateAsync(tostring(player.UserId),function(old)
   old=type(old)=="table" and old or {}
-  return {stage=math.max(old.stage or 1,data.stage),coins=data.coins,wins=math.max(old.wins or 0,data.wins)}
+  return {stage=math.max(old.stage or 1,data.stage),coins=data.coins,wins=math.max(old.wins or 0,data.wins),receipts=old.receipts or {}}
  end)end)
 end
 local function neonText(part,text)
@@ -235,6 +240,85 @@ MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player,id,pur
   end
  end
 end)
+local function launchRainbowFireworks(player)
+ local character=player.Character
+ local root=character and character:FindFirstChild("HumanoidRootPart")
+ if not root or not root:IsA("BasePart") then return end
+ local fire=Instance.new("ParticleEmitter")
+ fire.Name="RainbowFireworks";fire.Rate=0
+ fire.Lifetime=NumberRange.new(.8,1.8)
+ fire.Speed=NumberRange.new(12,27)
+ fire.SpreadAngle=Vector2.new(360,360)
+ fire.Color=ColorSequence.new(Color3.fromRGB(255,88,172),Color3.fromRGB(73,229,255))
+ fire.Parent=root
+ fire:Emit(130)
+ game:GetService("Debris"):AddItem(fire,4)
+end
+local function productDelta(name)
+ if name=="coins_250" then return 0,250 end
+ if name=="coins_1200" then return 0,1200 end
+ if name=="skip_1" then return 1,0 end
+ if name=="skip_3" then return 3,0 end
+ if name=="fireworks" or name=="chaos" then return 0,0 end
+ return nil,nil
+end
+-- For permanent progress changes, mark each receipt exactly once in the same
+-- DataStore transaction that awards the stage or coin balance.
+MarketplaceService.ProcessReceipt=function(receipt)
+ local name=productIndex[receipt.ProductId]
+ if not name then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ local player=Players:GetPlayerByUserId(receipt.PlayerId)
+ if not player then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ local stats=player:FindFirstChild("leaderstats")
+ local stage=stats and stats:FindFirstChild("Stage")
+ local balance=stats and stats:FindFirstChild("Coins")
+ local wins=stats and stats:FindFirstChild("Wins")
+ if not(stage and balance and wins) then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ local addStages,addCoins=productDelta(name)
+ if not addStages then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ local key=tostring(player.UserId)
+ local purchaseId=tostring(receipt.PurchaseId)
+ local previousWasGranted=false
+ local ok,result=pcall(function()
+  return SAVE_STORE:UpdateAsync(key,function(old)
+   old=type(old)=="table" and old or {}
+   local receipts=old.receipts or {}
+   if receipts[purchaseId] then
+    previousWasGranted=true
+    return old
+   end
+   -- Keep current earned in-session progress before granting the product.
+   local currentStage=math.max(1,tonumber(old.stage) or 1,stage.Value)
+   local currentCoins=math.max(0,tonumber(old.coins) or 0,balance.Value)
+   local currentWins=math.max(0,tonumber(old.wins) or 0,wins.Value)
+   receipts[purchaseId]=true
+   return {stage=math.min(STAGES+1,currentStage+addStages),coins=currentCoins+addCoins,wins=currentWins,receipts=receipts}
+  end)
+ end)
+ if not ok or type(result)~="table" then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ if not previousWasGranted then
+  stage.Value=math.max(stage.Value,math.min(STAGES+1,tonumber(result.stage) or stage.Value))
+  balance.Value=math.max(balance.Value,tonumber(result.coins) or balance.Value)
+  if addStages>0 then teleport(player,stage.Value) end
+  if name=="fireworks" or name=="chaos" then launchRainbowFireworks(player) end
+  if name=="chaos" then
+   if os.time()-lastChaosTime>120 then
+    lastChaosTime=os.time()
+    showMessage:FireAllClients("🌈 CHECKPOINT CHAOS IN 3 SECONDS! Saved progress stays safe.")
+    task.delay(3,function()
+     for _,other in ipairs(Players:GetPlayers()) do
+      local ownStats=other:FindFirstChild("leaderstats")
+      local ownStage=ownStats and ownStats:FindFirstChild("Stage")
+      if ownStage then teleport(other,ownStage.Value) end
+     end
+    end)
+   else message(player,"Chaos cooling down. You received fireworks instead!") end
+  end
+  message(player,"✅ PURCHASE DELIVERED: "..name:gsub("_"," "))
+ end
+ return Enum.ProductPurchaseDecision.PurchaseGranted
+end
+
 Players.PlayerAdded:Connect(function(player)
  refreshPasses(player)
  local leaderstats=Instance.new("Folder");leaderstats.Name="leaderstats";leaderstats.Parent=player
