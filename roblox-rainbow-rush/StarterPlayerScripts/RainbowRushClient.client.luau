@@ -10,6 +10,7 @@ local player=Players.LocalPlayer
 local events=ReplicatedStorage:WaitForChild("RainbowRushEvents")
 local messageEvent=events:WaitForChild("Message") :: RemoteEvent
 local info=events:WaitForChild("PassInfo") :: RemoteFunction
+local catalog=events:WaitForChild("ShopCatalog") :: RemoteFunction
 local gui=Instance.new("ScreenGui")
 gui.Name="RainbowRushHUD"
 gui.ResetOnSpawn=false
@@ -50,69 +51,116 @@ notification.BackgroundColor3=Color3.fromRGB(24,100,99)
 
 local shop=button("CosmeticShop","✨ RAINBOW TRAIL",UDim2.new(1,-194,0,12),UDim2.fromOffset(181,48))
 shop.BackgroundColor3=Color3.fromRGB(81,137,205)
-local shopPanel=Instance.new("Frame")
-shopPanel.Name="ShopPanel"
-shopPanel.Position=UDim2.new(.5,-175,.5,-110)
-shopPanel.Size=UDim2.fromOffset(350,220)
-shopPanel.BackgroundColor3=Color3.fromRGB(30,30,72)
-shopPanel.BorderSizePixel=0
-shopPanel.Visible=false
-shopPanel.Parent=gui
-local corner=Instance.new("UICorner");corner.CornerRadius=UDim.new(0,18);corner.Parent=shopPanel
-local title=Instance.new("TextLabel")
-title.Size=UDim2.new(1,-24,0,45);title.Position=UDim2.fromOffset(12,9)
-title.BackgroundTransparency=1;title.Text="✨ OPTIONAL COSMETIC"
-title.Font=Enum.Font.GothamBlack;title.TextSize=21;title.TextColor3=Color3.fromRGB(255,231,143)
-title.Parent=shopPanel
-local desc=Instance.new("TextLabel")
-desc.Size=UDim2.new(1,-24,0,60);desc.Position=UDim2.fromOffset(12,56)
-desc.BackgroundTransparency=1;desc.TextWrapped=true
-desc.Text="Rainbow Trail adds colorful particles as you run. It doesn't make you faster or help you win."
-desc.Font=Enum.Font.Gotham;desc.TextSize=14;desc.TextColor3=Color3.new(1,1,1)
-desc.Parent=shopPanel
-local purchase=Instance.new("TextButton")
-purchase.Name="Purchase"
-purchase.Position=UDim2.fromOffset(15,125);purchase.Size=UDim2.fromOffset(320,40)
-purchase.Text="🌈 RAINBOW TRAIL — NOT SET UP"
-purchase.Font=Enum.Font.GothamBold;purchase.TextScaled=true;purchase.TextWrapped=true
-purchase.TextColor3=Color3.new(1,1,1)
-purchase.BackgroundColor3=Color3.fromRGB(115,70,192)
-purchase.Parent=shopPanel
-local purchaseCorner=Instance.new("UICorner");purchaseCorner.CornerRadius=UDim.new(0,9);purchaseCorner.Parent=purchase
-local close=Instance.new("TextButton")
-close.Name="Close";close.Position=UDim2.fromOffset(109,177);close.Size=UDim2.fromOffset(132,34)
-close.Text="CLOSE";close.TextColor3=Color3.new(1,1,1)
-close.Font=Enum.Font.GothamBold;close.TextSize=16
-close.BackgroundColor3=Color3.fromRGB(74,91,135);close.Parent=shopPanel
-local closeCorner=Instance.new("UICorner");closeCorner.CornerRadius=UDim.new(0,8);closeCorner.Parent=close
-shop.Activated:Connect(function()shopPanel.Visible=not shopPanel.Visible end)
-close.Activated:Connect(function()shopPanel.Visible=false end)
-
-local passId=0
-local ok,id=pcall(function()return info:InvokeServer()end)
-if ok and typeof(id)=="number" and id>0 then
- passId=id
- purchase.Text="🌈 VIEW ROBLOX PRICE & BUY"
-else
- purchase.Text="🌈 COMING SOON — FREE GAME"
- purchase.BackgroundColor3=Color3.fromRGB(71,79,106)
+-- The shop lists actual Roblox Marketplace prices; IDs remain 0 until configured.
+local fullShop=Instance.new("Frame")
+fullShop.Name="ShopPanel";fullShop.AnchorPoint=Vector2.new(.5,.5)
+fullShop.Position=UDim2.fromScale(.5,.5)
+fullShop.Size=UDim2.new(.86,0,.8,0)
+fullShop.BackgroundColor3=Color3.fromRGB(24,22,62)
+fullShop.BorderSizePixel=0;fullShop.Visible=false;fullShop.Parent=gui
+local sizeLimit=Instance.new("UISizeConstraint")
+sizeLimit.MaxSize=Vector2.new(620,640);sizeLimit.MinSize=Vector2.new(290,280)
+sizeLimit.Parent=fullShop
+local round=Instance.new("UICorner")
+round.CornerRadius=UDim.new(0,18);round.Parent=fullShop
+local header=Instance.new("TextLabel")
+header.Text="🌈 RAINBOW RUSH SHOP"
+header.Size=UDim2.new(1,-92,0,49);header.Position=UDim2.fromOffset(14,7)
+header.Font=Enum.Font.GothamBlack;header.TextScaled=true;header.TextColor3=Color3.fromRGB(255,222,125)
+header.BackgroundTransparency=1;header.Parent=fullShop
+local x=Instance.new("TextButton")
+x.Text="✕";x.Size=UDim2.fromOffset(48,43);x.Position=UDim2.new(1,-58,0,8)
+x.TextSize=25;x.Font=Enum.Font.GothamBold
+x.BackgroundColor3=Color3.fromRGB(111,62,102);x.TextColor3=Color3.new(1,1,1)
+x.Parent=fullShop
+local xRound=Instance.new("UICorner");xRound.CornerRadius=UDim.new(0,9);xRound.Parent=x
+local infoText=Instance.new("TextLabel")
+infoText.Text="FREE TO PLAY · Paid upgrades are optional · Official Roblox checkout"
+infoText.Size=UDim2.new(1,-18,0,36);infoText.Position=UDim2.fromOffset(9,56)
+infoText.Font=Enum.Font.Gotham;infoText.TextSize=12
+infoText.TextWrapped=true;infoText.BackgroundTransparency=1
+infoText.TextColor3=Color3.fromRGB(211,234,255);infoText.Parent=fullShop
+local scrolling=Instance.new("ScrollingFrame")
+scrolling.Size=UDim2.new(1,-18,1,-103);scrolling.Position=UDim2.fromOffset(9,96)
+scrolling.CanvasSize=UDim2.fromOffset(0,0);scrolling.ScrollBarThickness=6
+scrolling.ScrollingDirection=Enum.ScrollingDirection.Y
+scrolling.AutomaticCanvasSize=Enum.AutomaticSize.Y
+scrolling.BackgroundTransparency=1;scrolling.BorderSizePixel=0;scrolling.Parent=fullShop
+local list=Instance.new("UIListLayout")
+list.Padding=UDim.new(0,7);list.Parent=scrolling
+local rawCatalog=nil
+local okCatalog,catalogData=pcall(function()return catalog:InvokeServer()end)
+if okCatalog and typeof(catalogData)=="table" then rawCatalog=catalogData end
+local passes=rawCatalog and rawCatalog.passes or {}
+local products=rawCatalog and rawCatalog.products or {}
+local offers={
+ {"🌈 Rainbow Trail","rainbow_trail","pass","Permanent rainbow running trail"},
+ {"⚡ Speed Coil","speed","pass","Permanent faster running"},
+ {"🪶 Gravity Coil","gravity","pass","Permanent higher jumping"},
+ {"🪙 Double Coins","double_coins","pass","Earn twice as many coins"},
+ {"👑 VIP Golden Glow","vip","pass","Permanent golden player glow"},
+ {"⏭️ Skip 1 Stage","skip_1","product","Move ahead one checkpoint"},
+ {"🚀 Skip 3 Stages","skip_3","product","Move ahead up to three checkpoints"},
+ {"💰 250 Coins","coins_250","product","Repeatable coin pack"},
+ {"💎 1200 Coins","coins_1200","product","Repeatable big coin pack"},
+ {"🎆 Fireworks","fireworks","product","Celebrate with bright particles"},
+ {"🌪️ Checkpoint Chaos","chaos","product","Returns everyone to their saved checkpoint after a warning; 2-minute cooldown"}
+}
+local function row(titleText:string,key:string,kind:string,detail:string)
+ local holder=Instance.new("Frame")
+ holder.Name=key;holder.Size=UDim2.new(1,-8,0,89)
+ holder.BackgroundColor3=Color3.fromRGB(46,48,100);holder.BorderSizePixel=0;holder.Parent=scrolling
+ local radius=Instance.new("UICorner");radius.CornerRadius=UDim.new(0,10);radius.Parent=holder
+ local title=Instance.new("TextLabel")
+ title.Size=UDim2.new(.60,0,0,28);title.Position=UDim2.fromOffset(10,5)
+ title.BackgroundTransparency=1;title.TextXAlignment=Enum.TextXAlignment.Left
+ title.Text=titleText;title.Font=Enum.Font.GothamBold;title.TextSize=15
+ title.TextColor3=Color3.new(1,1,1);title.Parent=holder
+ local explanation=Instance.new("TextLabel")
+ explanation.Size=UDim2.new(.59,0,0,49);explanation.Position=UDim2.fromOffset(10,34)
+ explanation.BackgroundTransparency=1;explanation.TextXAlignment=Enum.TextXAlignment.Left
+ explanation.TextWrapped=true;explanation.Text=detail;explanation.Font=Enum.Font.Gotham
+ explanation.TextSize=12;explanation.TextColor3=Color3.fromRGB(209,224,247);explanation.Parent=holder
+ local buy=Instance.new("TextButton")
+ buy.Size=UDim2.new(.35,-8,0,53);buy.Position=UDim2.new(.65,0,.5,-26)
+ buy.BackgroundColor3=Color3.fromRGB(121,61,189);buy.BorderSizePixel=0
+ buy.Font=Enum.Font.GothamBold;buy.TextScaled=true;buy.TextWrapped=true
+ buy.TextColor3=Color3.new(1,1,1);buy.Parent=holder
+ local buyRound=Instance.new("UICorner");buyRound.CornerRadius=UDim.new(0,8);buyRound.Parent=buy
+ local id=(kind=="pass" and passes[key] or products[key]) or 0
+ if typeof(id)~="number" or id<=0 then
+  buy.Text="COMING SOON"
+  buy.BackgroundColor3=Color3.fromRGB(77,77,98)
+ else
+  buy.Text="VIEW PRICE"
+  task.spawn(function()
+   local success,product=pcall(function()
+    return MarketplaceService:GetProductInfo(id,kind=="pass" and Enum.InfoType.GamePass or Enum.InfoType.Product)
+   end)
+   if success and typeof(product)=="table" and typeof(product.PriceInRobux)=="number" then
+    buy.Text=tostring(product.PriceInRobux).." ROBUX"
+   end
+  end)
+  buy.Activated:Connect(function()
+   local success=pcall(function()
+    if kind=="pass" then
+     MarketplaceService:PromptGamePassPurchase(player,id)
+    else
+     MarketplaceService:PromptProductPurchase(player,id)
+    end
+   end)
+   if not success then
+    notification.Text="Purchase couldn't open. Try again later."
+    notification.Visible=true
+    task.delay(3,function()notification.Visible=false end)
+   end
+  end)
+ end
 end
-purchase.Activated:Connect(function()
- if passId==0 then
-  notification.Text="Rainbow Trail is not available yet. You can play every stage for free!"
-  notification.Visible=true
-  task.delay(3,function()notification.Visible=false end)
-  return
- end
- local success=pcall(function()
-  MarketplaceService:PromptGamePassPurchase(player,passId)
- end)
- if not success then
-  notification.Text="Roblox purchasing isn't available right now."
-  notification.Visible=true
-  task.delay(3,function()notification.Visible=false end)
- end
-end)
+for _,offer in ipairs(offers) do row(offer[1],offer[2],offer[3],offer[4]) end
+shop.Text="🛒 SHOP · 11 ITEMS"
+shop.Activated:Connect(function()fullShop.Visible=not fullShop.Visible end)
+x.Activated:Connect(function()fullShop.Visible=false end)
 
 local stats=player:WaitForChild("leaderstats",30)
 if stats then
