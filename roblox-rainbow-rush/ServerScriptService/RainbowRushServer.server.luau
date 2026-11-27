@@ -20,7 +20,25 @@ for name,id in pairs(PRODUCTS) do
 end
 local STAGES=12
 local STAGE_LENGTH=70
-local SAVE_STORE=DataStoreService:GetDataStore("RainbowRush_Progress_01")
+-- Unpublished Studio places may not have DataStore access.
+-- Use a memory-only test store so the obby and HUD can still run before publishing.
+local storeOkay,realStore=pcall(function()
+ return DataStoreService:GetDataStore("RainbowRush_Progress_01")
+end)
+local temporaryRecords={}
+local SAVE_STORE=if storeOkay then realStore else {
+ GetAsync=function(_,key)
+  return temporaryRecords[key]
+ end,
+ UpdateAsync=function(_,key,callback)
+  local value=callback(temporaryRecords[key])
+  if value~=nil then temporaryRecords[key]=value end
+  return temporaryRecords[key]
+ end
+}
+if not storeOkay then
+ warn("Rainbow Rush: DataStore unavailable. Using temporary test progress; publish and enable Studio API access to test saving.")
+end
 -- Purchases are stored in the same player record as progression for atomic grants.
 local checkpoints={}
 local touchCooldown={}
