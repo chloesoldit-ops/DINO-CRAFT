@@ -102,7 +102,8 @@ local function teleport(player,stage)
  local root=character and character:FindFirstChild("HumanoidRootPart")
  if root and root:IsA("BasePart") then
   root.AssemblyLinearVelocity=Vector3.zero
-  root.CFrame=CFrame.lookAt(stagePos(stage)+Vector3.new(0,6,0),stagePos(stage)+Vector3.new(0,6,12))
+  local target=stagePos(stage)+Vector3.new(0,6,stage==1 and -18 or 0)
+  root.CFrame=CFrame.lookAt(target,target+Vector3.new(0,0,12))
  end
 end
 local function save(player)
