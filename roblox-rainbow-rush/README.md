@@ -1,15 +1,24 @@
-# 🌈 Rainbow Rush Obby — Roblox Studio 0.1
+# 🌈 Rainbow Rush Obby — Sky Islands Edition 0.3
 
-This is a **brand-new Roblox game** (not DinoCraft), made to be free to play with optional cosmetic Robux purchases. This starter prototype is not yet published or tested in Roblox Studio. It does not guarantee Roblox earnings.
+This is a separate Roblox game, made free to play with optional future upgrades. **Rainbow Rush 0.3** is a playable-code update with sky islands, hazards and replay. It is not yet published or fully playtested in Studio; Robux earnings are not guaranteed.
 
 ## What the game does
 
-- Builds 12 bright obstacle-course stages automatically, so you don't need to hand-place hundreds of parts.
+- Builds **12 themed sky-island stages** automatically: zigzags, lasers, speed boosts, vanishing platforms, moving clouds, tightrope, spinners, and a finish island. The original grey Baseplate is hidden.
 - Players jump across platforms, collect coins, unlock checkpoints, and respawn at their last stage.
 - Stage completion gives **25 free Coins**, coin pickups give **5 free Coins**, and finishing the entire course gives **200 bonus Coins**.
-- Shows a stage tracker, leaderboard Coins and Wins, notification messages, and a cosmetic shop.
+- Shows a compact stage tracker, leaderboard Coins and Wins, checkpoint messages, and an **11-item shop** that displays Coming Soon until Roblox IDs are added.
+- **Practice Boost:** spend **40 earned Coins** for 15 seconds of speed. **Free replay:** finish all stages to restart while keeping your Coins and Wins.
 - Players use normal Roblox chat. **No commands**.
-- Optional paid **Rainbow Trail** Game Pass leaves a colorful trail. It does not help players win. The ID is set to **0 by default**, so the purchase is **disabled** until you set it up.
+- Permanent-pass slots: Rainbow Trail, Speed, Gravity, Double Coins and VIP. Repeatable-product slots: 1/3 stage skips, two coin packs, fireworks and checkpoint chaos. **All IDs are 0 by default, so paid purchases are disabled.**
+
+## Already have the old game in Roblox Studio?
+
+1. Click **Stop** if the game is playing.
+2. Open **ServerScriptService → Script**. Copy the complete new [server script](ServerScriptService/RainbowRushServer.server.luau), select all existing code with **⌘A** and replace it with **⌘V**.
+3. Open **StarterPlayer → StarterPlayerScripts → LocalScript**. Copy the complete new [client script](StarterPlayerScripts/RainbowRushClient.client.luau), and replace the old code the same way.
+4. Press **Play**. Test stage 1 jumps, collisions, coin pickups, respawning, moving platforms, lasers, the shop, the free practice boost and reaching the final checkpoint. Open **Window → Output** if anything errors.
+5. **Keep this as a private prototype** until the entire course and saved progress are tested. Do not add Robux product IDs before testing purchases in an appropriate test environment.
 
 ## Copy and paste in Roblox Studio
 
@@ -26,11 +35,11 @@ This is a **brand-new Roblox game** (not DinoCraft), made to be free to play wit
 
 ## Optional Robux earnings — only after publishing
 
-The Rainbow Trail is a **Game Pass**: the buyer keeps access to the cosmetic across visits. It is not required to complete any stage.
+Game Passes are permanent upgrades; Developer Products are repeatable purchases. The server includes configurable slots for both. The code is **not yet production purchase-tested** and the product receipt/save path requires further validation for reliability under retries and simultaneous saves. All IDs are left at 0 for this release.
 
 1. In [Roblox Creator Hub](https://create.roblox.com/), select your published experience, then create a **Game Pass** with a Rainbow Trail image and an appropriate price.
 2. Copy that Game Pass's **Asset ID**.
-3. In the server script, change `local RAINBOW_TRAIL_PASS_ID=0` to your actual ID.
+3. In the server script, replace the relevant `0` inside `GAME_PASSES` with the real pass ID only after private testing. For repeatable products, use real IDs inside `PRODUCTS`.
 4. Save and republish the game from Studio.
 5. Test purchase prompting and ownership in an appropriate Roblox test environment before making the experience public.
 6. Roblox processes any purchase itself. Developer earnings are subject to Roblox's rules, fees, eligibility, and payout requirements; creating a game does not automatically earn Robux.
