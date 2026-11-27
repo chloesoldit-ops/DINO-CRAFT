@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW TROLL OBBY 0.6 — Prank Park Edition
+-- RAINBOW TROLL OBBY 0.7 — Trust Nothing Edition
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -22,7 +22,7 @@ local productIndex={}
 for name,id in pairs(PRODUCTS) do
  if id>0 then productIndex[id]=name end
 end
-local STAGES=12
+local STAGES=36
 local STAGE_LENGTH=70
 -- Unpublished Studio places may not have DataStore access.
 -- Use a memory-only test store so the obby and HUD can still run before publishing.
@@ -127,7 +127,7 @@ replayEvent.OnServerEvent:Connect(function(player)
  local stage=stats and stats:FindFirstChild("Stage")
  if not stage then return end
  if stage.Value<=STAGES then
-  message(player,"🏁 Finish all 12 stages to unlock replay!")
+  message(player,"🏁 Finish all 36 stages to unlock replay!")
   return
  end
  stage.Value=1
@@ -251,7 +251,7 @@ local function coinPad(position,stage,index)
   local player=playerOf(hit)
   if not player then return end
   local now=os.clock()
-  if now-(lastCollected[player.UserId] or 0)<25 then return end
+  if now-(lastCollected[player.UserId] or -1000)<25 then return end
   lastCollected[player.UserId]=now
   local stats=player:FindFirstChild("leaderstats")
   local stat=stats and stats:FindFirstChild("Coins")
@@ -297,7 +297,13 @@ end
 local stageNames={
  "Trust Issues","Fake Coin Alley","Wrong Way","Boost or Bust",
  "Laser Lies","Now You See Me","Cloud Betrayal","Tiny Troll Bridge",
- "Bounce Surprise","Spin to Lose","Almost the End","Fake Finish"
+ "Bounce Surprise","Spin to Lose","Almost the End","Fake Finish",
+ "Invisible Ink","Trust the Floor","Door of Lies","Banana Factory",
+ "No Jump Zone","Laser Sandwich","The Wrong Button","Ghost Bridge",
+ "Sneaky Steps","Reverse Express","Fake Checkpoint","Floor Roulette",
+ "The Long Jump","Pop Goes the Floor","Invisible Wall","Moving Madness",
+ "Tiny Trouble","Double Betrayal","Wrong Turn","The Final Exam",
+ "Definitely the End","Disappearing Act","Last Laugh","Actually the End"
 }
 local function floatingPart(name,size,position,color,material,collide)
  local p=block(name,size,CFrame.new(position),color,material or Enum.Material.Neon,collide)
@@ -477,6 +483,18 @@ RunService.Heartbeat:Connect(function()
   end
  end
 end)
+-- New traps use deterministic safe routes; no purchase is required.
+local function secretHazard(position,size,visible)
+ local hazard=block("SecretHazard",size,CFrame.new(position),Color3.fromRGB(255,55,80),Enum.Material.Neon,false)
+ hazard.Transparency=visible and 0 or 1
+ movingHarm(hazard)
+ return hazard
+end
+local function fakeFloor(position,size,color)
+ local fake=block("FakeFloor",size,CFrame.new(position),color,Enum.Material.SmoothPlastic,false)
+ fake.CanTouch=false
+ return fake
+end
 local routePoints={}
 for stage=1,STAGES+1 do
  local center=stagePos(stage)
@@ -519,8 +537,10 @@ for stage=1,STAGES+1 do
   spawn.Parent=mapFolder
  end
  -- Under each section, add distant cloud clusters as a sense of altitude.
- littleCloud(center+Vector3.new(-35,-13,30),1.2)
- littleCloud(center+Vector3.new(34,-17,50),.85)
+ if stage%2==1 then
+  littleCloud(center+Vector3.new(-35,-13,30),1.2)
+  littleCloud(center+Vector3.new(34,-17,50),.85)
+ end
  for side=-1,1,2 do
   orb("FloatingSkyOrb_"..stage.."_"..side,center+Vector3.new(side*34,15,20),
    4.2,palette[(stage+2)%#palette+1])
@@ -543,13 +563,48 @@ for stage=1,STAGES+1 do
    elseif stage==10 then x=math.sin(jump*.8)*2.4
    elseif stage==11 then x=math.sin(jump*.85)*3.5
    else x=math.sin(jump*1.15)*5.0 end
+   if stage>=13 then x=math.sin(jump*1.1+stage)*math.min(5,2.5+stage/15) end
    local width=(stage>=8 and 9 or 11)
    if stage==1 or stage==4 or stage==9 then width=13 end
    if stage==8 then width=6.8 end
+   if stage>=25 then width=8 end
    local pad=floatingPart("RainbowPlatform_"..stage.."_"..jump,
     Vector3.new(width,1.3,7.1),Vector3.new(x,10,z),
     palette[(stage+jump-1)%#palette+1],Enum.Material.SmoothPlastic,true)
    table.insert(points,{x=x,z=z,part=pad})
+   if stage>=13 then
+    local mode=(stage-13)%12
+    local side=(jump%2==0 and 1 or -1)
+    if mode==0 or mode==4 or mode==11 then
+     -- Unmarked lethal strip; opposite half remains safe.
+     if jump==2 or jump==4 or (stage>=30 and jump==5) then
+      secretHazard(Vector3.new(x+side*width*.31,11.35,z),Vector3.new(width*.38,1.3,6.5),false)
+     end
+    elseif mode==1 or mode==7 then
+     -- Identical-looking ghost twins, with a real center route.
+     if jump%2==0 then fakeFloor(Vector3.new(x+side*(width+1),10,z),pad.Size,pad.Color) end
+    elseif mode==2 or mode==6 then
+     if jump==3 then
+      local fake= baitPad(stage,jump,Vector3.new(x+12,10,z),"fake_finish","NEXT STAGE!")
+      fake.Color=pad.Color
+     end
+    elseif mode==3 or mode==9 then
+     if jump==2 or jump==5 then vanishingPad(pad) end
+    elseif mode==5 then
+     if jump==2 or jump==4 then
+      secretHazard(Vector3.new(x,11.25,z-1.8),Vector3.new(width,.5,.6),true)
+     end
+    elseif mode==8 then
+     if jump==3 or jump==5 then spinner(Vector3.new(x,11.45,z),stage+jump) end
+    elseif mode==10 then
+     if jump==3 then
+      -- Hidden side wall leaves a clear route on the other side.
+      local wall=block("InvisibleWall",Vector3.new(2,6,4),CFrame.new(x+side*3,13,z),pad.Color,Enum.Material.SmoothPlastic,true)
+      wall.Transparency=1
+     end
+    end
+   end
+
    -- An optional shiny branch beside the true course; no forced trap.
    if jump==3 and stage%3==1 then
     baitPad(stage,jump,Vector3.new(x+10.5,10,z),"fake_coin","FREE COINS!")
@@ -564,7 +619,7 @@ for stage=1,STAGES+1 do
      Vector3.new(.35,.3,6.2),Vector3.new(x+side*(width/2-.5),10.83,z),
      Color3.fromRGB(250,253,255))
    end
-   if jump==1 or jump==6 then
+   if stage<=12 and (jump==1 or jump==6) then
     decorative("ForwardMarker_"..stage.."_"..jump,Vector3.new(2.2,.35,2.8),
      Vector3.new(x,10.85,z),Color3.fromRGB(255,255,239))
    end
@@ -598,7 +653,7 @@ for stage=1,STAGES+1 do
   routePoints[stage]=points
   local endBridge=floatingPart("LandingPlatform_"..stage,Vector3.new(15,1.3,10),
    Vector3.new(0,10,center.Z+62),color,Enum.Material.SmoothPlastic,true)
-  if stage==12 then
+  if stage==12 or stage==33 or stage==36 then
    baitPad(stage,9,Vector3.new(-14,10,center.Z+61),"fake_finish","FREE FINISH!")
     sparkles(endBridge,color)
    for i=1,6 do

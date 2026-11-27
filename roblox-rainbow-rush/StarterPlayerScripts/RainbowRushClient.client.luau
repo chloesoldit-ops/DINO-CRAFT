@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW TROLL OBBY 0.6 — Prank Park Edition. Put in StarterPlayerScripts.
+-- RAINBOW TROLL OBBY 0.7 — Prank Park Edition. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
@@ -44,16 +44,16 @@ end
 local stageNames={
  "Trust Issues","Fake Coin Alley","Wrong Way","Boost or Bust",
  "Laser Lies","Now You See Me","Cloud Betrayal","Tiny Troll Bridge",
- "Bounce Surprise","Spin to Lose","Almost the End","Fake Finish"
+ "Bounce Surprise","Spin to Lose","Almost the End","Fake Finish",
+ "Invisible Ink","Trust the Floor","Door of Lies","Banana Factory",
+ "No Jump Zone","Laser Sandwich","The Wrong Button","Ghost Bridge",
+ "Sneaky Steps","Reverse Express","Fake Checkpoint","Floor Roulette",
+ "The Long Jump","Pop Goes the Floor","Invisible Wall","Moving Madness",
+ "Tiny Trouble","Double Betrayal","Wrong Turn","The Final Exam",
+ "Definitely the End","Disappearing Act","Last Laugh","Actually the End"
 }
-local stageHints={
- "Can you trust the signs?","Those free coins look suspicious!",
- "Some shortcuts are lies!","Watch out for surprise boosts!",
- "The red beams aren't friendly!","The floor might vanish!",
- "Not all clouds keep their promises!","Watch your footing!",
- "Bounce pads might surprise you!","Avoid the rotating troll beams!",
- "You're SO close now...","Can you spot the REAL finish?"
-}
+local stageHints={}
+for i=1,36 do stageHints[i]="Good luck." end
 local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  local element=Instance.new("TextButton")
  element.Name=name;element.Text=txt;element.Position=pos;element.Size=size
@@ -65,11 +65,11 @@ local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  return element
 end
 
-local banner=label("GameTitle","😂 RAINBOW TROLL OBBY 0.6",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
+local banner=label("GameTitle","😂 RAINBOW TROLL OBBY 0.7",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
 stylePanel(banner,Color3.fromRGB(94,48,204),Color3.fromRGB(211,68,173))
+local progress=label("Progress","Stage 1 / 36",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
 stylePanel(progress,Color3.fromRGB(41,74,168),Color3.fromRGB(34,138,190))
-local progress=label("Progress","Stage 1 / 12",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
 local currency=label("Currency","🪙 Coins: 0   🏆 Wins: 0",UDim2.new(0,13,0,63),UDim2.fromOffset(226,36),14)
 local timer=label("RaceTimer","⏱️ 00:00.0   🥇 BEST —",UDim2.new(.5,-145,0,131),UDim2.fromOffset(290,34),14)
 timer.BackgroundColor3=Color3.fromRGB(34,59,105)
@@ -87,7 +87,7 @@ local progressFill=Instance.new("Frame")
 progressFill.Name="ProgressFill";progressFill.Size=UDim2.fromScale(0,1)
 progressFill.BackgroundColor3=Color3.fromRGB(92,251,188)
 progressFill.BorderSizePixel=0;progressFill.Parent=progressBack
-local instructions=label("Instructions","😂 Find the real path · Ignore fake rewards · Reach the finish!",UDim2.new(.5,-195,0,102),UDim2.fromOffset(390,26),12)
+local instructions=label("Instructions","Trust nothing.",UDim2.new(.5,-195,0,102),UDim2.fromOffset(390,26),12)
 local notification=label("Notification","",UDim2.new(.5,-190,0,212),UDim2.fromOffset(380,50),16)
 notification.Visible=false
 notification.BackgroundColor3=Color3.fromRGB(24,100,99)
@@ -99,6 +99,19 @@ boost.Activated:Connect(function()practice:FireServer()end)
 local resetButton=button("ResetCheckpoint","📍 CHECKPOINT",UDim2.new(0,13,0,207),UDim2.fromOffset(155,42))
 resetButton.BackgroundColor3=Color3.fromRGB(86,86,152)
 resetButton.Activated:Connect(function()checkpointReset:FireServer()end)
+local deaths=0
+local deathLabel=label("Deaths","Deaths: 0",UDim2.fromOffset(13,257),UDim2.fromOffset(155,32),14)
+local function watchDeath(character)
+ local humanoid=character:WaitForChild("Humanoid",10)
+ if humanoid and humanoid:IsA("Humanoid") then
+  humanoid.Died:Connect(function()
+   deaths+=1
+   deathLabel.Text="Deaths: "..deaths
+  end)
+ end
+end
+player.CharacterAdded:Connect(watchDeath)
+if player.Character then task.spawn(watchDeath,player.Character) end
 local replayButton=button("ReplayCourse","🏁 REPLAY COURSE",UDim2.new(.5,-107,1,-74),UDim2.fromOffset(214,49))
 replayButton.BackgroundColor3=Color3.fromRGB(63,163,119)
 replayButton.Visible=false
@@ -232,7 +245,7 @@ local function updateTimer()
  local best=player:GetAttribute("BestTimeMs") or 0
  local stageStats=player:FindFirstChild("leaderstats")
  local stageValue=stageStats and stageStats:FindFirstChild("Stage")
- local finished=stageValue and stageValue:IsA("IntValue") and stageValue.Value>12
+ local finished=stageValue and stageValue:IsA("IntValue") and stageValue.Value>36
  local current=0
  if finished and type(lastTime)=="number" and lastTime>0 then
   current=lastTime
@@ -252,14 +265,14 @@ if stats then
  local wins=stats:WaitForChild("Wins",20)
  local function update()
   if stage and stage:IsA("IntValue") then
-   progress.Text=stage.Value>12 and "🏆 ALL 12 STAGES COMPLETE!" or ("☁️ Stage "..stage.Value.." / 12")
-   replayButton.Visible=stage.Value>12
-   local index=math.clamp(stage.Value,1,12)
-   stageTitle.Text=stage.Value>12 and "🏆 CHAMPION · COURSE COMPLETE" or
+   progress.Text=stage.Value>36 and "🏆 ALL 36 STAGES COMPLETE!" or ("☁️ Stage "..stage.Value.." / 36")
+   replayButton.Visible=stage.Value>36
+   local index=math.clamp(stage.Value,1,36)
+   stageTitle.Text=stage.Value>36 and "🏆 CHAMPION · COURSE COMPLETE" or
     ("STAGE "..index.." · "..string.upper(stageNames[index]))
-   instructions.Text=stage.Value>12 and "Replay for a new record!" or
-    ("☁️ "..stageHints[index].." · Collect coins and reach the checkpoint.")
-   local fraction=math.clamp((stage.Value-1)/12,0,1)
+   instructions.Text=stage.Value>36 and "Replay for a new record!" or
+    ("Trust nothing.")
+   local fraction=math.clamp((stage.Value-1)/36,0,1)
    TweenService:Create(progressFill,TweenInfo.new(.25),{Size=UDim2.fromScale(fraction,1)}):Play()
   end
   currency.Text="🪙 Coins: "..(coins and tostring(coins.Value) or "0").."    🏆 Wins: "..(wins and tostring(wins.Value) or "0")
