@@ -85,7 +85,7 @@ local function save(player)
  local data={stage=stage.Value,coins=points.Value,wins=wins.Value}
  pcall(function()SAVE_STORE:UpdateAsync(tostring(player.UserId),function(old)
   old=type(old)=="table" and old or {}
-  return {stage=math.max(old.stage or 1,data.stage),coins=data.coins,wins=math.max(old.wins or 0,data.wins),receipts=old.receipts or {}}
+  return {stage=math.max(old.stage or 1,data.stage),coins=math.max(old.coins or 0,data.coins),wins=math.max(old.wins or 0,data.wins),receipts=old.receipts or {}}
  end)end)
 end
 local function neonText(part,text)
