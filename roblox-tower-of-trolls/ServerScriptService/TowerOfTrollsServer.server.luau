@@ -10,7 +10,7 @@ local ReplicatedStorage=game:GetService("ReplicatedStorage")
 -- Optional, permanent cosmetic pass. Set to a real Game Pass ID after publishing.
 local RAINBOW_TRAIL_PASS_ID=0
 -- Replace 0 with IDs created in Roblox Creator Hub. All purchases are off until configured.
-local GAME_PASSES={slap=0,speed=2100229418,gravity=2101878610,fusion=2100445411,double_jump=2099863405,vip=2100127273,carpet=2099779265,rainbow_trail=0,double_coins=0}
+local GAME_PASSES={slap=2102130597,speed=2100229418,gravity=2101878610,fusion=2100445411,double_jump=2099863405,vip=2100127273,carpet=2099779265,rainbow_trail=0,double_coins=0}
 local LIVE_SHOP_ENABLED=false -- Enable only after live private purchase testing.
 -- Final Boss Skip: configured Developer Product, price controlled by Creator Dashboard.
 local PRODUCTS={skip_boss=3736985491,skip_1=0,skip_3=0,coins_250=0,coins_1200=0,fireworks=0,chaos=0}
