@@ -414,6 +414,9 @@ for stage=1,STAGES+1 do
  local color=palette[(stage-1)%#palette+1]
  local checkpoint=floatingPart("Checkpoint_"..stage,Vector3.new(27,2.2,19),center,color,Enum.Material.SmoothPlastic,true)
  checkpoints[stage]=checkpoint
+ rainbowArch(center,stage)
+ checkpointTheme(center,stage,color)
+ if stage==STAGES+1 then finishPodium(center) end
  local core=floatingPart("CheckpointCore_"..stage,Vector3.new(12,.4,9),center+Vector3.new(0,1.35,0),Color3.fromRGB(209,245,255),Enum.Material.Neon,false)
  core.Transparency=.22
  if stage==1 or stage==STAGES+1 then sparkles(core,color) end
@@ -434,6 +437,10 @@ for stage=1,STAGES+1 do
  -- Under each section, add distant cloud clusters as a sense of altitude.
  littleCloud(center+Vector3.new(-35,-13,30),1.2)
  littleCloud(center+Vector3.new(34,-17,50),.85)
+ for side=-1,1,2 do
+  orb("FloatingSkyOrb_"..stage.."_"..side,center+Vector3.new(side*34,15,20),
+   4.2,palette[(stage+2)%#palette+1])
+ end
  if stage<=STAGES then
   local points={}
   local pattern=stage%4
@@ -459,6 +466,16 @@ for stage=1,STAGES+1 do
     Vector3.new(width,1.3,7.1),Vector3.new(x,10,z),
     palette[(stage+jump-1)%#palette+1],Enum.Material.SmoothPlastic,true)
    table.insert(points,{x=x,z=z,part=pad})
+   -- Painted edges and chevrons make the next jump obvious.
+   for side=-1,1,2 do
+    decorative("PadStripe_"..stage.."_"..jump.."_"..side,
+     Vector3.new(.35,.3,6.2),Vector3.new(x+side*(width/2-.5),10.83,z),
+     Color3.fromRGB(250,253,255))
+   end
+   if jump==1 or jump==6 then
+    decorative("ForwardMarker_"..stage.."_"..jump,Vector3.new(2.2,.35,2.8),
+     Vector3.new(x,10.85,z),Color3.fromRGB(255,255,239))
+   end
    if jump==2 or jump==5 then coinPad(Vector3.new(x,12.8,z),stage,jump) end
    if stage==4 and (jump==2 or jump==5) then
     local boost=floatingPart("SpeedPad_"..stage.."_"..jump,Vector3.new(4,.5,4),Vector3.new(x,10.95,z),
@@ -489,7 +506,13 @@ for stage=1,STAGES+1 do
   routePoints[stage]=points
   local endBridge=floatingPart("LandingPlatform_"..stage,Vector3.new(15,1.3,10),
    Vector3.new(0,10,center.Z+62),color,Enum.Material.SmoothPlastic,true)
-  if stage==12 then sparkles(endBridge,color) end
+  if stage==12 then
+   sparkles(endBridge,color)
+   for i=1,6 do
+    decorative("FinaleStreamer_"..i,Vector3.new(.7,6,.7),
+     Vector3.new((i-3.5)*3.0,16,center.Z+62),palette[i])
+   end
+  end
  end
 end
 -- Invisible catch-up death plane; Roblox's default Baseplate is hidden.
