@@ -552,11 +552,11 @@ for stage=1,STAGES+1 do
    table.insert(points,{x=x,z=z,part=pad})
    -- An optional shiny branch beside the true course; no forced trap.
    if jump==3 and stage%3==1 then
-    baitPad(stage,jump,Vector3.new(x+16,10,z),"fake_coin","FREE COINS!")
+    baitPad(stage,jump,Vector3.new(x+10.5,10,z),"fake_coin","FREE COINS!")
    elseif jump==3 and stage%3==2 then
-    baitPad(stage,jump,Vector3.new(x-16,10,z),"wrong_way","SHORTCUT!")
+    baitPad(stage,jump,Vector3.new(x-10.5,10,z),"wrong_way","SHORTCUT!")
    elseif jump==3 and stage%3==0 then
-    baitPad(stage,jump,Vector3.new(x+16,10,z),"bounce","SECRET BOOST!")
+    baitPad(stage,jump,Vector3.new(x+10.5,10,z),"bounce","SECRET BOOST!")
    end
    -- Painted edges and chevrons make the next jump obvious.
    for side=-1,1,2 do
