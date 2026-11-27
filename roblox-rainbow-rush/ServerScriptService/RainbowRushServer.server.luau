@@ -158,53 +158,216 @@ local function movingHarm(part)
  end)
 end
 
--- Wide checkpoints, then alternating jumps, thin beams, moving-looking obstacles.
-for stage=1,STAGES+1 do
- local pos=stagePos(stage)
- local color=palette[(stage-1)%#palette+1]
- local platform=block("Checkpoint_"..stage,Vector3.new(24,2,20),CFrame.new(pos),color)
- neonText(platform,stage<=STAGES and ("🌈 STAGE "..stage) or "🏆 FINISH!")
- checkpoints[stage]=platform
- if stage==1 then
-  local spawn=Instance.new("SpawnLocation")
-  spawn.Name="RainbowRushSpawn";spawn.Size=Vector3.new(16,1,12)
-  spawn.Position=pos+Vector3.new(0,1.5,0);spawn.Anchored=true
-  spawn.Neutral=true;spawn.Color=Color3.fromRGB(80,240,195)
-  spawn.Parent=mapFolder
+-- RAINBOW RUSH 0.3: 12 distinct, reachable islands in the sky.
+-- Every obstacle section has a path with ~8-9 stud forward hops.
+local Lighting=game:GetService("Lighting")
+local TweenService=game:GetService("TweenService")
+Lighting.ClockTime=14.2
+Lighting.Brightness=3
+Lighting.Ambient=Color3.fromRGB(175,183,240)
+Lighting.OutdoorAmbient=Color3.fromRGB(187,205,255)
+Lighting.EnvironmentDiffuseScale=.8
+Lighting.EnvironmentSpecularScale=.7
+local atmosphere=Lighting:FindFirstChild("RainbowAtmosphere") or Instance.new("Atmosphere")
+atmosphere.Name="RainbowAtmosphere"
+atmosphere.Density=.27
+atmosphere.Offset=.1
+atmosphere.Color=Color3.fromRGB(210,233,255)
+atmosphere.Decay=Color3.fromRGB(150,169,238)
+atmosphere.Parent=Lighting
+local bloom=Lighting:FindFirstChild("RainbowBloom") or Instance.new("BloomEffect")
+bloom.Name="RainbowBloom"
+bloom.Intensity=.33;bloom.Size=20;bloom.Threshold=1.4
+bloom.Parent=Lighting
+local oldBaseplate=workspace:FindFirstChild("Baseplate")
+if oldBaseplate and oldBaseplate:IsA("BasePart") then
+ oldBaseplate.Transparency=1
+ oldBaseplate.CanCollide=false
+end
+local stageNames={
+ "Rookie Rainbow","Candy Hop","Zigzag Valley","Speedy Sprint",
+ "Laser Lane","Vanishing Steps","Moving Clouds","Neon Tightrope",
+ "Bouncy Galaxy","Spinner Storm","Cloud Kingdom","Rainbow Finale"
+}
+local function floatingPart(name,size,position,color,material,collide)
+ local p=block(name,size,CFrame.new(position),color,material or Enum.Material.Neon,collide)
+ if name:find("Platform") or name:find("Pad") or name:find("Cloud") then
+  local rim=Instance.new("Highlight")
+  rim.Name="GlowRim";rim.FillTransparency=1
+  rim.OutlineColor=color;rim.OutlineTransparency=.45;rim.Parent=p
  end
- platform.Touched:Connect(function(hit)
-  local p=playerOf(hit);if p then awardCheckpoint(p,stage)end
- end)
- if stage<=STAGES then
-  local difficulty=stage
-  local startZ=pos.Z+14
-  for jump=1,5 do
-   local z=startZ+jump*9
-   local x=math.sin(jump*1.65+stage)*math.min(10,3+difficulty*.65)
-   local width=math.max(5.3,10-stage*.35)
-   local pad=block("Jump_"..stage.."_"..jump,Vector3.new(width,1.4,7.2),
-    CFrame.new(x,10,z),palette[(stage+jump-1)%#palette+1])
-   if jump==2 or jump==4 then coinPad(Vector3.new(x,13,z),stage,jump)end
-   if stage>=4 and jump==3 then
-    local laser=block("RedDanger_"..stage,Vector3.new(width,.6,1.2),
-     CFrame.new(x,10.9,z-1.7),Color3.fromRGB(255,40,64),Enum.Material.Neon,false)
-    movingHarm(laser)
-   end
-  end
-  local bridge=block("Bridge_"..stage,Vector3.new(10,1.3,9),
-   CFrame.new(0,10,pos.Z+61),color)
+ return p
+end
+local function littleCloud(position,scale)
+ local model=Instance.new("Model");model.Name="FluffyCloud";model.Parent=mapFolder
+ for i=1,4 do
+  local x=(i-2.5)*4.1*scale
+  local cloud=block("Cloud",Vector3.new(8,3.8,5.8)*scale,CFrame.new(position+Vector3.new(x,math.sin(i)*.5,0)),Color3.fromRGB(240,246,255),Enum.Material.SmoothPlastic,false)
+  cloud.Shape=Enum.PartType.Ball
+  cloud.Parent=model
+  cloud.CastShadow=false
  end
 end
-local void=block("VoidRespawn",Vector3.new(300,2,STAGES*STAGE_LENGTH+250),
- CFrame.new(0,-22,STAGES*STAGE_LENGTH/2),Color3.fromRGB(30,22,54))
-void.Touched:Connect(function(hit)
- local p,h=playerOf(hit)
- if h then h.Health=0 end
+local function sparkles(part,color)
+ local a=Instance.new("Attachment");a.Parent=part
+ local particle=Instance.new("ParticleEmitter")
+ particle.Name="RainbowSparkles"
+ particle.Texture="rbxasset://textures/particles/sparkles_main.dds"
+ particle.Color=ColorSequence.new(color)
+ particle.Rate=5;particle.Lifetime=NumberRange.new(.5,1.3)
+ particle.Speed=NumberRange.new(.3,1.1)
+ particle.Size=NumberSequence.new(.7)
+ particle.Parent=a
+end
+local function boostPad(part)
+ part.Touched:Connect(function(hit)
+  local p,h=playerOf(hit)
+  if not p or not h then return end
+  local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+  if not root or not root:IsA("BasePart") then return end
+  if os.clock()-(touchCooldown[p] or 0)<2.5 then return end
+  touchCooldown[p]=os.clock()
+  root.AssemblyLinearVelocity=Vector3.new(root.AssemblyLinearVelocity.X,70,root.AssemblyLinearVelocity.Z+19)
+  message(p,"🚀 BOOST! Fly to the next platform!")
+ end)
+end
+local function vanishingPad(part)
+ local busy=false
+ part.Touched:Connect(function(hit)
+  if busy or not playerOf(hit) then return end
+  busy=true
+  task.delay(.4,function()
+   if not part.Parent then return end
+   part.Transparency=.72;part.CanCollide=false
+   task.delay(2.8,function()
+    if part.Parent then part.Transparency=0;part.CanCollide=true end
+    busy=false
+   end)
+  end)
+ end)
+end
+local spinnerParts={}
+local function spinner(center,stage)
+ local pivot=Instance.new("Part")
+ pivot.Name="SpinnerBeam_"..stage
+ pivot.Size=Vector3.new(14,.55,.7)
+ pivot.Material=Enum.Material.Neon
+ pivot.Color=Color3.fromRGB(255,61,112)
+ pivot.CanCollide=false;pivot.Anchored=true
+ pivot.Position=center
+ pivot.Parent=mapFolder
+ movingHarm(pivot)
+ table.insert(spinnerParts,{part=pivot,center=center,offset=stage*.75})
+end
+RunService.Heartbeat:Connect(function()
+ local now=os.clock()
+ for _,entry in ipairs(spinnerParts) do
+  if entry.part.Parent then
+   entry.part.CFrame=CFrame.new(entry.center)*CFrame.Angles(0,now*1.55+entry.offset,0)
+  end
+ end
 end)
-local lighting=game:GetService("Lighting")
-lighting.ClockTime=14;lighting.Brightness=2.4
-lighting.Ambient=Color3.fromRGB(190,185,230)
-lighting.OutdoorAmbient=Color3.fromRGB(160,195,230)
+local routePoints={}
+for stage=1,STAGES+1 do
+ local center=stagePos(stage)
+ local color=palette[(stage-1)%#palette+1]
+ local checkpoint=floatingPart("Checkpoint_"..stage,Vector3.new(27,2.2,19),center,color,Enum.Material.SmoothPlastic,true)
+ checkpoints[stage]=checkpoint
+ local core=floatingPart("CheckpointCore_"..stage,Vector3.new(12,.4,9),center+Vector3.new(0,1.35,0),Color3.fromRGB(209,245,255),Enum.Material.Neon,false)
+ core.Transparency=.22
+ if stage==1 or stage==STAGES+1 then sparkles(core,color) end
+ neonText(checkpoint,stage<=STAGES and ("STAGE "..stage.." — "..stageNames[stage]) or "🏆 RAINBOW CHAMPION!")
+ checkpoint.Touched:Connect(function(hit)
+  local p=playerOf(hit)
+  if p then awardCheckpoint(p,stage) end
+ end)
+ if stage==1 then
+  local spawn=Instance.new("SpawnLocation")
+  spawn.Name="RainbowRushSpawn";spawn.Size=Vector3.new(11,1,8)
+  spawn.Position=center+Vector3.new(0,2,0)
+  spawn.Anchored=true;spawn.Neutral=true;spawn.CanCollide=true
+  spawn.Transparency=.15
+  spawn.Color=Color3.fromRGB(104,251,209);spawn.Material=Enum.Material.Neon
+  spawn.Parent=mapFolder
+ end
+ -- Under each section, add distant cloud clusters as a sense of altitude.
+ littleCloud(center+Vector3.new(-35,-13,30),1.2)
+ littleCloud(center+Vector3.new(34,-17,50),.85)
+ if stage<=STAGES then
+  local points={}
+  local pattern=stage%4
+  for jump=1,6 do
+   local z=center.Z+9+jump*8.3
+   local x=0
+   if stage==1 then x=math.sin(jump*.7)*1.2
+   elseif stage==2 then x=(jump%2==0 and 4.2 or -4.2)
+   elseif stage==3 then x=math.sin(jump*1.18)*5.2
+   elseif stage==4 then x=math.sin(jump*.7)*1.6
+   elseif stage==5 then x=(jump%2==0 and 2.9 or -2.9)
+   elseif stage==6 then x=math.sin(jump*.8)*3.2
+   elseif stage==7 then x=math.sin(jump*.7)*3.2
+   elseif stage==8 then x=math.sin(jump*1.1)*2.5
+   elseif stage==9 then x=(jump%2==0 and 3.2 or -3.2)
+   elseif stage==10 then x=math.sin(jump*.8)*2.4
+   elseif stage==11 then x=math.sin(jump*.85)*3.5
+   else x=math.sin(jump*1.15)*5.0 end
+   local width=(stage>=8 and 9 or 11)
+   if stage==1 or stage==4 or stage==9 then width=13 end
+   if stage==8 then width=6.8 end
+   local pad=floatingPart("RainbowPlatform_"..stage.."_"..jump,
+    Vector3.new(width,1.3,7.1),Vector3.new(x,10,z),
+    palette[(stage+jump-1)%#palette+1],Enum.Material.SmoothPlastic,true)
+   table.insert(points,{x=x,z=z,part=pad})
+   if jump==2 or jump==5 then coinPad(Vector3.new(x,12.8,z),stage,jump) end
+   if stage==4 and (jump==2 or jump==5) then
+    local boost=floatingPart("SpeedPad_"..stage.."_"..jump,Vector3.new(4,.5,4),Vector3.new(x,10.95,z),
+     Color3.fromRGB(92,251,198),Enum.Material.Neon,false)
+    boostPad(boost)
+   elseif stage==5 and (jump==2 or jump==4) then
+    local laser=floatingPart("Laser_"..stage.."_"..jump,Vector3.new(width,.4,.6),
+     Vector3.new(x,11.25,z-2.25),Color3.fromRGB(255,52,102),Enum.Material.Neon,false)
+    movingHarm(laser)
+   elseif stage==6 and jump>=2 then
+    vanishingPad(pad)
+   elseif stage==7 and (jump==2 or jump==4) then
+    TweenService:Create(pad,TweenInfo.new(2.3,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),{
+     Position=pad.Position+Vector3.new(2.6,0,0)
+    }):Play()
+   elseif stage==9 and (jump==2 or jump==4) then
+    local bounce=floatingPart("BouncePad_"..stage.."_"..jump,Vector3.new(4.5,.5,4),Vector3.new(x,10.95,z),
+     Color3.fromRGB(255,207,88),Enum.Material.Neon,false)
+    boostPad(bounce)
+   elseif stage==10 and (jump==3 or jump==5) then
+    spinner(Vector3.new(x,11.45,z),stage+jump)
+   elseif stage==11 then
+    local cloud=block("SkyPuff_"..stage.."_"..jump,Vector3.new(width+3,.7,8),CFrame.new(x,9.1,z),
+     Color3.fromRGB(238,246,255),Enum.Material.SmoothPlastic,false)
+    cloud.Shape=Enum.PartType.Ball
+   end
+  end
+  routePoints[stage]=points
+  local endBridge=floatingPart("LandingPlatform_"..stage,Vector3.new(15,1.3,10),
+   Vector3.new(0,10,center.Z+62),color,Enum.Material.SmoothPlastic,true)
+  if stage==12 then sparkles(endBridge,color) end
+ end
+end
+-- Invisible catch-up death plane; Roblox's default Baseplate is hidden.
+local void=block("SkyVoid",Vector3.new(450,2,STAGES*STAGE_LENGTH+280),
+ CFrame.new(0,-33,STAGES*STAGE_LENGTH/2),Color3.fromRGB(108,130,204),Enum.Material.SmoothPlastic,false)
+void.Transparency=1
+void.Touched:Connect(function(hit)
+ local _,humanoid=playerOf(hit)
+ if humanoid then humanoid.Health=0 end
+end)
+-- Fall protection in case physics misses the invisible surface.
+RunService.Heartbeat:Connect(function()
+ for _,p in ipairs(Players:GetPlayers()) do
+  local char=p.Character
+  local root=char and char:FindFirstChild("HumanoidRootPart")
+  local humanoid=char and char:FindFirstChildOfClass("Humanoid")
+  if root and humanoid and root.Position.Y< -15 and humanoid.Health>0 then humanoid.Health=0 end
+ end
+end)
 
 local function applyTrail(player)
  if not(passOwnership[player] and passOwnership[player].rainbow_trail) then return end
