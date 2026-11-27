@@ -1,5 +1,5 @@
 --!nonstrict
--- TOWER OF TROLLS 1.9 — Power & Betrayal
+-- TOWER OF TROLLS 2.1 — The Gauntlets
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -781,6 +781,59 @@ local function finalBoss(center)
  platform("BossLastNeedle_1",P(6,29.3,0),Vector3.new(1,1,1),needle)
  platform("BossLastNeedle_2",P(12,29.6,0),Vector3.new(1,1,1),needle)
 end
+-- 2.1: Six extended skill gauntlets. No extra checkpoints.
+local gauntletFloors={[5]=1,[15]=2,[25]=3,[35]=4,[45]=5,[55]=6}
+stageNames[5]="Laser Switchback"
+stageNames[15]="Needle Marathon"
+stageNames[25]="Balance Labyrinth"
+stageNames[35]="Wall Wrap Academy"
+stageNames[45]="Ghost Forks"
+stageNames[55]="Collapsing Nightmare"
+local function gauntlet(stage,center,color,kind)
+ local direction=stage%4==1 and 1 or -1
+ local corners={Vector3.zero,Vector3.new(24,0,0),Vector3.new(24,0,24*direction),Vector3.new(0,0,24*direction),Vector3.zero}
+ local function point(i)
+  local segment=math.min(4,math.floor(i/4)+1)
+  local t=(i-(segment-1)*4)/4
+  return center+corners[segment]:Lerp(corners[segment+1],t)+Vector3.new(0,i*STAGE_LENGTH/16,0)
+ end
+ local gold=Color3.fromRGB(255,213,80)
+ local dark=Color3.fromRGB(41,32,60)
+ for i=1,15 do
+  local pos=point(i)
+  local nextPos=point(i+1)
+  local flat=Vector3.new(nextPos.X-pos.X,0,nextPos.Z-pos.Z)
+  local cf=CFrame.lookAt(pos,pos+flat)
+  local corner=i%4==0
+  local size=corner and Vector3.new(5,1,5) or Vector3.new(2.8,1,2.8)
+  if kind==1 and not corner then size=Vector3.new(4,1,3.5) end
+  if kind==2 and not corner then size=Vector3.new(1,1,1) end
+  if kind==3 and not corner then size=Vector3.new(1.35,1,4.5) end
+  if kind==4 then size=corner and Vector3.new(5,1,5) or Vector3.new(3.8,1,3.8) end
+  if kind==5 and not corner then size=Vector3.new(2.4,1,2.4) end
+  if kind==6 and not corner then size=Vector3.new(2.3,1,2.3) end
+  local pad=block("Gauntlet_"..stage.."_"..i,size,cf,corner and gold or color,Enum.Material.SmoothPlastic,true)
+  if i==1 then prankSign(pad,stageNames[stage].." - NO SAVE") end
+  if kind==1 and corner then
+   local a=pos-cf.RightVector*2+Vector3.new(0,1.05,0)
+   local b=pos+cf.RightVector*2+Vector3.new(0,1.05,0)
+   local beam=secretHazard(a,Vector3.new(.45,.5,2),true)
+   TweenService:Create(beam,TweenInfo.new(1.3,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,-1,true),{Position=b}):Play()
+  elseif kind==4 and i%4==1 then
+   local middle=pos:Lerp(nextPos,.5)
+   local width=math.floor(i/4)%2==0 and 4 or 5
+   block("GauntletWrap_"..stage.."_"..i,Vector3.new(width,11,.5),CFrame.lookAt(middle+Vector3.new(0,4.5,0),middle+Vector3.new(0,4.5,0)+flat),dark,Enum.Material.SmoothPlastic,true)
+  elseif kind==5 and i%4==2 then
+   local fake=fakeFloor(pos+cf.RightVector*4.5,size,color)
+   prankSign(fake,"EASY ROUTE")
+   local other=fakeFloor(pos-cf.RightVector*4.5,size,color)
+   prankSign(other,"TRUST ME")
+  elseif kind==6 and not corner then
+   vanishingPad(pad)
+  end
+  if corner then coinPad(pos+Vector3.new(0,2.5,0),stage,i) end
+ end
+end
 for stage=1,STAGES+1 do
  local center=stagePos(stage)
  local color=palette[(stage-1)%#palette+1]
@@ -805,6 +858,8 @@ for stage=1,STAGES+1 do
   finalBoss(center)
  elseif stage<=STAGES and betrayalFloors[stage] then
   betrayalCourse(stage,center,color)
+ elseif stage<=STAGES and gauntletFloors[stage] then
+  gauntlet(stage,center,color,gauntletFloors[stage])
  elseif stage<=STAGES then
   local mode=(stage-1)%6
   for step=1,11 do
@@ -1270,6 +1325,11 @@ do
   local d=targetRoot.Position-root.Position
   local direction=Vector3.new(d.X,0,d.Z).Unit
   targetRoot.AssemblyLinearVelocity=direction*38+Vector3.new(0,19,0)
+  local impact=Instance.new("Part")
+  impact.Name="BonkFlash";impact.Shape=Enum.PartType.Ball;impact.Size=Vector3.new(2,2,2);impact.CFrame=CFrame.new(targetRoot.Position)
+  impact.Color=Color3.fromRGB(255,205,65);impact.Material=Enum.Material.Neon;impact.Anchored=true;impact.CanCollide=false;impact.CanTouch=false;impact.CanQuery=false;impact.Transparency=.35;impact.Parent=mapFolder
+  TweenService:Create(impact,TweenInfo.new(.3),{Size=Vector3.new(7,7,7),Transparency=1}):Play()
+  game:GetService("Debris"):AddItem(impact,.4)
   message(p,"BONK! Slap landed.")
   message(target,"BONK! You have 25 seconds of slap protection.")
  end)

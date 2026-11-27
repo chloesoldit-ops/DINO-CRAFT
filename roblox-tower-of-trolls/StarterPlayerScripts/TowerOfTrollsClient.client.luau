@@ -1,5 +1,5 @@
 --!nonstrict
--- TOWER OF TROLLS 1.9. Put in StarterPlayerScripts.
+-- TOWER OF TROLLS 2.1. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
@@ -109,6 +109,12 @@ local stageNames={
  "Actually the End",
  "FINAL BOSS: THE IMPOSSIBLE EXAM"
 }
+stageNames[5]="Laser Switchback"
+stageNames[15]="Needle Marathon"
+stageNames[25]="Balance Labyrinth"
+stageNames[35]="Wall Wrap Academy"
+stageNames[45]="Ghost Forks"
+stageNames[55]="Collapsing Nightmare"
 local stageHints={}
 for i=1,61 do stageHints[i]="Good luck." end
 local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
@@ -122,7 +128,7 @@ local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  return element
 end
 
-local banner=label("GameTitle","😂 TOWER OF TROLLS 1.9",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
+local banner=label("GameTitle","😂 TOWER OF TROLLS 2.1",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
 stylePanel(banner,Color3.fromRGB(94,48,204),Color3.fromRGB(211,68,173))
 local progress=label("Progress","Floor 1 / 61",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
