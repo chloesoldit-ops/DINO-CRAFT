@@ -1,6 +1,16 @@
-# 🌈 Rainbow Rush Obby — Sky Carnival Edition 0.5
+# 😂 Rainbow Troll Obby — Prank Park 0.6
 
-This is a separate Roblox game, made free to play with optional future upgrades. **Rainbow Rush 0.5** adds a colorful obby-style lobby, 12 sky-island obstacle themes, stage arches, beacons, an illuminated finish podium, animated coins, a race timer, and personal-best tracking. It is not yet published or fully playtested in Studio; Robux earnings are not guaranteed.
+This is a separate Roblox game, made free to play with optional future upgrades. **Rainbow Troll Obby 0.6** adds a colorful obby-style lobby, 12 sky-island obstacle themes, stage arches, beacons, an illuminated finish podium, animated coins, a race timer, and personal-best tracking. It is not yet published or fully playtested in Studio; Robux earnings are not guaranteed.
+
+## New troll mechanics in 0.6
+
+- **Fake coin pads:** shiny gold optional platforms launch curious players into the air instead of awarding coins
+- **Wrong-way shortcuts:** tempting paths turn your character around
+- **Secret bounce traps:** surprise launch pads provide dramatic jumps
+- **Fake finish:** a decoy near the final stage sends the player back to their saved checkpoint, with no progress loss
+- **Prank Park stages:** twelve renamed troll-themed sections and new hints; main path and original free checkpoint gameplay remain
+
+**No purchases are needed to avoid the tricks.** Trolls affect only the current run, never saved progress or previously purchased items. All paid IDs remain zero until tested.
 
 ## What the game does
 
@@ -19,7 +29,7 @@ This is a separate Roblox game, made free to play with optional future upgrades.
 1. Click **Stop** if the game is playing.
 2. Open **ServerScriptService → Script**. Copy the complete new [server script](ServerScriptService/RainbowRushServer.server.luau), select all existing code with **⌘A** and replace it with **⌘V**.
 3. Open **StarterPlayer → StarterPlayerScripts → LocalScript**. Copy the complete new [client script](StarterPlayerScripts/RainbowRushClient.client.luau), and replace the old code the same way.
-4. Press **Play**. You should spawn in the new purple-and-rainbow lobby, looking toward the stage-one arch. Check platform jumps, rotating coins, moving platforms, hazards, the stage timer, checkpoint reset, finish bonus and the shop. Open **Window → Output** if anything errors.
+4. Press **Play**. You should spawn in the prank-themed purple-and-rainbow lobby, looking toward the stage-one arch. Check platform jumps, rotating coins, moving platforms, hazards, the stage timer, checkpoint reset, finish bonus and the shop. Open **Window → Output** if anything errors.
 5. **Keep this as a private prototype** until the entire course and saved progress are tested. Do not add Robux product IDs before testing purchases in an appropriate test environment.
 
 ## Copy and paste in Roblox Studio
