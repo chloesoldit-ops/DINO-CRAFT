@@ -14,6 +14,7 @@ local GAME_PASSES={rainbow_trail=0,speed=0,gravity=0,double_coins=0,vip=0}
 local PRODUCTS={skip_1=0,skip_3=0,coins_250=0,coins_1200=0,fireworks=0,chaos=0}
 local passOwnership={}
 local lastChaosTime=0
+local freeBoostCooldown={}
 local productIndex={}
 for name,id in pairs(PRODUCTS) do
  if id>0 then productIndex[id]=name end
@@ -56,6 +57,10 @@ local passInfo=Instance.new("RemoteFunction")
 passInfo.Name="PassInfo"
 passInfo.Parent=events
 passInfo.OnServerInvoke=function()return GAME_PASSES.rainbow_trail end
+local replayEvent=Instance.new("RemoteEvent")
+replayEvent.Name="ReplayCourse";replayEvent.Parent=events
+local boostEvent=Instance.new("RemoteEvent")
+boostEvent.Name="PracticeBoost";boostEvent.Parent=events
 local shopCatalog=Instance.new("RemoteFunction")
 shopCatalog.Name="ShopCatalog";shopCatalog.Parent=events
 shopCatalog.OnServerInvoke=function() return {passes=GAME_PASSES,products=PRODUCTS} end
@@ -106,6 +111,44 @@ local function save(player)
   return {stage=math.max(old.stage or 1,data.stage),coins=math.max(old.coins or 0,data.coins),wins=math.max(old.wins or 0,data.wins),receipts=old.receipts or {}}
  end)end)
 end
+-- Replaying is free and never resets purchases, coins or wins.
+replayEvent.OnServerEvent:Connect(function(player)
+ local stats=player:FindFirstChild("leaderstats")
+ local stage=stats and stats:FindFirstChild("Stage")
+ if not stage then return end
+ if stage.Value<=STAGES then
+  message(player,"🏁 Finish all 12 stages to unlock replay!")
+  return
+ end
+ stage.Value=1
+ teleport(player,1)
+ message(player,"🌈 NEW RUN! Race your friends again!")
+end)
+boostEvent.OnServerEvent:Connect(function(player)
+ local stats=player:FindFirstChild("leaderstats")
+ local balance=stats and stats:FindFirstChild("Coins")
+ local character=player.Character
+ local humanoid=character and character:FindFirstChildOfClass("Humanoid")
+ if not balance or not humanoid or humanoid.Health<=0 then return end
+ if os.clock()-(freeBoostCooldown[player] or -1000)<70 then
+  message(player,"⚡ Practice Boost is cooling down!")
+  return
+ end
+ if balance.Value<40 then
+  message(player,"⚡ Earn 40 coins to activate a 15-second speed boost!")
+  return
+ end
+ freeBoostCooldown[player]=os.clock()
+ balance.Value-=40
+ local current=passOwnership[player] and passOwnership[player].speed and 24 or 16
+ humanoid.WalkSpeed=math.max(current,27)
+ message(player,"⚡ PRACTICE BOOST! 15 seconds of super speed!")
+ task.delay(15,function()
+  if humanoid.Parent then
+   humanoid.WalkSpeed=current
+  end
+ end)
+end)
 local function neonText(part,text)
  local gui=Instance.new("BillboardGui")
  gui.Adornee=part;gui.Size=UDim2.fromOffset(250,75)
@@ -522,7 +565,7 @@ Players.PlayerAdded:Connect(function(player)
  player.CharacterAdded:Connect(onSpawn)
  if player.Character then task.spawn(onSpawn) end
 end)
-Players.PlayerRemoving:Connect(function(player)save(player);touchCooldown[player]=nil;passOwnership[player]=nil end)
+Players.PlayerRemoving:Connect(function(player)save(player);touchCooldown[player]=nil;passOwnership[player]=nil;freeBoostCooldown[player]=nil end)
 game:BindToClose(function()
  for _,player in Players:GetPlayers() do save(player)end
 end)
