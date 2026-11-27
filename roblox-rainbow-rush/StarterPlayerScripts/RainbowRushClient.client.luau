@@ -1,10 +1,11 @@
 --!strict
--- RAINBOW RUSH OBBY 0.3 — Sky Islands Edition. Put in StarterPlayerScripts.
+-- RAINBOW RUSH OBBY 0.4 — Sky Race Edition. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local MarketplaceService=game:GetService("MarketplaceService")
 local TweenService=game:GetService("TweenService")
+local RunService=game:GetService("RunService")
 
 local player=Players.LocalPlayer
 local events=ReplicatedStorage:WaitForChild("RainbowRushEvents")
@@ -13,6 +14,7 @@ local info=events:WaitForChild("PassInfo") :: RemoteFunction
 local catalog=events:WaitForChild("ShopCatalog") :: RemoteFunction
 local replay=events:WaitForChild("ReplayCourse") :: RemoteEvent
 local practice=events:WaitForChild("PracticeBoost") :: RemoteEvent
+local checkpointReset=events:WaitForChild("ResetCheckpoint") :: RemoteEvent
 local gui=Instance.new("ScreenGui")
 gui.Name="RainbowRushHUD"
 gui.ResetOnSpawn=false
@@ -42,12 +44,24 @@ local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  return element
 end
 
-local banner=label("GameTitle","🌈 RAINBOW RUSH · SKY ISLANDS",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
+local banner=label("GameTitle","🌈 RAINBOW RUSH · SKY RACE 0.4",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
 local progress=label("Progress","Stage 1 / 12",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
 local currency=label("Currency","🪙 Coins: 0   🏆 Wins: 0",UDim2.new(0,13,0,63),UDim2.fromOffset(226,36),14)
-local instructions=label("Instructions","☁️ Jump · Dodge hazards · Collect coins · Reach the finish!",UDim2.new(.5,-195,0,90),UDim2.fromOffset(390,32),12)
-local notification=label("Notification","",UDim2.new(.5,-190,0,130),UDim2.fromOffset(380,50),16)
+local timer=label("RaceTimer","⏱️ 00:00.0   🥇 BEST —",UDim2.new(.5,-145,0,131),UDim2.fromOffset(290,34),14)
+timer.BackgroundColor3=Color3.fromRGB(34,59,105)
+local progressBack=Instance.new("Frame")
+progressBack.Name="ProgressBack"
+progressBack.Position=UDim2.new(.5,-140,0,88)
+progressBack.Size=UDim2.fromOffset(280,7)
+progressBack.BackgroundColor3=Color3.fromRGB(45,40,93)
+progressBack.BorderSizePixel=0;progressBack.Parent=gui
+local progressFill=Instance.new("Frame")
+progressFill.Name="ProgressFill";progressFill.Size=UDim2.fromScale(0,1)
+progressFill.BackgroundColor3=Color3.fromRGB(92,251,188)
+progressFill.BorderSizePixel=0;progressFill.Parent=progressBack
+local instructions=label("Instructions","☁️ Jump · Dodge hazards · Collect coins · Reach the finish!",UDim2.new(.5,-195,0,102),UDim2.fromOffset(390,26),12)
+local notification=label("Notification","",UDim2.new(.5,-190,0,177),UDim2.fromOffset(380,50),16)
 notification.Visible=false
 notification.BackgroundColor3=Color3.fromRGB(24,100,99)
 
@@ -55,6 +69,9 @@ local shop=button("CosmeticShop","🛒 SHOP",UDim2.new(0,13,0,107),UDim2.fromOff
 local boost=button("PracticeBoost","⚡ BOOST · 40 COINS",UDim2.new(0,13,0,157),UDim2.fromOffset(155,43))
 boost.BackgroundColor3=Color3.fromRGB(29,138,162)
 boost.Activated:Connect(function()practice:FireServer()end)
+local resetButton=button("ResetCheckpoint","📍 CHECKPOINT",UDim2.new(0,13,0,207),UDim2.fromOffset(155,42))
+resetButton.BackgroundColor3=Color3.fromRGB(86,86,152)
+resetButton.Activated:Connect(function()checkpointReset:FireServer()end)
 local replayButton=button("ReplayCourse","🏁 REPLAY COURSE",UDim2.new(.5,-107,1,-74),UDim2.fromOffset(214,49))
 replayButton.BackgroundColor3=Color3.fromRGB(63,163,119)
 replayButton.Visible=false
@@ -171,6 +188,31 @@ shop.Text="🛒 SHOP · 11 ITEMS"
 shop.Activated:Connect(function()fullShop.Visible=not fullShop.Visible end)
 x.Activated:Connect(function()fullShop.Visible=false end)
 
+local function timeText(milliseconds:number):string
+ local tenths=math.floor(milliseconds/100)%10
+ local seconds=math.floor(milliseconds/1000)%60
+ local minutes=math.floor(milliseconds/60000)
+ return string.format("%02d:%02d.%d",minutes,seconds,tenths)
+end
+local function updateTimer()
+ local started=player:GetAttribute("RunStartedAt")
+ local lastTime=player:GetAttribute("LastTimeMs")
+ local best=player:GetAttribute("BestTimeMs") or 0
+ local stageStats=player:FindFirstChild("leaderstats")
+ local stageValue=stageStats and stageStats:FindFirstChild("Stage")
+ local finished=stageValue and stageValue:IsA("IntValue") and stageValue.Value>12
+ local current=0
+ if finished and type(lastTime)=="number" and lastTime>0 then
+  current=lastTime
+ elseif not finished and type(started)=="number" then
+  current=math.max(0,(workspace:GetServerTimeNow()-started)*1000)
+ end
+ timer.Text="⏱️ "..timeText(current).."   🥇 BEST "..(best>0 and timeText(best) or "—")
+end
+local lastTimerUpdate=0
+RunService.RenderStepped:Connect(function()
+ if os.clock()-lastTimerUpdate>.1 then lastTimerUpdate=os.clock();updateTimer() end
+end)
 local stats=player:WaitForChild("leaderstats",30)
 if stats then
  local stage=stats:WaitForChild("Stage",20)
@@ -180,6 +222,8 @@ if stats then
   if stage and stage:IsA("IntValue") then
    progress.Text=stage.Value>12 and "🏆 ALL 12 STAGES COMPLETE!" or ("☁️ Stage "..stage.Value.." / 12")
    replayButton.Visible=stage.Value>12
+   local fraction=math.clamp((stage.Value-1)/12,0,1)
+   TweenService:Create(progressFill,TweenInfo.new(.25),{Size=UDim2.fromScale(fraction,1)}):Play()
   end
   currency.Text="🪙 Coins: "..(coins and tostring(coins.Value) or "0").."    🏆 Wins: "..(wins and tostring(wins.Value) or "0")
  end
