@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW TROLL OBBY 0.7 — Trust Nothing Edition
+-- RAINBOW TROLL OBBY 0.8 — Betrayal Edition
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -495,6 +495,55 @@ local function fakeFloor(position,size,color)
  fake.CanTouch=false
  return fake
 end
+-- Reactive pranks: each surprise fires once per player per stage per session.
+local prankSeen=setmetatable({}, {__mode="k"})
+local function reactivePrank(pad,stage,kind)
+ pad.Touched:Connect(function(hit)
+  local p,h=playerOf(hit)
+  if not p or not h then return end
+  local stats=p:FindFirstChild("leaderstats")
+  local st=stats and stats:FindFirstChild("Stage")
+  if not st or st.Value~=stage then return end
+  local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+  if not root or not root:IsA("BasePart") then return end
+  local seen=prankSeen[p] or {}
+  prankSeen[p]=seen
+  local key=tostring(stage)..kind
+  if seen[key] then return end
+  seen[key]=true
+  if kind=="yeet" then
+   root.AssemblyLinearVelocity=Vector3.new(0,38,-38)
+   message(p,"NOPE. Back you go!")
+  elseif kind=="freeze" then
+   local speed=h.WalkSpeed
+   h.WalkSpeed=0
+   message(p,"Your legs are buffering...")
+   task.delay(.85,function() if h.Parent and h.Health>0 and h.WalkSpeed==0 then h.WalkSpeed=speed end end)
+  elseif kind=="backstep" then
+   root.CFrame=root.CFrame+Vector3.new(0,2,-8.3)
+   root.AssemblyLinearVelocity=Vector3.zero
+   message(p,"One step forward, one step back.")
+  elseif kind=="pop" then
+   root.AssemblyLinearVelocity=Vector3.new(24,52,0)
+   message(p,"POP QUIZ: can you fly?")
+  elseif kind=="fakewin" then
+   message(p,"YOU WON! ...just kidding.")
+   task.delay(.45,function()
+    if p.Character and p.Character:FindFirstChild("HumanoidRootPart")==root and st.Value==stage and h.Health>0 then teleport(p,stage) end
+   end)
+  elseif kind=="tinyjump" then
+   local oldPower,oldHeight=h.JumpPower,h.JumpHeight
+   h.JumpPower=15;h.JumpHeight=1
+   message(p,"Jump subscription expired.")
+   task.delay(1.3,function()
+    if h.Parent and h.Health>0 then
+     if h.JumpPower==15 then h.JumpPower=oldPower end
+     if h.JumpHeight==1 then h.JumpHeight=oldHeight end
+    end
+   end)
+  end
+ end)
+end
 local routePoints={}
 for stage=1,STAGES+1 do
  local center=stagePos(stage)
@@ -572,6 +621,24 @@ for stage=1,STAGES+1 do
     Vector3.new(width,1.3,7.1),Vector3.new(x,10,z),
     palette[(stage+jump-1)%#palette+1],Enum.Material.SmoothPlastic,true)
    table.insert(points,{x=x,z=z,part=pad})
+   -- Ordinary-looking main route pads hide the surprises. Each is learnable.
+   local tricks={"yeet","freeze","backstep","pop","fakewin","tinyjump"}
+   if stage>=2 and jump==2+(stage%3) then
+    reactivePrank(pad,stage,tricks[(stage-2)%#tricks+1])
+   end
+   if stage>=19 and jump==5 then
+    reactivePrank(pad,stage,tricks[(stage+1)%#tricks+1])
+   end
+   -- A real-looking bridge with a missing middle: the original route remains open.
+   if stage%5==0 and jump==3 then
+    local side=stage%2==0 and 1 or -1
+    for k=1,3 do
+     local pos=Vector3.new(x+side*(width/2+3.5),10,z+(k-2)*3)
+     if k==2 then fakeFloor(pos,Vector3.new(4,1.3,3),pad.Color)
+     else block("ShortcutTile",Vector3.new(4,1.3,3),CFrame.new(pos),pad.Color,Enum.Material.SmoothPlastic,true) end
+    end
+   end
+
    if stage>=13 then
     local mode=(stage-13)%12
     local side=(jump%2==0 and 1 or -1)
