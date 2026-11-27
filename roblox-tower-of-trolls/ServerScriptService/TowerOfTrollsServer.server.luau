@@ -1,5 +1,5 @@
 --!nonstrict
--- TOWER OF TROLLS 2.1 — The Gauntlets
+-- TOWER OF TROLLS 2.2 — Stability
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -37,7 +37,7 @@ local function savedFloor(stage)
  return math.min(51,1+math.floor((math.clamp(stage,1,STAGES)-1)/CHECKPOINT_INTERVAL)*CHECKPOINT_INTERVAL)
 end
 local STAGE_LENGTH=30
-local TOWER_RADIUS=15.5
+local TOWER_RADIUS=13.5
 -- Unpublished Studio places may not have DataStore access.
 -- Use a memory-only test store so the obby and HUD can still run before publishing.
 local studio=RunService:IsStudio()
@@ -57,14 +57,15 @@ local SAVE_STORE=if storeOkay then realStore else {
   return temporaryRecords[key]
  end
 }
-if not storeOkay then
- warn("Rainbow Rush: DataStore unavailable. Using temporary test progress; publish and enable Studio API access to test saving.")
-end
+if studio then print("Tower 2.2: Studio memory-only test mode.") elseif not storeOkay then warn("Tower data unavailable; purchases and saves disabled.") end
 -- Purchases are stored in the same player record as progression for atomic grants.
 local checkpoints={}
 local touchCooldown={}
 local coins={}
 local spinningCoins={}
+if workspace:FindFirstChild("RainbowRushWorld") or ReplicatedStorage:FindFirstChild("RainbowRushEvents") then
+ error("Duplicate tower detected. Stop and disable old obby scripts before playing.")
+end
 local mapFolder=Instance.new("Folder")
 mapFolder.Name="RainbowRushWorld"
 mapFolder.Parent=workspace
@@ -122,9 +123,11 @@ local function teleport(player,stage)
  local root=character and character:FindFirstChild("HumanoidRootPart")
  if root and root:IsA("BasePart") then
   root.AssemblyLinearVelocity=Vector3.zero
+  root.AssemblyAngularVelocity=Vector3.zero
   local target=stagePos(stage)+Vector3.new(0,5,0)
   if prison[player] then target=Vector3.new(80,15,0) end
-  root.CFrame=CFrame.lookAt(target,target+Vector3.new(0,0,12))
+  local sign=stage%2==0 and -1 or 1
+  if stage==STAGES or stage%10==5 or stage%10==8 then root.CFrame=CFrame.lookAt(target,target+Vector3.new(1,0,0)) else root.CFrame=CFrame.lookAt(target,target+Vector3.new(-.25,0,sign)) end
  end
 end
 local function returnToSavedFloor(player)
@@ -241,10 +244,8 @@ local function awardCheckpoint(player,stage)
  local coinStat=stats and stats:FindFirstChild("Coins")
  local winStat=stats and stats:FindFirstChild("Wins")
  if not(stageStat and coinStat and winStat) then return end
- if stage<stageStat.Value and stage>=savedFloor(stageStat.Value) then
-  stageStat.Value=stage
-  return
- end
+ -- Do not roll progression backwards when landing on an earlier marker.
+ if stage<=stageStat.Value then return end
  if stage==stageStat.Value+1 then
   if stage==STAGES+1 and (bossProgress[player] or 0)~=4 then
    message(player,"Finish all four boss sections first!")
@@ -769,17 +770,14 @@ local function finalBoss(center)
   platform("BossNeedleB_"..i,P(91-i*6.5,10+i*.65,49.5+(i%2)*1.2),Vector3.new(1,1,1),needle)
  end
  gate(3,P(0,19,49.5),"3/4 - FINAL WRAPS")
- for i=1,8 do
+ for i=1,7 do
   local z=49.5-i*5.5
   local y=19+i*1.05
   local width=i%2==0 and 5 or 4
   platform("BossFinalLanding_"..i,P(0,y,z),Vector3.new(3.5,1,3.1),gold)
   block("BossFinalWall_"..i,Vector3.new(width,12,.65),CFrame.new(P((i%2==0 and -.25 or .25),y+5.4,z+2.75)),dark,Enum.Material.SmoothPlastic,true)
  end
- gate(4,P(0,29,0),"4/4 - THE REAL FINISH")
- -- Bridge the previous 17.5-stud gap to the actual finish, using precision landings.
- platform("BossLastNeedle_1",P(6,29.3,0),Vector3.new(1,1,1),needle)
- platform("BossLastNeedle_2",P(12,29.6,0),Vector3.new(1,1,1),needle)
+ gate(4,P(0,27.5,5.5),"4/4 - JUMP TO FINISH")
 end
 -- 2.1: Six extended skill gauntlets. No extra checkpoints.
 local gauntletFloors={[5]=1,[15]=2,[25]=3,[35]=4,[45]=5,[55]=6}
@@ -841,7 +839,7 @@ for stage=1,STAGES+1 do
  local checkpoint=block((isSaved and "Checkpoint_" or "FloorMarker_")..stage,Vector3.new(7,1.3,7),CFrame.new(center),color,Enum.Material.SmoothPlastic,true)
  checkpoints[stage]=checkpoint
  neonText(checkpoint,stage<=STAGES and ((isSaved and "CHECKPOINT " or "FLOOR ")..stage.." — "..stageNames[stage]) or "TOWER CHAMPION!")
- if isSaved then checkpoint.Material=Enum.Material.Neon end
+ if isSaved then checkpoint.Material=Enum.Material.Neon;checkpointTheme(center,stage,color) end
  checkpoint.Touched:Connect(function(hit)
   local p=playerOf(hit)
   if p and not prison[p] then awardCheckpoint(p,stage) end
@@ -852,7 +850,7 @@ for stage=1,STAGES+1 do
   spawn.Position=center+Vector3.new(0,.9,0);spawn.Anchored=true;spawn.Neutral=true
   spawn.CanCollide=true;spawn.Transparency=.35;spawn.Parent=mapFolder
  elseif stage==STAGES+1 then
-  sparkles(checkpoint,color)
+  sparkles(checkpoint,color);finishPodium(center)
  end
  if stage==STAGES then
   finalBoss(center)
@@ -1112,7 +1110,12 @@ if studio then
   if not RunService:IsStudio() then return end
   local owned=passOwnership[p] or {};local enable=not p:GetAttribute("StudioAllPasses")
   for k,id in pairs(GAME_PASSES) do owned[k]=enable and (id>0 or k=="slap");p:SetAttribute("Own_"..k,owned[k]) end
-  passOwnership[p]=owned;p:SetAttribute("StudioAllPasses",enable);powerMode[p]="normal";stopSpecial(p);returnToSavedFloor(p);applyBenefits(p)
+  passOwnership[p]=owned;p:SetAttribute("StudioAllPasses",enable);powerMode[p]="normal";if flying[p] or lounging[p] then returnSpecial(p) else applyBenefits(p) end
+  if not enable and p.Character then
+   local ch=p.Character;local root=ch:FindFirstChild("HumanoidRootPart");local head=ch:FindFirstChild("Head")
+   for _,obj in ipairs({ch:FindFirstChild("RainbowVIPGlow"),head and head:FindFirstChild("VIPTag"),root and root:FindFirstChild("RainbowCosmeticTrail"),root and root:FindFirstChild("RainbowTrailA"),root and root:FindFirstChild("RainbowTrailB")}) do if obj then obj:Destroy() end end
+  end
+  message(p,enable and "All test passes enabled. Open ABILITIES." or "Test passes disabled.")
  end)
 end
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player,id,purchased)
@@ -1223,8 +1226,10 @@ if studio then
  end)
 end
 
-Players.PlayerAdded:Connect(function(player)
- refreshPasses(player)
+local initialized=setmetatable({}, {__mode="k"})
+local function initializePlayer(player)
+ if initialized[player] or not player.Parent then return end
+ initialized[player]=true
  local leaderstats=Instance.new("Folder");leaderstats.Name="leaderstats";leaderstats.Parent=player
  local stage=Instance.new("IntValue");stage.Name="Stage";stage.Value=1;stage.Parent=leaderstats
  local coin=Instance.new("IntValue");coin.Name="Coins";coin.Parent=leaderstats
@@ -1243,16 +1248,19 @@ Players.PlayerAdded:Connect(function(player)
  raceStarted[player]=workspace:GetServerTimeNow()
  raceEligible[player]=stage.Value==1
  player:SetAttribute("RunStartedAt",raceStarted[player])
- local function onSpawn()
-  task.wait(.3)
-  if player.Parent and player.Character then
+ local function onSpawn(character)
+  local root=character:WaitForChild("HumanoidRootPart",10)
+  if root and player.Parent and player.Character==character then
    returnToSavedFloor(player)
    applyBenefits(player)
   end
  end
  player.CharacterAdded:Connect(onSpawn)
- if player.Character then task.spawn(onSpawn) end
-end)
+ if player.Character then task.spawn(onSpawn,player.Character) end
+ if not studio then task.spawn(function() refreshPasses(player);if player.Parent then applyBenefits(player) end end) end
+end
+Players.PlayerAdded:Connect(initializePlayer)
+for _,p in ipairs(Players:GetPlayers()) do task.spawn(initializePlayer,p) end
 Players.PlayerRemoving:Connect(function(player)
  save(player)
  prison[player]=nil;prisonDone[player]=nil
@@ -1324,7 +1332,7 @@ do
   raceEligible[p]=false;raceEligible[target]=false
   local d=targetRoot.Position-root.Position
   local direction=Vector3.new(d.X,0,d.Z).Unit
-  targetRoot.AssemblyLinearVelocity=direction*38+Vector3.new(0,19,0)
+  targetRoot:ApplyImpulse((direction*38+Vector3.new(0,19,0))*targetRoot.AssemblyMass)
   local impact=Instance.new("Part")
   impact.Name="BonkFlash";impact.Shape=Enum.PartType.Ball;impact.Size=Vector3.new(2,2,2);impact.CFrame=CFrame.new(targetRoot.Position)
   impact.Color=Color3.fromRGB(255,205,65);impact.Material=Enum.Material.Neon;impact.Anchored=true;impact.CanCollide=false;impact.CanTouch=false;impact.CanQuery=false;impact.Transparency=.35;impact.Parent=mapFolder
@@ -1334,6 +1342,7 @@ do
   message(target,"BONK! You have 25 seconds of slap protection.")
  end)
  Players.PlayerAdded:Connect(function(p)
+  shield[p]=os.clock()+8
   p.CharacterAdded:Connect(function() shield[p]=os.clock()+8 end)
  end)
  for _,p in ipairs(Players:GetPlayers()) do
@@ -1341,3 +1350,6 @@ do
   p.CharacterAdded:Connect(function() shield[p]=os.clock()+8 end)
  end
 end
+
+events:SetAttribute("TowerVersion","2.2")
+print("TOWER OF TROLLS 2.2 SERVER READY")

@@ -1,5 +1,5 @@
 --!nonstrict
--- TOWER OF TROLLS 2.1. Put in StarterPlayerScripts.
+-- TOWER OF TROLLS 2.2. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
@@ -19,11 +19,14 @@ local replay=events:WaitForChild("ReplayCourse") :: RemoteEvent
 local practice=events:WaitForChild("PracticeBoost") :: RemoteEvent
 local checkpointReset=events:WaitForChild("ResetCheckpoint") :: RemoteEvent
 local playerGui=player:WaitForChild("PlayerGui")
-if playerGui:FindFirstChild("RainbowRushHUD") then return end
+-- A persistent HUD must be owned by a persistent PlayerScripts controller.
+if not script:IsDescendantOf(player:WaitForChild("PlayerScripts")) then warn("Move Tower client into StarterPlayerScripts, not StarterCharacterScripts.");return end
+for _,name in ipairs({"RainbowRushHUD","TrollPrisonUI"}) do local old=playerGui:FindFirstChild(name);if old then old:Destroy() end end
 local gui=Instance.new("ScreenGui")
 gui.Name="RainbowRushHUD"
 gui.ResetOnSpawn=false
 gui.IgnoreGuiInset=false
+gui.DisplayOrder=10
 gui.Parent=player:WaitForChild("PlayerGui")
 
 local function label(name:string,txt:string,pos:UDim2,size:UDim2,textSize:number):TextLabel
@@ -33,18 +36,17 @@ local function label(name:string,txt:string,pos:UDim2,size:UDim2,textSize:number
  element.TextColor3=Color3.fromRGB(255,255,255)
  element.TextStrokeTransparency=.55
  element.BackgroundColor3=Color3.fromRGB(23,31,70)
- element.BackgroundTransparency=.13;element.BorderSizePixel=0
+ element.BackgroundTransparency=0;element.BorderSizePixel=0
  element.Parent=gui
  local round=Instance.new("UICorner");round.CornerRadius=UDim.new(0,12);round.Parent=element
  return element
 end
 local function stylePanel(target:GuiObject,c1:Color3,c2:Color3)
- local gradient=Instance.new("UIGradient")
- gradient.Color=ColorSequence.new(c1,c2)
- gradient.Rotation=30;gradient.Parent=target
+ target.BackgroundColor3=c1:Lerp(c2,.25)
+ if target:IsA("TextLabel") or target:IsA("TextButton") then target.TextColor3=Color3.new(1,1,1);target.TextStrokeTransparency=1 end
  local stroke=Instance.new("UIStroke")
  stroke.Color=Color3.fromRGB(242,241,255)
- stroke.Transparency=.62;stroke.Thickness=1.7;stroke.Parent=target
+ stroke.ApplyStrokeMode=Enum.ApplyStrokeMode.Border;stroke.Transparency=.65;stroke.Thickness=1.4;stroke.Parent=target
 end
 local stageNames={
  "The Floor Is Lying",
@@ -128,7 +130,7 @@ local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  return element
 end
 
-local banner=label("GameTitle","😂 TOWER OF TROLLS 2.1",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
+local banner=label("GameTitle","😂 TOWER OF TROLLS 2.2",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
 stylePanel(banner,Color3.fromRGB(94,48,204),Color3.fromRGB(211,68,173))
 local progress=label("Progress","Floor 1 / 61",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
@@ -190,7 +192,7 @@ fullShop.Name="ShopPanel";fullShop.AnchorPoint=Vector2.new(.5,.5)
 fullShop.Position=UDim2.fromScale(.5,.5)
 fullShop.Size=UDim2.new(.86,0,.8,0)
 fullShop.BackgroundColor3=Color3.fromRGB(24,22,62)
-fullShop.BorderSizePixel=0;fullShop.Visible=false;fullShop.Parent=gui
+fullShop.BorderSizePixel=0;fullShop.Visible=false;fullShop.Parent=gui;fullShop.ZIndex=20
 stylePanel(fullShop,Color3.fromRGB(30,25,78),Color3.fromRGB(19,56,107))
 local sizeLimit=Instance.new("UISizeConstraint")
 sizeLimit.MaxSize=Vector2.new(620,640);sizeLimit.MinSize=Vector2.new(290,280)
@@ -263,24 +265,22 @@ local function row(titleText:string,key:string,kind:string,detail:string)
   buy.Text="COMING SOON"
   buy.BackgroundColor3=Color3.fromRGB(77,77,98)
  else
-  buy.Text="VIEW PRICE"
-  if kind=="pass" then
-   local function markOwned() if player:GetAttribute("Own_"..key) then buy.Text="OWNED";buy.BackgroundColor3=Color3.fromRGB(43,125,80) end end
-   player:GetAttributeChangedSignal("Own_"..key):Connect(markOwned);markOwned()
+  local price="VIEW PRICE"
+  local function refresh()
+   buy.BackgroundColor3=Color3.fromRGB(121,61,189)
+   if kind=="pass" and player:GetAttribute("Own_"..key) then buy.Text="OWNED";buy.BackgroundColor3=Color3.fromRGB(43,125,80)
+   elseif key=="skip_boss" and (player:GetAttribute("BossSkipCredits") or 0)>0 then buy.Text="REDEEM CREDIT"
+   else buy.Text=price end
   end
-  if key=="skip_boss" then
-   local function creditText()
-    if (player:GetAttribute("BossSkipCredits") or 0)>0 then buy.Text="REDEEM CREDIT" end
-   end
-   player:GetAttributeChangedSignal("BossSkipCredits"):Connect(creditText)
-   creditText()
-  end
+  if kind=="pass" then player:GetAttributeChangedSignal("Own_"..key):Connect(refresh) end
+  if key=="skip_boss" then player:GetAttributeChangedSignal("BossSkipCredits"):Connect(refresh) end
+  refresh()
   task.spawn(function()
    local success,product=pcall(function()
     return MarketplaceService:GetProductInfo(id,kind=="pass" and Enum.InfoType.GamePass or Enum.InfoType.Product)
    end)
    if success and typeof(product)=="table" and typeof(product.PriceInRobux)=="number" then
-    if not (kind=="pass" and player:GetAttribute("Own_"..key)) and (key~="skip_boss" or (player:GetAttribute("BossSkipCredits") or 0)==0) then buy.Text=tostring(product.PriceInRobux).." ROBUX" end
+    price=tostring(product.PriceInRobux).." ROBUX";refresh()
    end
   end)
   buy.Activated:Connect(function()
@@ -326,6 +326,7 @@ local function row(titleText:string,key:string,kind:string,detail:string)
  end
 end
 for _,offer in ipairs(offers) do row(offer[1],offer[2],offer[3],offer[4]) end
+for _,obj in ipairs(fullShop:GetDescendants()) do if obj:IsA("GuiObject") then obj.ZIndex=21 end end
 -- A compact abilities menu, separate from the purchase shop.
 local powerButton=button("PowerMenu","ABILITIES",UDim2.fromOffset(13,295),UDim2.fromOffset(155,39))
 local powers=Instance.new("Frame");powers.Name="Powers";powers.Size=UDim2.fromOffset(205,282);powers.Position=UDim2.fromOffset(175,100);powers.BackgroundColor3=Color3.fromRGB(25,30,58);powers.Visible=false;powers.Parent=gui
@@ -349,7 +350,7 @@ powerRow("gravity","Gravity Coil","mode","gravity")
 powerRow("fusion","Fusion Coil","mode","fusion")
 powerRow("carpet","Magic Carpet","carpet")
 powerRow("vip","VIP Lounge","lounge")
-powerButton.Activated:Connect(function() powers.Visible=not powers.Visible end)
+powerButton.Activated:Connect(function() powers.Visible=not powers.Visible;fullShop.Visible=false end)
 UserInputService.JumpRequest:Connect(function()
  if not player:GetAttribute("Own_double_jump") or player:GetAttribute("CarpetFlying") then return end
  local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -381,8 +382,8 @@ end
 local bossShopButton=button("BossShopShortcut","FINAL BOSS SHOP",UDim2.new(1,-174,0,65),UDim2.fromOffset(160,42))
 bossShopButton.Visible=false
 bossShopButton.Activated:Connect(function() fullShop.Visible=true end)
-shop.Text="🛒 SHOP · 7 ITEMS"
-shop.Activated:Connect(function()fullShop.Visible=not fullShop.Visible end)
+shop.Text="🛒 SHOP · 8 ITEMS"
+shop.Activated:Connect(function()fullShop.Visible=not fullShop.Visible;powers.Visible=false end)
 x.Activated:Connect(function()fullShop.Visible=false end)
 
 local function timeText(milliseconds:number):string
@@ -488,11 +489,12 @@ do
   end
   for _,attr in ipairs({"Own_slap","TrollPrison","CarpetFlying","VIPLounge"}) do player:GetAttributeChangedSignal(attr):Connect(visibility) end
   visibility()
-  b.Activated:Connect(function()
-   if os.clock()<readyAt then return end
-   readyAt=os.clock()+12
-   slap:FireServer()
-  end)
+  local function doSlap()
+   if not b.Visible or not gui.Enabled or os.clock()<readyAt then return end
+   readyAt=os.clock()+12;slap:FireServer()
+  end
+  b.Activated:Connect(doSlap)
+  UserInputService.InputBegan:Connect(function(input,processed) if not processed and input.KeyCode==Enum.KeyCode.F then doSlap() end end)
   task.spawn(function()
    while b.Parent do
     local left=math.ceil(readyAt-os.clock())
@@ -502,3 +504,5 @@ do
   end)
  end
 end
+
+print("TOWER OF TROLLS 2.2 CLIENT READY")
