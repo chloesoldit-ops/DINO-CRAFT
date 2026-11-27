@@ -9,9 +9,14 @@ local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 -- Optional, permanent cosmetic pass. Set to a real Game Pass ID after publishing.
 local RAINBOW_TRAIL_PASS_ID=0
+-- Replace 0 with IDs created in Roblox Creator Hub. All purchases are off until configured.
+local GAME_PASSES={rainbow_trail=0,speed=0,gravity=0,double_coins=0,vip=0}
+local PRODUCTS={skip_1=0,skip_3=0,coins_250=0,coins_1200=0,fireworks=0,chaos=0}
+local passOwnership={}
 local STAGES=12
 local STAGE_LENGTH=70
 local SAVE_STORE=DataStoreService:GetDataStore("RainbowRush_Progress_01")
+local RECEIPTS=DataStoreService:GetDataStore("RainbowRush_Receipts_v1")
 local checkpoints={}
 local touchCooldown={}
 local coins={}
@@ -27,7 +32,10 @@ showMessage.Parent=events
 local passInfo=Instance.new("RemoteFunction")
 passInfo.Name="PassInfo"
 passInfo.Parent=events
-passInfo.OnServerInvoke=function()return RAINBOW_TRAIL_PASS_ID end
+passInfo.OnServerInvoke=function()return GAME_PASSES.rainbow_trail end
+local shopCatalog=Instance.new("RemoteFunction")
+shopCatalog.Name="ShopCatalog";shopCatalog.Parent=events
+shopCatalog.OnServerInvoke=function() return {passes=GAME_PASSES,products=PRODUCTS} end
 
 local palette={
  Color3.fromRGB(248,81,114),Color3.fromRGB(255,171,57),
@@ -72,7 +80,7 @@ local function save(player)
  local data={stage=stage.Value,coins=points.Value,wins=wins.Value}
  pcall(function()SAVE_STORE:UpdateAsync(tostring(player.UserId),function(old)
   old=type(old)=="table" and old or {}
-  return {stage=math.max(old.stage or 1,data.stage),coins=math.max(old.coins or 0,data.coins),wins=math.max(old.wins or 0,data.wins)}
+  return {stage=math.max(old.stage or 1,data.stage),coins=data.coins,wins=math.max(old.wins or 0,data.wins)}
  end)end)
 end
 local function neonText(part,text)
@@ -92,9 +100,9 @@ local function awardCheckpoint(player,stage)
  if not(stageStat and coinStat and winStat) then return end
  if stage==stageStat.Value+1 then
   stageStat.Value=stage
-  coinStat.Value+=25
+  coinStat.Value+=25*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1)
   message(player,"✅ CHECKPOINT "..stage.."! +25 free coins!")
-  if stage==STAGES+1 then winStat.Value+=1;coinStat.Value+=200;message(player,"🏆 YOU WON! +200 BONUS COINS!") end
+  if stage==STAGES+1 then winStat.Value+=1;coinStat.Value+=200*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1);message(player,"🏆 YOU WON! BONUS COINS!") end
   task.spawn(save,player)
  elseif stage>stageStat.Value+1 then
   message(player,"Reach the previous checkpoint first!")
@@ -114,7 +122,7 @@ local function coinPad(position,stage,index)
   lastCollected[player.UserId]=now
   local stats=player:FindFirstChild("leaderstats")
   local stat=stats and stats:FindFirstChild("Coins")
-  if stat then stat.Value+=5;message(player,"🪙 +5 FREE COINS!") end
+  if stat then stat.Value+=5*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1);message(player,"🪙 COINS COLLECTED!") end
  end)
 end
 local function movingHarm(part)
@@ -176,9 +184,7 @@ lighting.Ambient=Color3.fromRGB(190,185,230)
 lighting.OutdoorAmbient=Color3.fromRGB(160,195,230)
 
 local function applyTrail(player)
- if RAINBOW_TRAIL_PASS_ID<=0 then return end
- local ok,owned=pcall(function()return MarketplaceService:UserOwnsGamePassAsync(player.UserId,RAINBOW_TRAIL_PASS_ID)end)
- if not ok or not owned then return end
+ if not(passOwnership[player] and passOwnership[player].rainbow_trail) then return end
  local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
  if not root or root:FindFirstChild("RainbowTrailA") then return end
  local a=Instance.new("Attachment");a.Name="RainbowTrailA";a.Position=Vector3.new(-.4,-1,0);a.Parent=root
