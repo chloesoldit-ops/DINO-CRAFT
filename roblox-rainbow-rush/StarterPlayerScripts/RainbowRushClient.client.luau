@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW RUSH OBBY 0.4 — Sky Race Edition. Put in StarterPlayerScripts.
+-- RAINBOW RUSH OBBY 0.5 — Sky Carnival Edition. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
@@ -33,6 +33,25 @@ local function label(name:string,txt:string,pos:UDim2,size:UDim2,textSize:number
  local round=Instance.new("UICorner");round.CornerRadius=UDim.new(0,12);round.Parent=element
  return element
 end
+local function stylePanel(target:GuiObject,c1:Color3,c2:Color3)
+ local gradient=Instance.new("UIGradient")
+ gradient.Color=ColorSequence.new(c1,c2)
+ gradient.Rotation=30;gradient.Parent=target
+ local stroke=Instance.new("UIStroke")
+ stroke.Color=Color3.fromRGB(242,241,255)
+ stroke.Transparency=.62;stroke.Thickness=1.7;stroke.Parent=target
+end
+local stageNames={
+ "Rookie Rainbow","Candy Hop","Zigzag Valley","Speedy Sprint",
+ "Laser Lane","Vanishing Steps","Moving Clouds","Neon Tightrope",
+ "Bouncy Galaxy","Spinner Storm","Cloud Kingdom","Rainbow Finale"
+}
+local stageHints={
+ "Follow the rainbow path!","Side-step and jump!","Time those zigzags!",
+ "Use the boost pads!","Avoid the red lasers!","Platforms disappear!",
+ "Wait for moving clouds!","Stay on the narrow pads!","Bounce to victory!",
+ "Dodge the spinning beams!","Jump through the clouds!","The final challenge!"
+}
 local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  local element=Instance.new("TextButton")
  element.Name=name;element.Text=txt;element.Position=pos;element.Size=size
@@ -46,10 +65,16 @@ end
 
 local banner=label("GameTitle","🌈 RAINBOW RUSH · SKY RACE 0.4",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
+stylePanel(banner,Color3.fromRGB(94,48,204),Color3.fromRGB(211,68,173))
+stylePanel(progress,Color3.fromRGB(41,74,168),Color3.fromRGB(34,138,190))
 local progress=label("Progress","Stage 1 / 12",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
 local currency=label("Currency","🪙 Coins: 0   🏆 Wins: 0",UDim2.new(0,13,0,63),UDim2.fromOffset(226,36),14)
 local timer=label("RaceTimer","⏱️ 00:00.0   🥇 BEST —",UDim2.new(.5,-145,0,131),UDim2.fromOffset(290,34),14)
 timer.BackgroundColor3=Color3.fromRGB(34,59,105)
+local stageTitle=label("StageTheme","STAGE 1 · ROOKIE RAINBOW",
+ UDim2.new(.5,-165,0,174),UDim2.fromOffset(330,30),14)
+stageTitle.BackgroundColor3=Color3.fromRGB(59,92,142)
+stylePanel(stageTitle,Color3.fromRGB(46,104,178),Color3.fromRGB(91,62,167))
 local progressBack=Instance.new("Frame")
 progressBack.Name="ProgressBack"
 progressBack.Position=UDim2.new(.5,-140,0,88)
@@ -61,7 +86,7 @@ progressFill.Name="ProgressFill";progressFill.Size=UDim2.fromScale(0,1)
 progressFill.BackgroundColor3=Color3.fromRGB(92,251,188)
 progressFill.BorderSizePixel=0;progressFill.Parent=progressBack
 local instructions=label("Instructions","☁️ Jump · Dodge hazards · Collect coins · Reach the finish!",UDim2.new(.5,-195,0,102),UDim2.fromOffset(390,26),12)
-local notification=label("Notification","",UDim2.new(.5,-190,0,177),UDim2.fromOffset(380,50),16)
+local notification=label("Notification","",UDim2.new(.5,-190,0,212),UDim2.fromOffset(380,50),16)
 notification.Visible=false
 notification.BackgroundColor3=Color3.fromRGB(24,100,99)
 
@@ -77,6 +102,10 @@ replayButton.BackgroundColor3=Color3.fromRGB(63,163,119)
 replayButton.Visible=false
 replayButton.Activated:Connect(function()replay:FireServer()end)
 shop.BackgroundColor3=Color3.fromRGB(81,137,205)
+stylePanel(shop,Color3.fromRGB(51,115,220),Color3.fromRGB(120,72,207))
+stylePanel(boost,Color3.fromRGB(20,183,172),Color3.fromRGB(30,111,186))
+stylePanel(resetButton,Color3.fromRGB(88,89,174),Color3.fromRGB(124,81,156))
+stylePanel(replayButton,Color3.fromRGB(44,182,132),Color3.fromRGB(48,125,208))
 -- The shop lists actual Roblox Marketplace prices; IDs remain 0 until configured.
 local fullShop=Instance.new("Frame")
 fullShop.Name="ShopPanel";fullShop.AnchorPoint=Vector2.new(.5,.5)
@@ -84,6 +113,7 @@ fullShop.Position=UDim2.fromScale(.5,.5)
 fullShop.Size=UDim2.new(.86,0,.8,0)
 fullShop.BackgroundColor3=Color3.fromRGB(24,22,62)
 fullShop.BorderSizePixel=0;fullShop.Visible=false;fullShop.Parent=gui
+stylePanel(fullShop,Color3.fromRGB(30,25,78),Color3.fromRGB(19,56,107))
 local sizeLimit=Instance.new("UISizeConstraint")
 sizeLimit.MaxSize=Vector2.new(620,640);sizeLimit.MinSize=Vector2.new(290,280)
 sizeLimit.Parent=fullShop
@@ -222,6 +252,11 @@ if stats then
   if stage and stage:IsA("IntValue") then
    progress.Text=stage.Value>12 and "🏆 ALL 12 STAGES COMPLETE!" or ("☁️ Stage "..stage.Value.." / 12")
    replayButton.Visible=stage.Value>12
+   local index=math.clamp(stage.Value,1,12)
+   stageTitle.Text=stage.Value>12 and "🏆 CHAMPION · COURSE COMPLETE" or
+    ("STAGE "..index.." · "..string.upper(stageNames[index]))
+   instructions.Text=stage.Value>12 and "Replay for a new record!" or
+    ("☁️ "..stageHints[index].." · Collect coins and reach the checkpoint.")
    local fraction=math.clamp((stage.Value-1)/12,0,1)
    TweenService:Create(progressFill,TweenInfo.new(.25),{Size=UDim2.fromScale(fraction,1)}):Play()
   end
