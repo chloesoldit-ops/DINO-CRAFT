@@ -426,11 +426,26 @@ for stage=1,STAGES+1 do
   if p then awardCheckpoint(p,stage) end
  end)
  if stage==1 then
+  local welcome=floatingPart("WelcomeDeck",Vector3.new(36,1.8,21),
+   center+Vector3.new(0,-.4,-17),Color3.fromRGB(123,91,231),Enum.Material.SmoothPlastic,true)
+  local path=floatingPart("LobbyPath",Vector3.new(13,1.3,6),
+   center+Vector3.new(0,0,-5),Color3.fromRGB(255,194,99),Enum.Material.SmoothPlastic,true)
+  for i=1,6 do
+   decorative("WelcomeStripe_"..i,Vector3.new(3.5,.32,14),
+    center+Vector3.new((i-3.5)*3.6,.65,-19),palette[i])
+  end
+  for side=-1,1,2 do
+   local pillar=decorative("WelcomeTower_"..side,Vector3.new(2,12,2),
+    center+Vector3.new(side*16,6,-20),Color3.fromRGB(255,214,104))
+   orb("WelcomeGlobe_"..side,pillar.Position+Vector3.new(0,7,0),
+    4,Color3.fromRGB(255,248,175))
+  end
+  neonText(welcome,"WELCOME TO RAINBOW RUSH!  JUMP • RACE • WIN!")
   local spawn=Instance.new("SpawnLocation")
   spawn.Name="RainbowRushSpawn";spawn.Size=Vector3.new(11,1,8)
-  spawn.Position=center+Vector3.new(0,2,0)
+  spawn.Position=center+Vector3.new(0,1.8,-18)
   spawn.Anchored=true;spawn.Neutral=true;spawn.CanCollide=true
-  spawn.Transparency=.15
+  spawn.Transparency=.38
   spawn.Color=Color3.fromRGB(104,251,209);spawn.Material=Enum.Material.Neon
   spawn.Parent=mapFolder
  end
