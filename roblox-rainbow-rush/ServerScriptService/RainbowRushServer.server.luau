@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW RUSH OBBY 0.5 — Sky Carnival Edition
+-- RAINBOW TROLL OBBY 0.6 — Prank Park Edition
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -295,9 +295,9 @@ if oldBaseplate and oldBaseplate:IsA("BasePart") then
  oldBaseplate.CanCollide=false
 end
 local stageNames={
- "Rookie Rainbow","Candy Hop","Zigzag Valley","Speedy Sprint",
- "Laser Lane","Vanishing Steps","Moving Clouds","Neon Tightrope",
- "Bouncy Galaxy","Spinner Storm","Cloud Kingdom","Rainbow Finale"
+ "Trust Issues","Fake Coin Alley","Wrong Way","Boost or Bust",
+ "Laser Lies","Now You See Me","Cloud Betrayal","Tiny Troll Bridge",
+ "Bounce Surprise","Spin to Lose","Almost the End","Fake Finish"
 }
 local function floatingPart(name,size,position,color,material,collide)
  local p=block(name,size,CFrame.new(position),color,material or Enum.Material.Neon,collide)
@@ -408,6 +408,54 @@ local function vanishingPad(part)
   end)
  end)
 end
+
+-- Side-path pranks: never delete progress, purchases or earned coins.
+local trollCooldown={}
+local function prankTarget(part,kind)
+ part.Touched:Connect(function(hit)
+  local player=playerOf(hit)
+  if not player then return end
+  if os.clock()-(trollCooldown[player] or -1000)<3 then return end
+  trollCooldown[player]=os.clock()
+  local char=player.Character
+  local root=char and char:FindFirstChild("HumanoidRootPart")
+  if not root or not root:IsA("BasePart") then return end
+  if kind=="fake_finish" then
+   local stats=player:FindFirstChild("leaderstats")
+   local stage=stats and stats:FindFirstChild("Stage")
+   if stage then teleport(player,stage.Value) end
+   message(player,"😂 FAKE FINISH! You got trolled! Your checkpoint is safe.")
+  elseif kind=="fake_coin" then
+   root.AssemblyLinearVelocity=Vector3.new(0,45,-18)
+   message(player,"🪙 FREE COINS? NAH! YOU GOT LAUNCHED!")
+  elseif kind=="wrong_way" then
+   root.AssemblyLinearVelocity=Vector3.zero
+   root.CFrame=root.CFrame*CFrame.Angles(0,math.pi,0)
+   message(player,"↩️ WRONG WAY! The path was behind you!")
+  elseif kind=="bounce" then
+   root.AssemblyLinearVelocity=Vector3.new(0,59,0)
+   message(player,"🚀 SECRET BOUNCE! Surprise!")
+  end
+ end)
+end
+local function prankSign(part,words)
+ local g=Instance.new("BillboardGui")
+ g.Size=UDim2.fromOffset(175,55);g.StudsOffset=Vector3.new(0,3,0)
+ g.Adornee=part;g.AlwaysOnTop=true;g.MaxDistance=90;g.Parent=part
+ local t=Instance.new("TextLabel")
+ t.Size=UDim2.fromScale(1,1);t.BackgroundTransparency=1
+ t.Text=words;t.TextScaled=true;t.Font=Enum.Font.GothamBlack
+ t.TextColor3=Color3.fromRGB(255,242,101)
+ t.TextStrokeTransparency=.1;t.Parent=g
+end
+local function baitPad(stage,jump,position,kind,label)
+ local part=block("TrollBait_"..stage.."_"..jump,Vector3.new(7.5,1.1,7),
+  CFrame.new(position),Color3.fromRGB(255,194,28),Enum.Material.Neon,true)
+ prankSign(part,label)
+ prankTarget(part,kind)
+ return part
+end
+
 local spinnerParts={}
 local function spinner(center,stage)
  local pivot=Instance.new("Part")
@@ -461,7 +509,7 @@ for stage=1,STAGES+1 do
    orb("WelcomeGlobe_"..side,pillar.Position+Vector3.new(0,7,0),
     4,Color3.fromRGB(255,248,175))
   end
-  neonText(welcome,"WELCOME TO RAINBOW RUSH!  JUMP • RACE • WIN!")
+  neonText(welcome,"RAINBOW TROLL OBBY! TRUST NOTHING!")
   local spawn=Instance.new("SpawnLocation")
   spawn.Name="RainbowRushSpawn";spawn.Size=Vector3.new(11,1,8)
   spawn.Position=center+Vector3.new(0,1.8,-18)
@@ -502,6 +550,14 @@ for stage=1,STAGES+1 do
     Vector3.new(width,1.3,7.1),Vector3.new(x,10,z),
     palette[(stage+jump-1)%#palette+1],Enum.Material.SmoothPlastic,true)
    table.insert(points,{x=x,z=z,part=pad})
+   -- An optional shiny branch beside the true course; no forced trap.
+   if jump==3 and stage%3==1 then
+    baitPad(stage,jump,Vector3.new(x+16,10,z),"fake_coin","FREE COINS!")
+   elseif jump==3 and stage%3==2 then
+    baitPad(stage,jump,Vector3.new(x-16,10,z),"wrong_way","SHORTCUT!")
+   elseif jump==3 and stage%3==0 then
+    baitPad(stage,jump,Vector3.new(x+16,10,z),"bounce","SECRET BOOST!")
+   end
    -- Painted edges and chevrons make the next jump obvious.
    for side=-1,1,2 do
     decorative("PadStripe_"..stage.."_"..jump.."_"..side,
@@ -543,7 +599,8 @@ for stage=1,STAGES+1 do
   local endBridge=floatingPart("LandingPlatform_"..stage,Vector3.new(15,1.3,10),
    Vector3.new(0,10,center.Z+62),color,Enum.Material.SmoothPlastic,true)
   if stage==12 then
-   sparkles(endBridge,color)
+   baitPad(stage,9,Vector3.new(-14,10,center.Z+61),"fake_finish","FREE FINISH!")
+    sparkles(endBridge,color)
    for i=1,6 do
     decorative("FinaleStreamer_"..i,Vector3.new(.7,6,.7),
      Vector3.new((i-3.5)*3.0,16,center.Z+62),palette[i])
