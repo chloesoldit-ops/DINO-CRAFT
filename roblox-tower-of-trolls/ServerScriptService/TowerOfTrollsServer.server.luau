@@ -1,5 +1,5 @@
 --!nonstrict
--- RAINBOW TROLL OBBY 1.0 — Tower of Trolls
+-- TOWER OF TROLLS 1.9 — Power & Betrayal
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -10,9 +10,15 @@ local ReplicatedStorage=game:GetService("ReplicatedStorage")
 -- Optional, permanent cosmetic pass. Set to a real Game Pass ID after publishing.
 local RAINBOW_TRAIL_PASS_ID=0
 -- Replace 0 with IDs created in Roblox Creator Hub. All purchases are off until configured.
-local GAME_PASSES={rainbow_trail=0,speed=0,gravity=0,double_coins=0,vip=0}
-local PRODUCTS={skip_1=0,skip_3=0,coins_250=0,coins_1200=0,fireworks=0,chaos=0}
+local GAME_PASSES={slap=0,speed=2100229418,gravity=2101878610,fusion=2100445411,double_jump=2099863405,vip=2100127273,carpet=2099779265,rainbow_trail=0,double_coins=0}
+local LIVE_SHOP_ENABLED=false -- Enable only after live private purchase testing.
+-- Final Boss Skip: configured Developer Product, price controlled by Creator Dashboard.
+local PRODUCTS={skip_boss=3736985491,skip_1=0,skip_3=0,coins_250=0,coins_1200=0,fireworks=0,chaos=0}
 local passOwnership={}
+local powerMode={}
+local flying={}
+local lounging={}
+local stopSpecial=function() end
 local lastChaosTime=0
 local freeBoostCooldown={}
 local resetCooldown={}
@@ -23,19 +29,24 @@ for name,id in pairs(PRODUCTS) do
  if id>0 then productIndex[id]=name end
 end
 -- Version 1.2: multiplayer betrayal bridges
-local STAGES=60
+local STAGES=61
+local bossProgress=setmetatable({}, {__mode="k"})
 local CHECKPOINT_INTERVAL=10
 local function savedFloor(stage)
- return math.min(STAGES+1,1+math.floor((math.clamp(stage,1,STAGES+1)-1)/CHECKPOINT_INTERVAL)*CHECKPOINT_INTERVAL)
+ if stage>=STAGES+1 then return STAGES+1 end
+ return math.min(51,1+math.floor((math.clamp(stage,1,STAGES)-1)/CHECKPOINT_INTERVAL)*CHECKPOINT_INTERVAL)
 end
 local STAGE_LENGTH=30
-local TOWER_RADIUS=12
+local TOWER_RADIUS=15.5
 -- Unpublished Studio places may not have DataStore access.
 -- Use a memory-only test store so the obby and HUD can still run before publishing.
+local studio=RunService:IsStudio()
 local storeOkay,realStore=pcall(function()
+ if studio then return nil end
  return DataStoreService:GetDataStore("RainbowRush_Tower_10")
 end)
 local temporaryRecords={}
+storeOkay=storeOkay and realStore~=nil
 local SAVE_STORE=if storeOkay then realStore else {
  GetAsync=function(_,key)
   return temporaryRecords[key]
@@ -75,7 +86,7 @@ local resetEvent=Instance.new("RemoteEvent")
 resetEvent.Name="ResetCheckpoint";resetEvent.Parent=events
 local shopCatalog=Instance.new("RemoteFunction")
 shopCatalog.Name="ShopCatalog";shopCatalog.Parent=events
-shopCatalog.OnServerInvoke=function() return {passes=GAME_PASSES,products=PRODUCTS} end
+shopCatalog.OnServerInvoke=function() return {passes=GAME_PASSES,products=PRODUCTS,live=LIVE_SHOP_ENABLED} end
 
 local palette={
  Color3.fromRGB(248,81,114),Color3.fromRGB(255,171,57),
@@ -100,11 +111,13 @@ local function playerOf(part)
  local model=part and part:FindFirstAncestorOfClass("Model")
  local humanoid=model and model:FindFirstChildOfClass("Humanoid")
  local player=model and Players:GetPlayerFromCharacter(model)
- if not player or not humanoid or humanoid.Health<=0 then return nil end
+ if not player or not humanoid or humanoid.Health<=0 or flying[player] or lounging[player] then return nil end
  return player,humanoid
 end
 local prison={}; local prisonDone={}; local prisonSpawn
 local function teleport(player,stage)
+ stopSpecial(player)
+ bossProgress[player]=nil
  local character=player.Character
  local root=character and character:FindFirstChild("HumanoidRootPart")
  if root and root:IsA("BasePart") then
@@ -121,20 +134,25 @@ local function returnToSavedFloor(player)
  if not prison[player] then stage.Value=savedFloor(stage.Value) end
  teleport(player,stage.Value)
 end
+local dataBusy={}
 local function save(player)
+ if not player:GetAttribute("TowerDataReady") or dataBusy[player] then return end
  local stats=player:FindFirstChild("leaderstats")
  local stage=stats and stats:FindFirstChild("Stage")
  local points=stats and stats:FindFirstChild("Coins")
  local wins=stats and stats:FindFirstChild("Wins")
  if not (stage and points and wins) then return end
  local data={stage=savedFloor(stage.Value),coins=points.Value,wins=wins.Value,best=player:GetAttribute("BestTimeMs") or 0}
+ dataBusy[player]=true
  pcall(function()SAVE_STORE:UpdateAsync(tostring(player.UserId),function(old)
   old=type(old)=="table" and old or {}
   local previousBest=tonumber(old.best) or 0
   local best=data.best
   if previousBest>0 and (best<=0 or previousBest<best) then best=previousBest end
-  return {stage=data.stage,coins=data.coins,wins=math.max(old.wins or 0,data.wins),best=best,receipts=old.receipts or {}}
+  old.stage=data.stage;old.coins=data.coins;old.wins=math.max(tonumber(old.wins) or 0,data.wins);old.best=best
+  return old
  end)end)
+ dataBusy[player]=nil
 end
 -- Replaying is free and never resets purchases, coins or wins.
 replayEvent.OnServerEvent:Connect(function(player)
@@ -142,12 +160,12 @@ replayEvent.OnServerEvent:Connect(function(player)
  local stage=stats and stats:FindFirstChild("Stage")
  if not stage then return end
  if stage.Value<=STAGES then
-  message(player,"🏁 Finish all 60 floors to unlock replay!")
+  message(player,"🏁 Finish all 61 floors to unlock replay!")
   return
  end
  stage.Value=1
  raceStarted[player]=workspace:GetServerTimeNow()
- raceEligible[player]=true
+ raceEligible[player]=(powerMode[player] or "normal")=="normal"
  player:SetAttribute("RunStartedAt",raceStarted[player])
  player:SetAttribute("LastTimeMs",0)
  teleport(player,1)
@@ -168,7 +186,7 @@ boostEvent.OnServerEvent:Connect(function(player)
  local balance=stats and stats:FindFirstChild("Coins")
  local character=player.Character
  local humanoid=character and character:FindFirstChildOfClass("Humanoid")
- if not balance or not humanoid or humanoid.Health<=0 then return end
+ if not balance or not humanoid or humanoid.Health<=0 or prison[player] or flying[player] or lounging[player] then return end
  if os.clock()-(freeBoostCooldown[player] or -1000)<70 then
   message(player,"⚡ Practice Boost is cooling down!")
   return
@@ -179,12 +197,13 @@ boostEvent.OnServerEvent:Connect(function(player)
  end
  freeBoostCooldown[player]=os.clock()
  balance.Value-=40
- local current=passOwnership[player] and passOwnership[player].speed and 24 or 16
+ raceEligible[player]=false
+ local current=humanoid.WalkSpeed
  humanoid.WalkSpeed=math.max(current,27)
  message(player,"⚡ PRACTICE BOOST! 15 seconds of super speed!")
  task.delay(15,function()
   if humanoid.Parent then
-   humanoid.WalkSpeed=current
+   if humanoid.WalkSpeed==27 then humanoid.WalkSpeed=current end
   end
  end)
 end)
@@ -227,6 +246,10 @@ local function awardCheckpoint(player,stage)
   return
  end
  if stage==stageStat.Value+1 then
+  if stage==STAGES+1 and (bossProgress[player] or 0)~=4 then
+   message(player,"Finish all four boss sections first!")
+   return
+  end
   stageStat.Value=stage
   if savedFloor(stage)==stage then
    celebrateCheckpoint(player,stage==STAGES+1)
@@ -377,7 +400,8 @@ local stageNames={
  "Definitely Done",
  "Not Done",
  "Last Laugh",
- "Actually the End"
+ "Actually the End",
+ "FINAL BOSS: THE IMPOSSIBLE EXAM"
 }
 local function floatingPart(name,size,position,color,material,collide)
  local p=block(name,size,CFrame.new(position),color,material or Enum.Material.Neon,collide)
@@ -619,13 +643,20 @@ local function jokeTrap(part,stage,index)
   if not st or st.Value~=stage then return end
   seen[p]=true
   message(p,jokes[(stage+index)%#jokes+1])
-  if stage%3==0 then h.Health=0 end
+  -- Jokes on the real route are text only; deadly traps are separate obstacles.
  end)
 end
 -- Vertical spiral tower: 12 jumps per floor, 60 floors.
 local function towerPoint(stage,step)
- local angle=step*math.pi/6
- return Vector3.new(TOWER_RADIUS*math.cos(angle),10+(stage-1)*STAGE_LENGTH+step*2.5,TOWER_RADIUS*math.sin(angle))
+ local direction=stage%2==0 and -1 or 1
+ local angle=direction*step*math.pi/6
+ local mode=(stage-1)%6
+ local radius=TOWER_RADIUS
+ if mode==1 then radius=radius-1.5*math.sin(step*math.pi/3) end
+ if mode==4 then radius=radius-2*math.sin(step*math.pi/2)^2 end
+ local rise=step*2.5
+ if mode==2 then rise=rise+0.65*math.sin(step*math.pi/2) end
+ return Vector3.new(radius*math.cos(angle),10+(stage-1)*STAGE_LENGTH+rise,radius*math.sin(angle))
 end
 local function radial(step)
  local angle=step*math.pi/6
@@ -651,7 +682,7 @@ local function betrayalCourse(stage,center,color)
   local delta=b-a
   local horizontal=Vector3.new(delta.X,0,delta.Z)
   local length=horizontal.Magnitude
-  local count=math.ceil(length/4.5)
+  local count=math.ceil(length/6.5)
   local forward=horizontal.Unit
   local lateral=Vector3.new(-forward.Z,0,forward.X)
   for i=1,count do
@@ -662,7 +693,7 @@ local function betrayalCourse(stage,center,color)
     block("Needle_"..stage.."_"..segment.."_"..i,Vector3.new(size,1,size),CFrame.new(pos),gold,Enum.Material.SmoothPlastic,true)
    end
    local middle=a:Lerp(b,(i-.5)/count)+lateral*2.5
-   local deck=block("BetrayalBridge_"..stage.."_"..segment.."_"..i,Vector3.new(3,.65,length/count+.15),CFrame.lookAt(middle,middle+forward),color,Enum.Material.Neon,false)
+   local deck=block("BetrayalBridge_"..stage.."_"..segment.."_"..i,Vector3.new(3,.65,delta.Magnitude/count+.2),CFrame.lookAt(middle,middle+delta.Unit),color,Enum.Material.Neon,false)
    deck.Transparency=1;deck.CanTouch=false
    table.insert(bridge,deck)
    -- Wide permanent corner landings join the two directions.
@@ -693,6 +724,63 @@ local function betrayalCourse(stage,center,color)
  end)
  prankSign(block("BetrayalSign_"..stage,Vector3.new(1,1,1),CFrame.new(center+Vector3.new(4,0,0)),gold,Enum.Material.SmoothPlastic,false),"TRUST A FRIEND... OR JUMP THE GOLD STUDS")
 end
+-- FINAL BOSS: no checkpoint, four ordered gates, fixed geometry.
+local function finalBoss(center)
+ local gold=Color3.fromRGB(255,200,64)
+ local dark=Color3.fromRGB(44,38,60)
+ local needle=Color3.fromRGB(255,93,125)
+ local function platform(name,pos,size,color)
+  return block(name,size,CFrame.new(pos),color,Enum.Material.SmoothPlastic,true)
+ end
+ local function gate(index,pos,label)
+  local pad=platform("BossGate_"..index,pos,Vector3.new(4,1,4),gold)
+  prankSign(pad,label)
+  pad.Touched:Connect(function(hit)
+   local p=playerOf(hit)
+   local stats=p and p:FindFirstChild("leaderstats")
+   local stage=stats and stats:FindFirstChild("Stage")
+   if stage and stage.Value==STAGES and (bossProgress[p] or 0)==index-1 then
+    bossProgress[p]=index
+    message(p,"Boss section "..index.." / 4 cleared. NOT a checkpoint!")
+   end
+  end)
+  return pad
+ end
+ local function P(x,y,z) return center+Vector3.new(x,y,z) end
+ -- 12 one-stud landings, 6.5-7 studs center to center, low rise.
+ prankSign(platform("BossEntrance",P(5,0,0),Vector3.new(3,1,3),dark),"FINAL EXAM - NO CHECKPOINTS")
+ for i=1,12 do
+  platform("BossNeedleA_"..i,P(5+i*6.6,i*.35,(i%2)*1.2),Vector3.new(1,1,1),needle)
+ end
+ gate(1,P(91,4.5,0),"1/4 - WALL WRAPS NEXT")
+ -- Alternating 4/5-stud barriers: tall enough that jumping over is not the route.
+ -- Wide landing pads allow takeoff from the side, then steer around the wall.
+ for i=1,8 do
+  local z=i*5.5
+  local y=4.5+i*.65
+  local width=i%2==0 and 5 or 4
+  local wallX=91+(i%2==0 and -.25 or .25)
+  platform("BossWrapLanding_"..i,P(91,y,z),Vector3.new(3.5,1,3.1),gold)
+  block("BossWrapWall_"..i,Vector3.new(width,12,.65),CFrame.new(P(wallX,y+5.4,z-2.75)),dark,Enum.Material.SmoothPlastic,true)
+ end
+ gate(2,P(91,10,49.5),"2/4 - NEEDLE MARATHON")
+ -- Return along a separate elevated leg, 13 tiny landings.
+ for i=1,13 do
+  platform("BossNeedleB_"..i,P(91-i*6.5,10+i*.65,49.5+(i%2)*1.2),Vector3.new(1,1,1),needle)
+ end
+ gate(3,P(0,19,49.5),"3/4 - FINAL WRAPS")
+ for i=1,8 do
+  local z=49.5-i*5.5
+  local y=19+i*1.05
+  local width=i%2==0 and 5 or 4
+  platform("BossFinalLanding_"..i,P(0,y,z),Vector3.new(3.5,1,3.1),gold)
+  block("BossFinalWall_"..i,Vector3.new(width,12,.65),CFrame.new(P((i%2==0 and -.25 or .25),y+5.4,z+2.75)),dark,Enum.Material.SmoothPlastic,true)
+ end
+ gate(4,P(0,29,0),"4/4 - THE REAL FINISH")
+ -- Bridge the previous 17.5-stud gap to the actual finish, using precision landings.
+ platform("BossLastNeedle_1",P(6,29.3,0),Vector3.new(1,1,1),needle)
+ platform("BossLastNeedle_2",P(12,29.6,0),Vector3.new(1,1,1),needle)
+end
 for stage=1,STAGES+1 do
  local center=stagePos(stage)
  local color=palette[(stage-1)%#palette+1]
@@ -713,17 +801,54 @@ for stage=1,STAGES+1 do
  elseif stage==STAGES+1 then
   sparkles(checkpoint,color)
  end
- if stage<=STAGES and betrayalFloors[stage] then
+ if stage==STAGES then
+  finalBoss(center)
+ elseif stage<=STAGES and betrayalFloors[stage] then
   betrayalCourse(stage,center,color)
  elseif stage<=STAGES then
   local mode=(stage-1)%6
   for step=1,11 do
    local pos=towerPoint(stage,step)
-   local side=radial(step)
-   local width=stage<=10 and 6 or (stage<=30 and 5 or 4.5)
+   local side=Vector3.new(pos.X,0,pos.Z).Unit
+   local width=stage<=10 and 3.8 or (stage<=30 and 3.2 or 2.5)
    -- Extra wide timing platforms provide space to dodge hazards.
-   if step==5 and mode==3 then width=6.5 end
-   local pad=block("RainbowPlatform_"..stage.."_"..step,Vector3.new(width,1.1,width),CFrame.new(pos),color,Enum.Material.SmoothPlastic,true)
+   if step==5 and mode==3 then width=4.5 end
+   local nextPos=towerPoint(stage,step+1)
+   local flat=Vector3.new(nextPos.X-pos.X,0,nextPos.Z-pos.Z)
+   local facing=CFrame.lookAt(pos,pos+flat)
+   local size=Vector3.new(width,1.1,width)
+   -- Distinct obstacle geometry, not merely a different color.
+   if mode==0 and (step==5 or step==8) then size=Vector3.new(1.5,1.1,5) end
+   if mode==1 and (step==5 or step==8) then size=Vector3.new(2.2,1.1,3.6) end
+   if mode==2 and step==6 then size=Vector3.new(4.8,1.1,4.8) end
+   if mode==4 and step==3 then size=Vector3.new(1.8,1.1,4.5) end
+   if mode==4 and step==8 then size=Vector3.new(5.2,1.1,4.5) end
+   if stage>=12 and stage%5==2 and (step==3 or step==7 or step==9) then size=Vector3.new(1,1.1,1) end
+   if stage%5==4 and (step==3 or step==7) then size=Vector3.new(1.35,1.1,5.2) end
+   local pad=block("RainbowPlatform_"..stage.."_"..step,size,facing,color,Enum.Material.SmoothPlastic,true)
+   if mode==1 and (step==5 or step==8) then
+    local shift=side*1.15
+    TweenService:Create(pad,TweenInfo.new(1.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),{Position=pos+shift}):Play()
+   elseif mode==2 and step==6 then
+    -- Jump over a visible bar before making the next jump.
+    local bar=block("LowHurdle_"..stage,Vector3.new(4.8,.6,.45),facing*CFrame.new(0,1.05,0),Color3.fromRGB(255,70,95),Enum.Material.Neon,false)
+    movingHarm(bar)
+   elseif mode==4 and step==8 then
+    -- Wall wrap: a short wall blocks the direct landing line; both edges are open.
+    local wall=block("WrapWall_"..stage,Vector3.new(.65,3.2,1.8),facing*CFrame.new(0,2.05,0),Color3.fromRGB(39,40,64),Enum.Material.SmoothPlastic,true)
+   elseif mode==5 and step==4 then
+    -- Two tempting decoys flanking the actual path, consistent on every attempt.
+    local left=fakeFloor(pos+facing.RightVector*4,Vector3.new(2.8,1.1,3),color)
+    local right=fakeFloor(pos-facing.RightVector*4,Vector3.new(2.8,1.1,3),color)
+    prankSign(left,"100% SAFE")
+   end
+   -- Fixed timing challenge: the platform is stationary, the beam moves.
+   if stage>=11 and step==2 and stage%2==0 then
+    local beam=secretHazard(pos+Vector3.new(-width/2,1.1,0),Vector3.new(.35,.45,width),true)
+    TweenService:Create(beam,TweenInfo.new(1.1,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,-1,true),{Position=pos+Vector3.new(width/2,1.1,0)}):Play()
+   end
+   -- A second collapsing landing, with a short learnable reaction window.
+   if stage>=31 and step==10 and mode~=2 then vanishingPad(pad) end
    if stage==3 and step==3 then
     prankSign(pad,"JUMP!")
     local trigger=block("JumpTrap",Vector3.new(width+1,3,width+1),CFrame.new(pos+Vector3.new(0,5,0)),white,Enum.Material.SmoothPlastic,false)
@@ -750,6 +875,29 @@ for stage=1,STAGES+1 do
     local fake=baitPad(stage,step,pos+side*(width+3),"fake_finish","CHECKPOINT!")
     fake.Color=color
    end
+   -- New optional bait and learnable precision hazards. No random launch effects.
+   if stage%7==0 and step==6 then
+    local decoy=fakeFloor(pos+side*5,Vector3.new(3,1.1,3),pad.Color)
+    prankSign(decoy,"DEFINITELY SOLID")
+   end
+   if stage%7==3 and step==7 then
+    local decoy=block("FakeRest_"..stage,Vector3.new(3,1,3),CFrame.new(pos+side*5),color,Enum.Material.SmoothPlastic,true)
+    prankSign(decoy,"AFK SAFE ZONE")
+    prankTarget(decoy,"fake_finish")
+   end
+   -- A timed side-to-side hurdle, with space to wait on either end.
+   if stage%6==0 and step==5 then
+    pad.Size=Vector3.new(5,1.1,4.5)
+    local start=pos+facing.RightVector*2+Vector3.new(0,1.15,0)
+    local finish=pos-facing.RightVector*2+Vector3.new(0,1.15,0)
+    local beam=secretHazard(start,Vector3.new(.45,.5,2.3),true)
+    TweenService:Create(beam,TweenInfo.new(1.6,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,-1,true),{Position=finish}):Play()
+   end
+   if stage%5==4 and step==7 then
+    local ghost=fakeFloor(pos+facing.RightVector*4,Vector3.new(3,1.1,5),color)
+    prankSign(ghost,"EASY MODE")
+   end
+   if stage%5==2 and step==9 then prankSign(pad,"Please land responsibly.") end
    if step==2 or step==10 then coinPad(pos+Vector3.new(0,2.5,0),stage,step) end
    if step==9 and stage%5==0 then jokeTrap(pad,stage,step) end
   end
@@ -764,19 +912,19 @@ RunService.Heartbeat:Connect(function(dt)
   local root=char and char:FindFirstChild("HumanoidRootPart")
   local h=char and char:FindFirstChildOfClass("Humanoid")
   local stats=p:FindFirstChild("leaderstats");local st=stats and stats:FindFirstChild("Stage")
-  if root and h and st and h.Health>0 and not prison[p] and root.Position.Y<stagePos(savedFloor(st.Value)).Y-8 then h.Health=0 end
+  if root and h and st and h.Health>0 and not prison[p] and not flying[p] and not lounging[p] and root.Position.Y<stagePos(savedFloor(st.Value)).Y-8 then h.Health=0 end
  end
 end)
 
 local function applyTrail(player)
- if not(passOwnership[player] and passOwnership[player].rainbow_trail) then return end
+ if not(passOwnership[player] and (passOwnership[player].rainbow_trail or passOwnership[player].vip)) then return end
  local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
  if not root or root:FindFirstChild("RainbowTrailA") then return end
  local a=Instance.new("Attachment");a.Name="RainbowTrailA";a.Position=Vector3.new(-.4,-1,0);a.Parent=root
  local b=Instance.new("Attachment");b.Name="RainbowTrailB";b.Position=Vector3.new(.4,-1,0);b.Parent=root
  local trail=Instance.new("Trail");trail.Name="RainbowCosmeticTrail"
  trail.Attachment0=a;trail.Attachment1=b;trail.Lifetime=.7
- trail.Color=ColorSequence.new(palette[1],palette[5])
+ trail.Color=passOwnership[player].vip and ColorSequence.new(Color3.fromRGB(255,190,30),Color3.fromRGB(255,245,150)) or ColorSequence.new(palette[1],palette[5])
  trail.LightEmission=1;trail.Parent=root
 end
 local function refreshPasses(player)
@@ -790,15 +938,21 @@ local function refreshPasses(player)
  end
  passOwnership[player]=owned
  player:SetAttribute("RainbowVIP",owned.vip or false)
+ for name in pairs(GAME_PASSES) do player:SetAttribute("Own_"..name,owned[name]==true) end
 end
 local function applyBenefits(player)
  local owned=passOwnership[player] or {}
  local character=player.Character
  local humanoid=character and character:FindFirstChildOfClass("Humanoid")
  if humanoid then
-  humanoid.WalkSpeed=owned.speed and 24 or 16
+  local mode=powerMode[player] or "normal"
+  local speed=(mode=="speed" and owned.speed) or (mode=="fusion" and owned.fusion)
+  local gravity=(mode=="gravity" and owned.gravity) or (mode=="fusion" and owned.fusion)
+  humanoid.WalkSpeed=speed and 24 or 16
   humanoid.UseJumpPower=true
-  humanoid.JumpPower=owned.gravity and 68 or 50
+  humanoid.JumpPower=gravity and 65 or 50
+  if speed or gravity then raceEligible[player]=false end
+  player:SetAttribute("PowerMode",mode)
  end
  if owned.vip and character and not character:FindFirstChild("RainbowVIPGlow") then
   local h=Instance.new("Highlight");h.Name="RainbowVIPGlow"
@@ -807,7 +961,104 @@ local function applyBenefits(player)
   h.FillTransparency=.62
   h.Parent=character
  end
+ if owned.vip and character then
+  local head=character:FindFirstChild("Head")
+  if head and not head:FindFirstChild("VIPTag") then
+   local tag=Instance.new("BillboardGui");tag.Name="VIPTag";tag.Size=UDim2.fromOffset(100,25);tag.StudsOffset=Vector3.new(0,2.8,0);tag.AlwaysOnTop=true;tag.Parent=head
+   local label=Instance.new("TextLabel");label.Size=UDim2.fromScale(1,1);label.BackgroundTransparency=1;label.Text="VIP";label.Font=Enum.Font.GothamBlack;label.TextColor3=Color3.fromRGB(255,215,55);label.TextStrokeTransparency=.2;label.TextScaled=true;label.Parent=tag
+  end
+ end
  applyTrail(player)
+end
+-- All abilities are authorized on the server. The carpet is exploration only.
+local ability=Instance.new("RemoteEvent");ability.Name="TowerAbility";ability.Parent=events
+local lastAction={};local airState={}
+local loungeCenter=Vector3.new(-110,18,0)
+local lounge=block("VIPLounge",Vector3.new(42,2,42),CFrame.new(loungeCenter),Color3.fromRGB(255,197,60),Enum.Material.SmoothPlastic,true)
+neonText(lounge,"VIP LOUNGE - RELAX")
+for i=1,4 do
+ local a=i*math.pi/2
+ local seat=Instance.new("Seat");seat.Name="VIPSeat";seat.Size=Vector3.new(5,1,5);seat.Anchored=true;seat.Color=Color3.fromRGB(115,55,180);seat.Position=loungeCenter+Vector3.new(math.cos(a)*12,2,math.sin(a)*12);seat.Parent=mapFolder
+end
+stopSpecial=function(p)
+ local state=flying[p]
+ if state then
+  if state.root.Parent then state.root.Anchored=false;state.root.AssemblyLinearVelocity=Vector3.zero end
+  if state.carpet then state.carpet:Destroy() end
+ end
+ flying[p]=nil;lounging[p]=nil
+ p:SetAttribute("CarpetFlying",false);p:SetAttribute("VIPLounge",false)
+end
+local function validCharacter(p)
+ local char=p.Character;local h=char and char:FindFirstChildOfClass("Humanoid");local root=char and char:FindFirstChild("HumanoidRootPart")
+ if h and root and root:IsA("BasePart") and h.Health>0 then return h,root end
+end
+local function returnSpecial(p)
+ stopSpecial(p);returnToSavedFloor(p);applyBenefits(p)
+end
+ability.OnServerEvent:Connect(function(p,action,value)
+ if type(action)~="string" or prison[p] then return end
+ local owned=passOwnership[p] or {}
+ local h,root=validCharacter(p);if not h then return end
+ if action=="move" then
+  local state=flying[p]
+  if not state or typeof(value)~="Vector3" or value.X~=value.X or value.Y~=value.Y or value.Z~=value.Z or value.Magnitude>1.01 then return end
+  if os.clock()-(state.inputAt or 0)<.045 then return end
+  state.direction=value;state.inputAt=os.clock();return
+ end
+ if os.clock()-(lastAction[p] or -10)<.18 then return end
+ lastAction[p]=os.clock()
+ if action=="mode" then
+  if value~="normal" and value~="speed" and value~="gravity" and value~="fusion" then return end
+  if value~="normal" and not owned[value] then return end
+  powerMode[p]=value;applyBenefits(p)
+ elseif action=="double" and owned.double_jump and not flying[p] and not lounging[p] then
+  local a=airState[p]
+  if not a or a.root~=root or a.used or h.FloorMaterial~=Enum.Material.Air or os.clock()-a.since<.12 then return end
+  a.used=true;raceEligible[p]=false
+  local v=root.AssemblyLinearVelocity;root.AssemblyLinearVelocity=Vector3.new(v.X,46,v.Z)
+ elseif action=="carpet" and owned.carpet then
+  if flying[p] then returnSpecial(p);return end
+  if lounging[p] then returnSpecial(p) end
+  raceEligible[p]=false
+  local carpet=Instance.new("Part");carpet.Name="MagicCarpet";carpet.Size=Vector3.new(5,.25,7);carpet.Color=Color3.fromRGB(145,40,220);carpet.Material=Enum.Material.Neon;carpet.Anchored=true;carpet.CanCollide=false;carpet.CanTouch=false;carpet.Parent=mapFolder
+  root.Anchored=true;root.AssemblyLinearVelocity=Vector3.zero
+  flying[p]={root=root,carpet=carpet,direction=Vector3.zero,inputAt=os.clock()};p:SetAttribute("CarpetFlying",true)
+  message(p,"Carpet exploration: no checkpoints or wins. Exit returns to your save.")
+ elseif action=="lounge" and owned.vip then
+  if lounging[p] then returnSpecial(p);return end
+  stopSpecial(p);lounging[p]=true;raceEligible[p]=false;p:SetAttribute("VIPLounge",true)
+  root.CFrame=CFrame.new(loungeCenter+Vector3.new(0,5,0));root.AssemblyLinearVelocity=Vector3.zero
+ end
+end)
+RunService.Heartbeat:Connect(function(dt)
+ for _,p in ipairs(Players:GetPlayers()) do
+  local h,root=validCharacter(p)
+  if not h then stopSpecial(p);airState[p]=nil;continue end
+  local a=airState[p]
+  if h.FloorMaterial~=Enum.Material.Air then airState[p]={root=root,used=false,since=os.clock()}
+  elseif not a or a.root~=root then airState[p]={root=root,used=false,since=os.clock()} end
+  local state=flying[p]
+  if state then
+   if state.root~=root or prison[p] then stopSpecial(p) else
+    local direction=os.clock()-state.inputAt<.5 and state.direction or Vector3.zero
+    local v=root.Position+direction*32*math.min(dt,.1)
+    v=Vector3.new(math.clamp(v.X,-160,160),math.clamp(v.Y,12,stagePos(STAGES+1).Y+20),math.clamp(v.Z,-160,160))
+    root.CFrame=CFrame.new(v)*root.CFrame.Rotation;state.carpet.CFrame=root.CFrame*CFrame.new(0,-3,0)
+   end
+  elseif lounging[p] and (root.Position-loungeCenter).Magnitude>30 then
+   root.CFrame=CFrame.new(loungeCenter+Vector3.new(0,5,0));root.AssemblyLinearVelocity=Vector3.zero
+  end
+ end
+end)
+if studio then
+ local testPass=Instance.new("RemoteEvent");testPass.Name="StudioTestPasses";testPass.Parent=events
+ testPass.OnServerEvent:Connect(function(p)
+  if not RunService:IsStudio() then return end
+  local owned=passOwnership[p] or {};local enable=not p:GetAttribute("StudioAllPasses")
+  for k,id in pairs(GAME_PASSES) do owned[k]=enable and (id>0 or k=="slap");p:SetAttribute("Own_"..k,owned[k]) end
+  passOwnership[p]=owned;p:SetAttribute("StudioAllPasses",enable);powerMode[p]="normal";stopSpecial(p);returnToSavedFloor(p);applyBenefits(p)
+ end)
 end
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player,id,purchased)
  if not purchased then return end
@@ -835,6 +1086,7 @@ local function launchRainbowFireworks(player)
  game:GetService("Debris"):AddItem(fire,4)
 end
 local function productDelta(name)
+ if name=="skip_boss" then return 0,0 end
  if name=="coins_250" then return 0,250 end
  if name=="coins_1200" then return 0,1200 end
  if name=="skip_1" then return CHECKPOINT_INTERVAL,0 end
@@ -844,62 +1096,76 @@ local function productDelta(name)
 end
 -- For permanent progress changes, mark each receipt exactly once in the same
 -- DataStore transaction that awards the stage or coin balance.
+-- The only configured product grants one durable boss-skip credit.
+-- Redeeming a credit is a separate transaction, so delayed receipts cannot be lost.
+local redeemBoss=Instance.new("RemoteEvent")
+redeemBoss.Name="RedeemBossSkip";redeemBoss.Parent=events
+local function liveData(p)
+ return not studio and storeOkay and p:GetAttribute("TowerDataReady") and not dataBusy[p]
+end
 MarketplaceService.ProcessReceipt=function(receipt)
- local name=productIndex[receipt.ProductId]
- if not name then return Enum.ProductPurchaseDecision.NotProcessedYet end
- local player=Players:GetPlayerByUserId(receipt.PlayerId)
- if not player then return Enum.ProductPurchaseDecision.NotProcessedYet end
- local stats=player:FindFirstChild("leaderstats")
- local stage=stats and stats:FindFirstChild("Stage")
- local balance=stats and stats:FindFirstChild("Coins")
- local wins=stats and stats:FindFirstChild("Wins")
- if not(stage and balance and wins) then return Enum.ProductPurchaseDecision.NotProcessedYet end
- local addStages,addCoins=productDelta(name)
- if not addStages then return Enum.ProductPurchaseDecision.NotProcessedYet end
- local key=tostring(player.UserId)
- local purchaseId=tostring(receipt.PurchaseId)
- local previousWasGranted=false
+ if receipt.ProductId~=PRODUCTS.skip_boss then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ local p=Players:GetPlayerByUserId(receipt.PlayerId)
+ if not p or not liveData(p) then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ dataBusy[p]=true
  local ok,result=pcall(function()
-  return SAVE_STORE:UpdateAsync(key,function(old)
+  return SAVE_STORE:UpdateAsync(tostring(p.UserId),function(old)
    old=type(old)=="table" and old or {}
-   local receipts=old.receipts or {}
-   if receipts[purchaseId] then
-    previousWasGranted=true
-    return old
+   old.receipts=old.receipts or {}
+   local id=tostring(receipt.PurchaseId)
+   if not old.receipts[id] then
+    old.bossCredits=(tonumber(old.bossCredits) or 0)+1
+    old.receipts[id]=true
    end
-   -- Keep current earned in-session progress before granting the product.
-   local currentStage=savedFloor(stage.Value)
-   local currentCoins=math.max(0,tonumber(old.coins) or 0,balance.Value)
-   local currentWins=math.max(0,tonumber(old.wins) or 0,wins.Value)
-   receipts[purchaseId]=true
-   return {stage=math.min(STAGES+1,currentStage+addStages),coins=currentCoins+addCoins,wins=currentWins,best=tonumber(old.best) or 0,receipts=receipts}
+   return old
   end)
  end)
+ dataBusy[p]=nil
  if not ok or type(result)~="table" then return Enum.ProductPurchaseDecision.NotProcessedYet end
- if not previousWasGranted then
-  stage.Value=math.max(stage.Value,math.min(STAGES+1,tonumber(result.stage) or stage.Value))
-  balance.Value=math.max(balance.Value,tonumber(result.coins) or balance.Value)
-  if addStages>0 then
-   raceEligible[player]=false
-   teleport(player,stage.Value)
-  end
-  if name=="fireworks" or name=="chaos" then launchRainbowFireworks(player) end
-  if name=="chaos" then
-   if os.time()-lastChaosTime>120 then
-    lastChaosTime=os.time()
-    showMessage:FireAllClients("🌈 CHECKPOINT CHAOS IN 3 SECONDS! Saved progress stays safe.")
-    task.delay(3,function()
-     for _,other in ipairs(Players:GetPlayers()) do
-      local ownStats=other:FindFirstChild("leaderstats")
-      local ownStage=ownStats and ownStats:FindFirstChild("Stage")
-      if ownStage then returnToSavedFloor(other) end
-     end
-    end)
-   else message(player,"Chaos cooling down. You received fireworks instead!") end
-  end
-  message(player,"✅ PURCHASE DELIVERED: "..name:gsub("_"," "))
+ if p.Parent then
+  p:SetAttribute("BossSkipCredits",tonumber(result.bossCredits) or 0)
+  message(p,"Boss skip credit saved! Redeem at floor 61.")
  end
  return Enum.ProductPurchaseDecision.PurchaseGranted
+end
+redeemBoss.OnServerEvent:Connect(function(p)
+ if not liveData(p) or prison[p] then return end
+ local stats=p:FindFirstChild("leaderstats")
+ local st=stats and stats:FindFirstChild("Stage")
+ local coin=stats and stats:FindFirstChild("Coins")
+ local wins=stats and stats:FindFirstChild("Wins")
+ if not st or not coin or not wins or st.Value~=STAGES then return end
+ dataBusy[p]=true
+ local granted=false
+ local ok,result=pcall(function()
+  return SAVE_STORE:UpdateAsync(tostring(p.UserId),function(old)
+   granted=false
+   if type(old)~="table" or (tonumber(old.bossCredits) or 0)<1 then return nil end
+   old.bossCredits-=1
+   old.stage=STAGES+1;old.coins=coin.Value;old.wins=wins.Value
+   granted=true;return old
+  end)
+ end)
+ if ok and granted and result and p.Parent then
+  p:SetAttribute("BossSkipCredits",result.bossCredits)
+  raceEligible[p]=false;raceStarted[p]=nil
+  prison[p]=nil;p:SetAttribute("TrollPrison",false)
+  st.Value=STAGES+1;teleport(p,STAGES+1)
+  message(p,"Paid completion! No earned win or speedrun record.")
+ end
+ dataBusy[p]=nil
+end)
+-- Studio-only testing remote. No live server can expose it.
+if studio then
+ local test=Instance.new("RemoteEvent");test.Name="StudioTestFloor";test.Parent=events
+ test.OnServerEvent:Connect(function(p,n)
+  if not RunService:IsStudio() or type(n)~="number" or n~=n then return end
+  local stats=p:FindFirstChild("leaderstats");local st=stats and stats:FindFirstChild("Stage")
+  if not st then return end
+  prison[p]=nil;p:SetAttribute("TrollPrison",false)
+  st.Value=math.clamp(math.floor(n),1,STAGES);raceEligible[p]=false
+  teleport(p,st.Value);message(p,"STUDIO TEST FLOOR "..st.Value)
+ end)
 end
 
 Players.PlayerAdded:Connect(function(player)
@@ -915,6 +1181,8 @@ Players.PlayerAdded:Connect(function(player)
   wins.Value=math.max(0,tonumber(data.wins) or 0)
   player:SetAttribute("BestTimeMs",math.max(0,math.floor(tonumber(data.best) or 0)))
  end
+ player:SetAttribute("BossSkipCredits",ok and type(data)=="table" and (tonumber(data.bossCredits) or 0) or 0)
+ player:SetAttribute("TowerDataReady",ok and storeOkay and not studio)
  if player:GetAttribute("BestTimeMs")==nil then player:SetAttribute("BestTimeMs",0) end
  player:SetAttribute("LastTimeMs",0)
  raceStarted[player]=workspace:GetServerTimeNow()
@@ -934,12 +1202,82 @@ Players.PlayerRemoving:Connect(function(player)
  save(player)
  prison[player]=nil;prisonDone[player]=nil
  touchCooldown[player]=nil
+ stopSpecial(player);powerMode[player]=nil;airState[player]=nil;lastAction[player]=nil
  passOwnership[player]=nil
  freeBoostCooldown[player]=nil
  resetCooldown[player]=nil
  raceStarted[player]=nil
  raceEligible[player]=nil
 end)
+task.spawn(function()
+ while task.wait(90) do
+  for _,p in ipairs(Players:GetPlayers()) do task.spawn(save,p) end
+ end
+end)
 game:BindToClose(function()
  for _,player in Players:GetPlayers() do save(player)end
 end)
+
+-- 2.0: Slap Glove. Server chooses nearby target; no client-supplied force.
+do
+ local remote=Instance.new("RemoteEvent")
+ remote.Name="SlapGlove";remote.Parent=events
+ local lastSlap=setmetatable({}, {__mode="k"})
+ local shield=setmetatable({}, {__mode="k"})
+ local function safe(p,root)
+  if prison[p] or flying[p] or lounging[p] or root.Anchored then return true end
+  local stats=p:FindFirstChild("leaderstats")
+  local stage=stats and stats:FindFirstChild("Stage")
+  if not stage or stage.Value>=STAGES+1 then return true end
+  if root.Position.Y<30 then return true end
+  for floor=11,51,10 do
+   if (root.Position-stagePos(floor)).Magnitude<12 then return true end
+  end
+  return false
+ end
+ remote.OnServerEvent:Connect(function(p)
+  local owned=passOwnership[p]
+  if not owned or not owned.slap then return end
+  if GAME_PASSES.slap==0 and not studio then return end
+  local now=os.clock()
+  if now-(lastSlap[p] or -100)<12 then return end
+  lastSlap[p]=now
+  local h,root=validCharacter(p)
+  if not h or safe(p,root) then message(p,"No slapping in safe zones.");return end
+  local target,targetRoot,best
+  local forward=Vector3.new(root.CFrame.LookVector.X,0,root.CFrame.LookVector.Z)
+  for _,other in ipairs(Players:GetPlayers()) do
+   if other~=p and now>=(shield[other] or 0) then
+    local oh,oroot=validCharacter(other)
+    if oh and not safe(other,oroot) then
+     local d=oroot.Position-root.Position
+     local flat=Vector3.new(d.X,0,d.Z)
+     if d.Magnitude<=8 and math.abs(d.Y)<3.5 and flat.Magnitude>0.1 and forward:Dot(flat.Unit)>.25 then
+      local params=RaycastParams.new()
+      params.FilterType=Enum.RaycastFilterType.Exclude
+      params.FilterDescendantsInstances={p.Character,other.Character}
+      params.RespectCanCollide=true
+      if not workspace:Raycast(root.Position,d,params) and (not best or d.Magnitude<best) then
+       target,targetRoot,best=other,oroot,d.Magnitude
+      end
+     end
+    end
+   end
+  end
+  if not target then message(p,"SLAP MISSED! Face a nearby player.");return end
+  shield[target]=now+25
+  raceEligible[p]=false;raceEligible[target]=false
+  local d=targetRoot.Position-root.Position
+  local direction=Vector3.new(d.X,0,d.Z).Unit
+  targetRoot.AssemblyLinearVelocity=direction*38+Vector3.new(0,19,0)
+  message(p,"BONK! Slap landed.")
+  message(target,"BONK! You have 25 seconds of slap protection.")
+ end)
+ Players.PlayerAdded:Connect(function(p)
+  p.CharacterAdded:Connect(function() shield[p]=os.clock()+8 end)
+ end)
+ for _,p in ipairs(Players:GetPlayers()) do
+  shield[p]=os.clock()+8
+  p.CharacterAdded:Connect(function() shield[p]=os.clock()+8 end)
+ end
+end

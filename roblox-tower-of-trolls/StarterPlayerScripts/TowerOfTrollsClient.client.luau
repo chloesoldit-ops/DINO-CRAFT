@@ -1,5 +1,5 @@
 --!nonstrict
--- RAINBOW TROLL OBBY 1.0 — Tower of Trolls. Put in StarterPlayerScripts.
+-- TOWER OF TROLLS 1.9. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
@@ -8,13 +8,18 @@ local TweenService=game:GetService("TweenService")
 local RunService=game:GetService("RunService")
 
 local player=Players.LocalPlayer
+local studio=RunService:IsStudio()
+local UserInputService=game:GetService("UserInputService")
 local events=ReplicatedStorage:WaitForChild("RainbowRushEvents")
+local ability=events:WaitForChild("TowerAbility")
 local messageEvent=events:WaitForChild("Message") :: RemoteEvent
 local info=events:WaitForChild("PassInfo") :: RemoteFunction
 local catalog=events:WaitForChild("ShopCatalog") :: RemoteFunction
 local replay=events:WaitForChild("ReplayCourse") :: RemoteEvent
 local practice=events:WaitForChild("PracticeBoost") :: RemoteEvent
 local checkpointReset=events:WaitForChild("ResetCheckpoint") :: RemoteEvent
+local playerGui=player:WaitForChild("PlayerGui")
+if playerGui:FindFirstChild("RainbowRushHUD") then return end
 local gui=Instance.new("ScreenGui")
 gui.Name="RainbowRushHUD"
 gui.ResetOnSpawn=false
@@ -101,10 +106,11 @@ local stageNames={
  "Definitely Done",
  "Not Done",
  "Last Laugh",
- "Actually the End"
+ "Actually the End",
+ "FINAL BOSS: THE IMPOSSIBLE EXAM"
 }
 local stageHints={}
-for i=1,60 do stageHints[i]="Good luck." end
+for i=1,61 do stageHints[i]="Good luck." end
 local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  local element=Instance.new("TextButton")
  element.Name=name;element.Text=txt;element.Position=pos;element.Size=size
@@ -116,10 +122,10 @@ local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  return element
 end
 
-local banner=label("GameTitle","😂 TOWER OF TROLLS 1.0",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
+local banner=label("GameTitle","😂 TOWER OF TROLLS 1.9",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
 stylePanel(banner,Color3.fromRGB(94,48,204),Color3.fromRGB(211,68,173))
-local progress=label("Progress","Floor 1 / 60",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
+local progress=label("Progress","Floor 1 / 61",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
 stylePanel(progress,Color3.fromRGB(41,74,168),Color3.fromRGB(34,138,190))
 local currency=label("Currency","🪙 Coins: 0   🏆 Wins: 0",UDim2.new(0,13,0,63),UDim2.fromOffset(226,36),14)
 local timer=label("RaceTimer","⏱️ 00:00.0   🥇 BEST —",UDim2.new(.5,-145,0,131),UDim2.fromOffset(290,34),14)
@@ -216,17 +222,14 @@ if okCatalog and typeof(catalogData)=="table" then rawCatalog=catalogData end
 local passes=rawCatalog and rawCatalog.passes or {}
 local products=rawCatalog and rawCatalog.products or {}
 local offers={
- {"🌈 Rainbow Trail","rainbow_trail","pass","Permanent rainbow running trail"},
- {"⚡ Speed Coil","speed","pass","Permanent faster running"},
- {"🪶 Gravity Coil","gravity","pass","Permanent higher jumping"},
- {"🪙 Double Coins","double_coins","pass","Earn twice as many coins"},
- {"👑 VIP Golden Glow","vip","pass","Permanent golden player glow"},
- {"⏭️ Skip 1 Checkpoint","skip_1","product","Advance to the next saved checkpoint (up to 10 floors)"},
- {"🚀 Skip 3 Checkpoints","skip_3","product","Advance up to three saved checkpoints (up to 30 floors)"},
- {"💰 250 Coins","coins_250","product","Repeatable coin pack"},
- {"💎 1200 Coins","coins_1200","product","Repeatable big coin pack"},
- {"🎆 Fireworks","fireworks","product","Celebrate with bright particles"},
- {"🌪️ Checkpoint Chaos","chaos","product","Returns everyone to their saved checkpoint after a warning; 2-minute cooldown"}
+ {"Slap Glove","slap","pass","Knock a nearby player backwards. 12-second cooldown; safe zones and victim protection."},
+ {"FINAL BOSS SKIP","skip_boss","product","One credit: finish Floor 61 without an earned win."},
+ {"Speed Coil","speed","pass","Toggle +50% running speed."},
+ {"Gravity Coil","gravity","pass","Toggle +30% jump power."},
+ {"Fusion Coil","fusion","pass","Toggle both coil abilities together."},
+ {"Double Jump","double_jump","pass","Press jump again in midair."},
+ {"VIP","vip","pass","Golden trail, name tag and VIP lounge."},
+ {"Magic Carpet","carpet","pass","Explore in flight; exit returns to saved floor. No progress during flight."}
 }
 local function row(titleText:string,key:string,kind:string,detail:string)
  local holder=Instance.new("Frame")
@@ -255,15 +258,52 @@ local function row(titleText:string,key:string,kind:string,detail:string)
   buy.BackgroundColor3=Color3.fromRGB(77,77,98)
  else
   buy.Text="VIEW PRICE"
+  if kind=="pass" then
+   local function markOwned() if player:GetAttribute("Own_"..key) then buy.Text="OWNED";buy.BackgroundColor3=Color3.fromRGB(43,125,80) end end
+   player:GetAttributeChangedSignal("Own_"..key):Connect(markOwned);markOwned()
+  end
+  if key=="skip_boss" then
+   local function creditText()
+    if (player:GetAttribute("BossSkipCredits") or 0)>0 then buy.Text="REDEEM CREDIT" end
+   end
+   player:GetAttributeChangedSignal("BossSkipCredits"):Connect(creditText)
+   creditText()
+  end
   task.spawn(function()
    local success,product=pcall(function()
     return MarketplaceService:GetProductInfo(id,kind=="pass" and Enum.InfoType.GamePass or Enum.InfoType.Product)
    end)
    if success and typeof(product)=="table" and typeof(product.PriceInRobux)=="number" then
-    buy.Text=tostring(product.PriceInRobux).." ROBUX"
+    if not (kind=="pass" and player:GetAttribute("Own_"..key)) and (key~="skip_boss" or (player:GetAttribute("BossSkipCredits") or 0)==0) then buy.Text=tostring(product.PriceInRobux).." ROBUX" end
    end
   end)
   buy.Activated:Connect(function()
+   if kind=="pass" and player:GetAttribute("Own_"..key) then return end
+   if not studio and not (rawCatalog and rawCatalog.live) then notification.Text="Shop is being tested. Purchases disabled.";notification.Visible=true;task.delay(3,function() notification.Visible=false end);return end
+   if studio then notification.Text="Studio test: real purchases disabled.";notification.Visible=true;task.delay(3,function() notification.Visible=false end);return end
+   if key=="skip_boss" then
+    local stats=player:FindFirstChild("leaderstats")
+    local stage=stats and stats:FindFirstChild("Stage")
+    if not stage or stage.Value~=61 or player:GetAttribute("TrollPrison") or not player:GetAttribute("TowerDataReady") then
+     notification.Text="Boss skip is available at floor 61 when saving is online."
+     notification.Visible=true
+     task.delay(3,function() notification.Visible=false end)
+     return
+    end
+    if (player:GetAttribute("BossSkipCredits") or 0)>0 then
+     events:WaitForChild("RedeemBossSkip"):FireServer();return
+    end
+   end
+   if key=="skip_1" or key=="skip_3" then
+    local stats=player:FindFirstChild("leaderstats")
+    local stage=stats and stats:FindFirstChild("Stage")
+    if not stage or stage.Value>=51 then
+     notification.Text="No checkpoint skips available beyond floor 51."
+     notification.Visible=true
+     task.delay(3,function() notification.Visible=false end)
+     return
+    end
+   end
    local success=pcall(function()
     if kind=="pass" then
      MarketplaceService:PromptGamePassPurchase(player,id)
@@ -280,7 +320,62 @@ local function row(titleText:string,key:string,kind:string,detail:string)
  end
 end
 for _,offer in ipairs(offers) do row(offer[1],offer[2],offer[3],offer[4]) end
-shop.Text="🛒 SHOP · 11 ITEMS"
+-- A compact abilities menu, separate from the purchase shop.
+local powerButton=button("PowerMenu","ABILITIES",UDim2.fromOffset(13,295),UDim2.fromOffset(155,39))
+local powers=Instance.new("Frame");powers.Name="Powers";powers.Size=UDim2.fromOffset(205,282);powers.Position=UDim2.fromOffset(175,100);powers.BackgroundColor3=Color3.fromRGB(25,30,58);powers.Visible=false;powers.Parent=gui
+local powerList=Instance.new("UIListLayout");powerList.Padding=UDim.new(0,5);powerList.Parent=powers
+local function powerRow(key,caption,action,value)
+ local b=Instance.new("TextButton");b.Size=UDim2.new(1,0,0,35);b.TextColor3=Color3.new(1,1,1);b.BackgroundColor3=Color3.fromRGB(80,65,160);b.Font=Enum.Font.GothamBold;b.TextSize=14;b.Parent=powers
+ local function update()
+  local own=key=="normal" or player:GetAttribute("Own_"..key)==true
+  b.Visible=own;b.Text=caption
+  if action=="mode" and player:GetAttribute("PowerMode")==value then b.Text=caption.." [ON]" end
+  if key=="carpet" and player:GetAttribute("CarpetFlying") then b.Text="EXIT CARPET" end
+  if key=="vip" and player:GetAttribute("VIPLounge") then b.Text="EXIT VIP LOUNGE" end
+ end
+ b.Activated:Connect(function() ability:FireServer(action,value) end)
+ for _,attr in ipairs({"Own_"..key,"PowerMode","CarpetFlying","VIPLounge"}) do player:GetAttributeChangedSignal(attr):Connect(update) end
+ update()
+end
+powerRow("normal","Normal movement","mode","normal")
+powerRow("speed","Speed Coil","mode","speed")
+powerRow("gravity","Gravity Coil","mode","gravity")
+powerRow("fusion","Fusion Coil","mode","fusion")
+powerRow("carpet","Magic Carpet","carpet")
+powerRow("vip","VIP Lounge","lounge")
+powerButton.Activated:Connect(function() powers.Visible=not powers.Visible end)
+UserInputService.JumpRequest:Connect(function()
+ if not player:GetAttribute("Own_double_jump") or player:GetAttribute("CarpetFlying") then return end
+ local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+ if h and h.FloorMaterial==Enum.Material.Air then ability:FireServer("double") end
+end)
+local up,down=false,false
+local upButton=button("CarpetUp","UP",UDim2.new(1,-90,.5,-40),UDim2.fromOffset(75,45))
+local downButton=button("CarpetDown","DOWN",UDim2.new(1,-90,.5,10),UDim2.fromOffset(75,45))
+upButton.Visible=false;downButton.Visible=false
+upButton.MouseButton1Down:Connect(function() up=true end);upButton.MouseButton1Up:Connect(function() up=false end)
+downButton.MouseButton1Down:Connect(function() down=true end);downButton.MouseButton1Up:Connect(function() down=false end)
+local function updateFlight() local on=player:GetAttribute("CarpetFlying")==true;upButton.Visible=on;downButton.Visible=on;up=false;down=false end
+player:GetAttributeChangedSignal("CarpetFlying"):Connect(updateFlight);updateFlight()
+local flightTick=0
+RunService.RenderStepped:Connect(function(dt)
+ if not player:GetAttribute("CarpetFlying") then return end
+ flightTick+=dt;if flightTick<.1 then return end;flightTick=0
+ local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid");if not h then return end
+ local v=h.MoveDirection;local y=0
+ if up or UserInputService:IsKeyDown(Enum.KeyCode.Space) then y+=1 end
+ if down or UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then y-=1 end
+ v=Vector3.new(v.X,y,v.Z);if v.Magnitude>1 then v=v.Unit end
+ ability:FireServer("move",v)
+end)
+if studio then
+ local tester=events:WaitForChild("StudioTestPasses",5)
+ if tester then local b=button("TestPowers","TEST ALL PASSES",UDim2.new(0,13,1,-55),UDim2.fromOffset(155,35));b.Activated:Connect(function() tester:FireServer() end) end
+end
+local bossShopButton=button("BossShopShortcut","FINAL BOSS SHOP",UDim2.new(1,-174,0,65),UDim2.fromOffset(160,42))
+bossShopButton.Visible=false
+bossShopButton.Activated:Connect(function() fullShop.Visible=true end)
+shop.Text="🛒 SHOP · 7 ITEMS"
 shop.Activated:Connect(function()fullShop.Visible=not fullShop.Visible end)
 x.Activated:Connect(function()fullShop.Visible=false end)
 
@@ -296,7 +391,7 @@ local function updateTimer()
  local best=player:GetAttribute("BestTimeMs") or 0
  local stageStats=player:FindFirstChild("leaderstats")
  local stageValue=stageStats and stageStats:FindFirstChild("Stage")
- local finished=stageValue and stageValue:IsA("IntValue") and stageValue.Value>60
+ local finished=stageValue and stageValue:IsA("IntValue") and stageValue.Value>61
  local current=0
  if finished and type(lastTime)=="number" and lastTime>0 then
   current=lastTime
@@ -316,14 +411,15 @@ if stats then
  local wins=stats:WaitForChild("Wins",20)
  local function update()
   if stage and stage:IsA("IntValue") then
-   progress.Text=stage.Value>60 and "🏆 ALL 60 FLOORS COMPLETE!" or ("☁️ Floor "..stage.Value.." / 60")
-   replayButton.Visible=stage.Value>60
-   local index=math.clamp(stage.Value,1,60)
-   stageTitle.Text=stage.Value>60 and "🏆 CHAMPION · COURSE COMPLETE" or
+   progress.Text=stage.Value>61 and "🏆 ALL 61 FLOORS COMPLETE!" or ("☁️ Floor "..stage.Value.." / 61")
+   replayButton.Visible=stage.Value>61
+   bossShopButton.Visible=stage.Value==61
+   local index=math.clamp(stage.Value,1,61)
+   stageTitle.Text=stage.Value>61 and "🏆 CHAMPION · COURSE COMPLETE" or
     ("FLOOR "..index.." · "..string.upper(stageNames[index]))
-   instructions.Text=stage.Value>60 and "Replay for a new record!" or
-    ("Saved floor: "..(1+math.floor((index-1)/10)*10).." | Next: "..math.min(61,11+math.floor((index-1)/10)*10))
-   local fraction=math.clamp((stage.Value-1)/60,0,1)
+   instructions.Text=stage.Value>61 and "Replay for a new record!" or
+    (index>=51 and "Saved floor: 51 | Next: FINISH (no more checkpoints)" or ("Saved floor: "..(1+math.floor((index-1)/10)*10).." | Next: "..(11+math.floor((index-1)/10)*10)))
+   local fraction=math.clamp((stage.Value-1)/61,0,1)
    TweenService:Create(progressFill,TweenInfo.new(.25),{Size=UDim2.fromScale(fraction,1)}):Play()
   end
   currency.Text="🪙 Coins: "..(coins and tostring(coins.Value) or "0").."    🏆 Wins: "..(wins and tostring(wins.Value) or "0")
@@ -364,3 +460,39 @@ escape.Activated:Connect(function() prisonPress:FireServer() end)
 player:GetAttributeChangedSignal("TrollPrison"):Connect(updatePrison)
 player:GetAttributeChangedSignal("PrisonCount"):Connect(updatePrison)
 updatePrison()
+
+-- Studio testing panel, absent in the published game.
+if studio then
+ local test=events:WaitForChild("StudioTestFloor",10)
+ if test then
+  local testBox=Instance.new("TextBox");testBox.Size=UDim2.fromOffset(100,35);testBox.Position=UDim2.new(1,-220,1,-50);testBox.Text="61";testBox.PlaceholderText="Floor 1-61";testBox.BackgroundColor3=Color3.fromRGB(35,40,65);testBox.TextColor3=Color3.new(1,1,1);testBox.TextSize=18;testBox.Parent=gui
+  local go=button("StudioGo","TEST GO",UDim2.new(1,-112,1,-50),UDim2.fromOffset(100,35))
+  go.Activated:Connect(function() local n=tonumber(testBox.Text);if n then test:FireServer(n) end end)
+ end
+end
+
+-- 2.0: Slap action (mobile and desktop).
+do
+ local slap=events:WaitForChild("SlapGlove",10)
+ if slap then
+  local b=button("SlapAction","SLAP",UDim2.new(1,-125,1,-145),UDim2.fromOffset(110,45))
+  local readyAt=0
+  local function visibility()
+   b.Visible=player:GetAttribute("Own_slap")==true and not player:GetAttribute("TrollPrison") and not player:GetAttribute("CarpetFlying") and not player:GetAttribute("VIPLounge")
+  end
+  for _,attr in ipairs({"Own_slap","TrollPrison","CarpetFlying","VIPLounge"}) do player:GetAttributeChangedSignal(attr):Connect(visibility) end
+  visibility()
+  b.Activated:Connect(function()
+   if os.clock()<readyAt then return end
+   readyAt=os.clock()+12
+   slap:FireServer()
+  end)
+  task.spawn(function()
+   while b.Parent do
+    local left=math.ceil(readyAt-os.clock())
+    b.Text=left>0 and ("SLAP "..left.."s") or "SLAP"
+    task.wait(.2)
+   end
+  end)
+ end
+end
