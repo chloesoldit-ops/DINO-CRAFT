@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW RUSH OBBY 0.5 — Sky Carnival Edition. Put in StarterPlayerScripts.
+-- RAINBOW TROLL OBBY 0.6 — Prank Park Edition. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
@@ -42,15 +42,17 @@ local function stylePanel(target:GuiObject,c1:Color3,c2:Color3)
  stroke.Transparency=.62;stroke.Thickness=1.7;stroke.Parent=target
 end
 local stageNames={
- "Rookie Rainbow","Candy Hop","Zigzag Valley","Speedy Sprint",
- "Laser Lane","Vanishing Steps","Moving Clouds","Neon Tightrope",
- "Bouncy Galaxy","Spinner Storm","Cloud Kingdom","Rainbow Finale"
+ "Trust Issues","Fake Coin Alley","Wrong Way","Boost or Bust",
+ "Laser Lies","Now You See Me","Cloud Betrayal","Tiny Troll Bridge",
+ "Bounce Surprise","Spin to Lose","Almost the End","Fake Finish"
 }
 local stageHints={
- "Follow the rainbow path!","Side-step and jump!","Time those zigzags!",
- "Use the boost pads!","Avoid the red lasers!","Platforms disappear!",
- "Wait for moving clouds!","Stay on the narrow pads!","Bounce to victory!",
- "Dodge the spinning beams!","Jump through the clouds!","The final challenge!"
+ "Can you trust the signs?","Those free coins look suspicious!",
+ "Some shortcuts are lies!","Watch out for surprise boosts!",
+ "The red beams aren't friendly!","The floor might vanish!",
+ "Not all clouds keep their promises!","Watch your footing!",
+ "Bounce pads might surprise you!","Avoid the rotating troll beams!",
+ "You're SO close now...","Can you spot the REAL finish?"
 }
 local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  local element=Instance.new("TextButton")
@@ -63,7 +65,7 @@ local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  return element
 end
 
-local banner=label("GameTitle","🌈 RAINBOW RUSH · SKY RACE 0.4",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
+local banner=label("GameTitle","😂 RAINBOW TROLL OBBY 0.6",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
 stylePanel(banner,Color3.fromRGB(94,48,204),Color3.fromRGB(211,68,173))
 stylePanel(progress,Color3.fromRGB(41,74,168),Color3.fromRGB(34,138,190))
@@ -85,7 +87,7 @@ local progressFill=Instance.new("Frame")
 progressFill.Name="ProgressFill";progressFill.Size=UDim2.fromScale(0,1)
 progressFill.BackgroundColor3=Color3.fromRGB(92,251,188)
 progressFill.BorderSizePixel=0;progressFill.Parent=progressBack
-local instructions=label("Instructions","☁️ Jump · Dodge hazards · Collect coins · Reach the finish!",UDim2.new(.5,-195,0,102),UDim2.fromOffset(390,26),12)
+local instructions=label("Instructions","😂 Find the real path · Ignore fake rewards · Reach the finish!",UDim2.new(.5,-195,0,102),UDim2.fromOffset(390,26),12)
 local notification=label("Notification","",UDim2.new(.5,-190,0,212),UDim2.fromOffset(380,50),16)
 notification.Visible=false
 notification.BackgroundColor3=Color3.fromRGB(24,100,99)
@@ -120,7 +122,7 @@ sizeLimit.Parent=fullShop
 local round=Instance.new("UICorner")
 round.CornerRadius=UDim.new(0,18);round.Parent=fullShop
 local header=Instance.new("TextLabel")
-header.Text="🌈 RAINBOW RUSH SHOP"
+header.Text="😂 TROLL OBBY SHOP"
 header.Size=UDim2.new(1,-92,0,49);header.Position=UDim2.fromOffset(14,7)
 header.Font=Enum.Font.GothamBlack;header.TextScaled=true;header.TextColor3=Color3.fromRGB(255,222,125)
 header.BackgroundTransparency=1;header.Parent=fullShop
