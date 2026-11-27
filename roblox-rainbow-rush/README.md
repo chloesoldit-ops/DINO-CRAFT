@@ -1,14 +1,16 @@
-# 🌈 Rainbow Rush Obby — Sky Islands Edition 0.3
+# 🌈 Rainbow Rush Obby — Sky Carnival Edition 0.5
 
-This is a separate Roblox game, made free to play with optional future upgrades. **Rainbow Rush 0.3** is a playable-code update with sky islands, hazards and replay. It is not yet published or fully playtested in Studio; Robux earnings are not guaranteed.
+This is a separate Roblox game, made free to play with optional future upgrades. **Rainbow Rush 0.5** adds a colorful obby-style lobby, 12 sky-island obstacle themes, stage arches, beacons, an illuminated finish podium, animated coins, a race timer, and personal-best tracking. It is not yet published or fully playtested in Studio; Robux earnings are not guaranteed.
 
 ## What the game does
 
 - Builds **12 themed sky-island stages** automatically: zigzags, lasers, speed boosts, vanishing platforms, moving clouds, tightrope, spinners, and a finish island. The original grey Baseplate is hidden.
+- **Obby-style visuals:** rainbow arches, glowing checkpoint beacons, white platform trim, floating sky decorations, a welcome deck, rainbow flooring, rotating coin orbs, and a finale podium.
+- **Race timer and personal best:** the HUD shows current race time and saved best completion time. A clean full-course run can earn a 100-coin personal-best bonus; using a paid stage skip disqualifies that run from the personal-best timing reward.
 - Players jump across platforms, collect coins, unlock checkpoints, and respawn at their last stage.
 - Stage completion gives **25 free Coins**, coin pickups give **5 free Coins**, and finishing the entire course gives **200 bonus Coins**.
-- Shows a compact stage tracker, leaderboard Coins and Wins, checkpoint messages, and an **11-item shop** that displays Coming Soon until Roblox IDs are added.
-- **Practice Boost:** spend **40 earned Coins** for 15 seconds of speed. **Free replay:** finish all stages to restart while keeping your Coins and Wins.
+- Shows a redesigned gradient HUD, stage theme labels, a stage progress bar, a live timer, leaderboard Coins and Wins, checkpoint messages, and an **11-item shop** that displays Coming Soon until Roblox IDs are added.
+- **Practice Boost:** spend **40 earned Coins** for 15 seconds of speed. **Free replay:** finish all stages to restart while keeping your Coins and Wins. **Checkpoint button:** return to your saved stage without resetting progress.
 - Players use normal Roblox chat. **No commands**.
 - Permanent-pass slots: Rainbow Trail, Speed, Gravity, Double Coins and VIP. Repeatable-product slots: 1/3 stage skips, two coin packs, fireworks and checkpoint chaos. **All IDs are 0 by default, so paid purchases are disabled.**
 
@@ -17,7 +19,7 @@ This is a separate Roblox game, made free to play with optional future upgrades.
 1. Click **Stop** if the game is playing.
 2. Open **ServerScriptService → Script**. Copy the complete new [server script](ServerScriptService/RainbowRushServer.server.luau), select all existing code with **⌘A** and replace it with **⌘V**.
 3. Open **StarterPlayer → StarterPlayerScripts → LocalScript**. Copy the complete new [client script](StarterPlayerScripts/RainbowRushClient.client.luau), and replace the old code the same way.
-4. Press **Play**. Test stage 1 jumps, collisions, coin pickups, respawning, moving platforms, lasers, the shop, the free practice boost and reaching the final checkpoint. Open **Window → Output** if anything errors.
+4. Press **Play**. You should spawn in the new purple-and-rainbow lobby, looking toward the stage-one arch. Check platform jumps, rotating coins, moving platforms, hazards, the stage timer, checkpoint reset, finish bonus and the shop. Open **Window → Output** if anything errors.
 5. **Keep this as a private prototype** until the entire course and saved progress are tested. Do not add Robux product IDs before testing purchases in an appropriate test environment.
 
 ## Copy and paste in Roblox Studio
@@ -50,7 +52,7 @@ The client simply opens Roblox's official `PromptGamePassPurchase` prompt. The s
 
 ## Before launch
 
-- Playtest at least two clients, each checkpoint and the finish reward.
+- Playtest at least two clients, each checkpoint and the finish reward. The server HUD wiring and stage jump distances were reviewed in source; this is **not** a substitute for a Roblox Studio physics playtest.
 - Check platform gaps are reasonable on both computer and mobile.
 - Inspect the **Output** window for script errors.
 - Configure DataStore saving properly. Studio test saves can need a published experience and API access settings.
