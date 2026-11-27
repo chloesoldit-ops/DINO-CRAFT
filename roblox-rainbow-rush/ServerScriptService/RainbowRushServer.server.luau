@@ -182,6 +182,25 @@ local function neonText(part,text)
  label.Text=text;label.TextScaled=true;label.Font=Enum.Font.GothamBlack
  label.TextColor3=Color3.new(1,1,1);label.TextStrokeTransparency=0;label.Parent=gui
 end
+local function celebrateCheckpoint(player,isFinish)
+ local char=player.Character
+ local root=char and char:FindFirstChild("HumanoidRootPart")
+ if not root or not root:IsA("BasePart") then return end
+ local attachment=Instance.new("Attachment")
+ attachment.Name="CheckpointConfetti";attachment.Parent=root
+ local particles=Instance.new("ParticleEmitter")
+ particles.Name="RainbowVictoryBurst"
+ particles.Texture="rbxasset://textures/particles/sparkles_main.dds"
+ particles.Rate=0
+ particles.Lifetime=NumberRange.new(.8,1.5)
+ particles.Speed=NumberRange.new(isFinish and 14 or 7,isFinish and 24 or 13)
+ particles.SpreadAngle=Vector2.new(360,360)
+ particles.Size=NumberSequence.new(.65)
+ particles.Color=ColorSequence.new(Color3.fromRGB(255,92,170),Color3.fromRGB(79,224,255))
+ particles.Parent=attachment
+ particles:Emit(isFinish and 140 or 35)
+ game:GetService("Debris"):AddItem(attachment,3)
+end
 local function awardCheckpoint(player,stage)
  local stats=player:FindFirstChild("leaderstats")
  local stageStat=stats and stats:FindFirstChild("Stage")
@@ -190,6 +209,7 @@ local function awardCheckpoint(player,stage)
  if not(stageStat and coinStat and winStat) then return end
  if stage==stageStat.Value+1 then
   stageStat.Value=stage
+  celebrateCheckpoint(player,stage==STAGES+1)
   coinStat.Value+=25*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1)
   message(player,"✅ CHECKPOINT "..stage.."! +25 free coins!")
   if stage==STAGES+1 then
