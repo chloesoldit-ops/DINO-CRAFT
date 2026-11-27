@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW RUSH OBBY 0.1 — Put this LocalScript in StarterPlayerScripts.
+-- RAINBOW RUSH OBBY 0.3 — Sky Islands Edition. Put in StarterPlayerScripts.
 -- Uses standard Roblox chat; no special commands.
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
@@ -11,6 +11,8 @@ local events=ReplicatedStorage:WaitForChild("RainbowRushEvents")
 local messageEvent=events:WaitForChild("Message") :: RemoteEvent
 local info=events:WaitForChild("PassInfo") :: RemoteFunction
 local catalog=events:WaitForChild("ShopCatalog") :: RemoteFunction
+local replay=events:WaitForChild("ReplayCourse") :: RemoteEvent
+local practice=events:WaitForChild("PracticeBoost") :: RemoteEvent
 local gui=Instance.new("ScreenGui")
 gui.Name="RainbowRushHUD"
 gui.ResetOnSpawn=false
@@ -40,16 +42,23 @@ local function button(name:string,txt:string,pos:UDim2,size:UDim2):TextButton
  return element
 end
 
-local banner=label("GameTitle","🌈 RAINBOW RUSH OBBY",UDim2.new(.5,-155,0,10),UDim2.fromOffset(310,44),20)
+local banner=label("GameTitle","🌈 RAINBOW RUSH · SKY ISLANDS",UDim2.new(.5,-178,0,7),UDim2.fromOffset(356,38),18)
 banner.BackgroundColor3=Color3.fromRGB(91,44,159)
-local progress=label("Progress","Stage 1 / 12",UDim2.new(.5,-110,0,60),UDim2.fromOffset(220,40),18)
-local currency=label("Currency","🪙 Coins: 0   🏆 Wins: 0",UDim2.new(0,12,0,12),UDim2.fromOffset(240,44),15)
-local instructions=label("Instructions","Jump between colorful platforms. Touch checkpoints to save!",UDim2.new(.5,-188,0,104),UDim2.fromOffset(376,40),13)
-local notification=label("Notification","",UDim2.new(.5,-190,0,152),UDim2.fromOffset(380,52),16)
+local progress=label("Progress","Stage 1 / 12",UDim2.new(.5,-112,0,49),UDim2.fromOffset(224,36),17)
+local currency=label("Currency","🪙 Coins: 0   🏆 Wins: 0",UDim2.new(0,13,0,63),UDim2.fromOffset(226,36),14)
+local instructions=label("Instructions","☁️ Jump · Dodge hazards · Collect coins · Reach the finish!",UDim2.new(.5,-195,0,90),UDim2.fromOffset(390,32),12)
+local notification=label("Notification","",UDim2.new(.5,-190,0,130),UDim2.fromOffset(380,50),16)
 notification.Visible=false
 notification.BackgroundColor3=Color3.fromRGB(24,100,99)
 
-local shop=button("CosmeticShop","✨ RAINBOW TRAIL",UDim2.new(1,-194,0,12),UDim2.fromOffset(181,48))
+local shop=button("CosmeticShop","🛒 SHOP",UDim2.new(0,13,0,107),UDim2.fromOffset(155,43))
+local boost=button("PracticeBoost","⚡ BOOST · 40 COINS",UDim2.new(0,13,0,157),UDim2.fromOffset(155,43))
+boost.BackgroundColor3=Color3.fromRGB(29,138,162)
+boost.Activated:Connect(function()practice:FireServer()end)
+local replayButton=button("ReplayCourse","🏁 REPLAY COURSE",UDim2.new(.5,-107,1,-74),UDim2.fromOffset(214,49))
+replayButton.BackgroundColor3=Color3.fromRGB(63,163,119)
+replayButton.Visible=false
+replayButton.Activated:Connect(function()replay:FireServer()end)
 shop.BackgroundColor3=Color3.fromRGB(81,137,205)
 -- The shop lists actual Roblox Marketplace prices; IDs remain 0 until configured.
 local fullShop=Instance.new("Frame")
@@ -169,7 +178,8 @@ if stats then
  local wins=stats:WaitForChild("Wins",20)
  local function update()
   if stage and stage:IsA("IntValue") then
-   progress.Text=stage.Value>12 and "🏆 ALL 12 STAGES COMPLETE!" or ("🌈 Stage "..stage.Value.." / 12")
+   progress.Text=stage.Value>12 and "🏆 ALL 12 STAGES COMPLETE!" or ("☁️ Stage "..stage.Value.." / 12")
+   replayButton.Visible=stage.Value>12
   end
   currency.Text="🪙 Coins: "..(coins and tostring(coins.Value) or "0").."    🏆 Wins: "..(wins and tostring(wins.Value) or "0")
  end
