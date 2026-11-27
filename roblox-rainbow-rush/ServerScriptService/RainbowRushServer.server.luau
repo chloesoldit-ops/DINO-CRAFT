@@ -1,5 +1,5 @@
 --!strict
--- RAINBOW RUSH OBBY 0.1 — Standalone Roblox game
+-- RAINBOW RUSH OBBY 0.4 — Standalone Roblox game
 -- Put this Script in ServerScriptService. No models or command setup required.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -15,6 +15,9 @@ local PRODUCTS={skip_1=0,skip_3=0,coins_250=0,coins_1200=0,fireworks=0,chaos=0}
 local passOwnership={}
 local lastChaosTime=0
 local freeBoostCooldown={}
+local resetCooldown={}
+local raceStarted={}
+local raceEligible={}
 local productIndex={}
 for name,id in pairs(PRODUCTS) do
  if id>0 then productIndex[id]=name end
@@ -61,6 +64,8 @@ local replayEvent=Instance.new("RemoteEvent")
 replayEvent.Name="ReplayCourse";replayEvent.Parent=events
 local boostEvent=Instance.new("RemoteEvent")
 boostEvent.Name="PracticeBoost";boostEvent.Parent=events
+local resetEvent=Instance.new("RemoteEvent")
+resetEvent.Name="ResetCheckpoint";resetEvent.Parent=events
 local shopCatalog=Instance.new("RemoteFunction")
 shopCatalog.Name="ShopCatalog";shopCatalog.Parent=events
 shopCatalog.OnServerInvoke=function() return {passes=GAME_PASSES,products=PRODUCTS} end
@@ -96,7 +101,7 @@ local function teleport(player,stage)
  local root=character and character:FindFirstChild("HumanoidRootPart")
  if root and root:IsA("BasePart") then
   root.AssemblyLinearVelocity=Vector3.zero
-  root.CFrame=CFrame.new(stagePos(stage)+Vector3.new(0,6,0))
+  root.CFrame=CFrame.lookAt(stagePos(stage)+Vector3.new(0,6,0),stagePos(stage)+Vector3.new(0,6,12))
  end
 end
 local function save(player)
@@ -105,10 +110,13 @@ local function save(player)
  local points=stats and stats:FindFirstChild("Coins")
  local wins=stats and stats:FindFirstChild("Wins")
  if not (stage and points and wins) then return end
- local data={stage=stage.Value,coins=points.Value,wins=wins.Value}
+ local data={stage=stage.Value,coins=points.Value,wins=wins.Value,best=player:GetAttribute("BestTimeMs") or 0}
  pcall(function()SAVE_STORE:UpdateAsync(tostring(player.UserId),function(old)
   old=type(old)=="table" and old or {}
-  return {stage=data.stage,coins=data.coins,wins=math.max(old.wins or 0,data.wins),receipts=old.receipts or {}}
+  local previousBest=tonumber(old.best) or 0
+  local best=data.best
+  if previousBest>0 and (best<=0 or previousBest<best) then best=previousBest end
+  return {stage=data.stage,coins=data.coins,wins=math.max(old.wins or 0,data.wins),best=best,receipts=old.receipts or {}}
  end)end)
 end
 -- Replaying is free and never resets purchases, coins or wins.
@@ -121,8 +129,22 @@ replayEvent.OnServerEvent:Connect(function(player)
   return
  end
  stage.Value=1
+ raceStarted[player]=workspace:GetServerTimeNow()
+ raceEligible[player]=true
+ player:SetAttribute("RunStartedAt",raceStarted[player])
+ player:SetAttribute("LastTimeMs",0)
  teleport(player,1)
- message(player,"🌈 NEW RUN! Race your friends again!")
+ task.spawn(save,player)
+ message(player,"🌈 NEW RUN! Race the clock and beat your personal best!")
+end)
+resetEvent.OnServerEvent:Connect(function(player)
+ if os.clock()-(resetCooldown[player] or -1000)<3 then return end
+ resetCooldown[player]=os.clock()
+ local stats=player:FindFirstChild("leaderstats")
+ local stage=stats and stats:FindFirstChild("Stage")
+ if not stage then return end
+ teleport(player,math.clamp(stage.Value,1,STAGES+1))
+ message(player,"📍 Returned to your saved checkpoint!")
 end)
 boostEvent.OnServerEvent:Connect(function(player)
  local stats=player:FindFirstChild("leaderstats")
@@ -168,7 +190,26 @@ local function awardCheckpoint(player,stage)
   stageStat.Value=stage
   coinStat.Value+=25*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1)
   message(player,"✅ CHECKPOINT "..stage.."! +25 free coins!")
-  if stage==STAGES+1 then winStat.Value+=1;coinStat.Value+=200*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1);message(player,"🏆 YOU WON! BONUS COINS!") end
+  if stage==STAGES+1 then
+   winStat.Value+=1
+   coinStat.Value+=200*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1)
+   local start=raceStarted[player]
+   if start and raceEligible[player] then
+    local elapsed=math.max(1,math.floor((workspace:GetServerTimeNow()-start)*1000))
+    player:SetAttribute("LastTimeMs",elapsed)
+    local oldBest=player:GetAttribute("BestTimeMs") or 0
+    if oldBest==0 or elapsed<oldBest then
+     player:SetAttribute("BestTimeMs",elapsed)
+     coinStat.Value+=100*(passOwnership[player] and passOwnership[player].double_coins and 2 or 1)
+     message(player,"🏆 NEW PERSONAL BEST! +100 bonus coins!")
+    else
+     message(player,"🏆 YOU WON! Replay to try for a faster time!")
+    end
+   else
+    message(player,"🏆 COURSE COMPLETE! Finish a fresh run to set a personal best!")
+   end
+   raceStarted[player]=nil
+  end
   task.spawn(save,player)
  elseif stage>stageStat.Value+1 then
   message(player,"Reach the previous checkpoint first!")
@@ -516,14 +557,17 @@ MarketplaceService.ProcessReceipt=function(receipt)
    local currentCoins=math.max(0,tonumber(old.coins) or 0,balance.Value)
    local currentWins=math.max(0,tonumber(old.wins) or 0,wins.Value)
    receipts[purchaseId]=true
-   return {stage=math.min(STAGES+1,currentStage+addStages),coins=currentCoins+addCoins,wins=currentWins,receipts=receipts}
+   return {stage=math.min(STAGES+1,currentStage+addStages),coins=currentCoins+addCoins,wins=currentWins,best=tonumber(old.best) or 0,receipts=receipts}
   end)
  end)
  if not ok or type(result)~="table" then return Enum.ProductPurchaseDecision.NotProcessedYet end
  if not previousWasGranted then
   stage.Value=math.max(stage.Value,math.min(STAGES+1,tonumber(result.stage) or stage.Value))
   balance.Value=math.max(balance.Value,tonumber(result.coins) or balance.Value)
-  if addStages>0 then teleport(player,stage.Value) end
+  if addStages>0 then
+   raceEligible[player]=false
+   teleport(player,stage.Value)
+  end
   if name=="fireworks" or name=="chaos" then launchRainbowFireworks(player) end
   if name=="chaos" then
    if os.time()-lastChaosTime>120 then
@@ -554,7 +598,13 @@ Players.PlayerAdded:Connect(function(player)
   stage.Value=math.clamp(tonumber(data.stage) or 1,1,STAGES+1)
   coin.Value=math.max(0,tonumber(data.coins) or 0)
   wins.Value=math.max(0,tonumber(data.wins) or 0)
+  player:SetAttribute("BestTimeMs",math.max(0,math.floor(tonumber(data.best) or 0)))
  end
+ if player:GetAttribute("BestTimeMs")==nil then player:SetAttribute("BestTimeMs",0) end
+ player:SetAttribute("LastTimeMs",0)
+ raceStarted[player]=workspace:GetServerTimeNow()
+ raceEligible[player]=stage.Value==1
+ player:SetAttribute("RunStartedAt",raceStarted[player])
  local function onSpawn()
   task.wait(.3)
   if player.Parent and player.Character then
@@ -565,7 +615,15 @@ Players.PlayerAdded:Connect(function(player)
  player.CharacterAdded:Connect(onSpawn)
  if player.Character then task.spawn(onSpawn) end
 end)
-Players.PlayerRemoving:Connect(function(player)save(player);touchCooldown[player]=nil;passOwnership[player]=nil;freeBoostCooldown[player]=nil end)
+Players.PlayerRemoving:Connect(function(player)
+ save(player)
+ touchCooldown[player]=nil
+ passOwnership[player]=nil
+ freeBoostCooldown[player]=nil
+ resetCooldown[player]=nil
+ raceStarted[player]=nil
+ raceEligible[player]=nil
+end)
 game:BindToClose(function()
  for _,player in Players:GetPlayers() do save(player)end
 end)
